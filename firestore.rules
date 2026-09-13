@@ -1,0 +1,63 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+
+      match /myCharacters/{characterId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    match /characters/{charId} {
+      allow read: if request.auth != null;
+      allow write: if false; // solo se escriben desde el script de migración (admin SDK)
+    }
+
+    match /tournaments/{tournamentId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.createdBy;
+
+      match /rounds/{roundId} {
+        allow read: if request.auth != null;
+        allow create, update, delete: if request.auth != null &&
+          request.auth.uid == get(/databases/$(database)/documents/tournaments/$(tournamentId)).data.createdBy;
+
+        match /reactions/{reactionId} {
+          allow read: if request.auth != null;
+          // el propio dueño de la reacción, O el creador del torneo (para poder
+          // borrar todo si elimina el torneo entero)
+          allow write: if request.auth != null && (
+            request.auth.uid == reactionId ||
+            request.auth.uid == get(/databases/$(database)/documents/tournaments/$(tournamentId)).data.createdBy
+          );
+        }
+      }
+
+      match /comments/{commentId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+        allow delete: if request.auth != null &&
+          request.auth.uid == get(/databases/$(database)/documents/tournaments/$(tournamentId)).data.createdBy;
+      }
+    }
+    match /invitations/{invitationId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.createdBy;
+
+      match /votes/{uid} {
+        allow read: if request.auth != null;
+        allow create, update: if request.auth != null && request.auth.uid == uid;
+        allow delete: if request.auth != null && (
+          request.auth.uid == uid ||
+          request.auth.uid == get(/databases/$(database)/documents/invitations/$(invitationId)).data.createdBy
+        );
+      }
+    }
+  }
+}

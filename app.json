@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Smash 33",
+    "slug": "smash-33",
+    "version": "1.0.0",
+    "orientation": "default",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.smash33.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptiveIcon.png",
+        "backgroundColor": "#0A0A0E"
+      },
+      "permissions": [
+        "NOTIFICATIONS"
+      ]
+    },
+    "plugins": [
+      "expo-status-bar",
+      [
+        "expo-notifications",
+        {
+          "color": "#7C5CFF"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "2e8b61c5-88ec-4359-a24c-8953bb136b22"
+      }
+    }
+  }
+}
