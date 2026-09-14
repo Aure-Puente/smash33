@@ -25,12 +25,14 @@ export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const [characters, setCharacters] = useState([]);
   const [lastTournament, setLastTournament] = useState(null);
-  const [bestCharacter, setBestCharacter] = useState(null);
+  const [characterWins, setCharacterWins] = useState({});
   const [activeTournament, setActiveTournament] = useState(null);
   const [loadingExtra, setLoadingExtra] = useState(true);
   const [myCharacterIds, setMyCharacterIds] = useState([]);
   const [myCharactersChecked, setMyCharactersChecked] = useState(false);
-  const [fallbackSeed] = useState(() => Math.floor(Math.random() * 1000));
+  // Semilla fija por sesión: elige un mismo personaje al azar mientras la
+  // app sigue abierta, y solo cambia si se cierra y se vuelve a abrir.
+  const [randomSeed] = useState(() => Math.floor(Math.random() * 1000));
   const initialLoading = loadingExtra;
   const spinAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -81,11 +83,8 @@ export default function HomeScreen({ navigation }) {
         .then(setLastTournament)
         .catch((e) => console.log("Error cargando último torneo:", e.message)),
       getMyCharacterWinCounts(user.uid)
-        .then((wins) => {
-          const entries = Object.entries(wins).sort((a, b) => b[1] - a[1]);
-          setBestCharacter(entries[0] || null); // [characterId, winCount]
-        })
-        .catch((e) => console.log("Error cargando mejor personaje:", e.message)),
+        .then(setCharacterWins)
+        .catch((e) => console.log("Error cargando victorias:", e.message)),
     ]).finally(() => setLoadingExtra(false));
 
     return () => {
@@ -98,201 +97,198 @@ export default function HomeScreen({ navigation }) {
 
   const lastWinner = lastTournament?.participants?.find((p) => p.uid === lastTournament.winnerUid);
   const lastWinnerCharacter = lastWinner ? charById(lastWinner.currentCharacterId) : null;
-  const bestCharacterData = bestCharacter ? charById(bestCharacter[0]) : null;
-  const fallbackCharacter =
-    characters.length > 0 ? characters[fallbackSeed % characters.length] : null;
-  const featuredCharacter = bestCharacterData || fallbackCharacter;
+
+  // Personaje destacado: uno al azar entre los que el usuario cargó en "Mis
+  // personajes" (no del catálogo completo).
+  const myCharacterList = characters.filter((c) => myCharacterIds.includes(c.fighterNumber));
+  const featuredCharacter =
+    myCharacterList.length > 0 ? myCharacterList[randomSeed % myCharacterList.length] : null;
+  const featuredCharacterWins = featuredCharacter ? characterWins[featuredCharacter.fighterNumber] || 0 : 0;
 
   const showCharactersModal = myCharactersChecked && myCharacterIds.length === 0 && isFocused;
   const isTournamentParticipant = activeTournament?.participantUids?.includes(user.uid);
   const showActiveTournamentCard = activeTournament && !isTournamentParticipant;
 
   return (
-    <ScrollView
-      contentContainerStyle={[
-        styles.container,
-        { backgroundColor: theme.colors.background, paddingTop: insets.top + SPACING.xl },
-      ]}
-    >
-      <Portal>
-        <Modal
-          visible={showCharactersModal}
-          dismissable={false}
-          contentContainerStyle={[styles.charsModal, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
-        >
-          <View style={[styles.charsModalIcon, { backgroundColor: theme.colors.primaryContainer }]}>
-            <Text style={{ fontSize: 28 }}>🎮</Text>
-          </View>
-          <Text variant="titleMedium" style={{ marginBottom: SPACING.xs, textAlign: "center", color: theme.colors.onSurface }}>
-            Todavía no cargaste personajes
-          </Text>
-          <Text variant="bodyMedium" style={{ textAlign: "center", marginBottom: SPACING.xl, color: theme.colors.onSurfaceVariant }}>
-            Antes de jugar necesitás cargar los personajes que sueles usar.
-          </Text>
-          <Button
-            mode="contained"
-            style={{ borderRadius: RADIUS.pill, width: "100%" }}
-            onPress={() => navigation.navigate("Perfil", { screen: "MyCharacters" })}
+    <View style={{ flex: 1, backgroundColor: theme.colors.background, paddingTop: insets.top }}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Portal>
+          <Modal
+            visible={showCharactersModal}
+            dismissable={false}
+            contentContainerStyle={[styles.charsModal, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
           >
-            Cargar personajes
-          </Button>
-        </Modal>
-      </Portal>
-
-      <View style={{ width: "100%", maxWidth: maxContentWidth, alignSelf: "center", flex: 1 }}>
-        {initialLoading ? (
-          <View style={styles.loadingFullScreen}>
-            <Animated.Image
-              source={require("../../assets/logo.webp")}
-              style={[styles.loadingLogo, { tintColor: theme.colors.primary, transform: [{ rotate: spinDeg }] }]}
-              resizeMode="contain"
-            />
-          </View>
-        ) : (
-          <Animated.View style={{ opacity: fadeAnim }}>
-            {/* --- Saludo + personaje destacado --- */}
-            <View style={[styles.heroCard, { backgroundColor: theme.colors.primaryContainer }]}>
-              <View style={styles.heroHeader}>
-                <Avatar.Image size={48} source={{ uri: profile?.photoURL }} />
-                <View style={{ marginLeft: SPACING.m }}>
-                  <Text variant="titleMedium" style={{ color: theme.colors.onPrimaryContainer }}>
-                    Hola, {profile?.playerName || "jugador"} 👋
-                  </Text>
-                  <Text variant="bodySmall" style={{ color: theme.colors.onPrimaryContainer, opacity: 0.75 }}>
-                    Bienvenido a Smash 33
-                  </Text>
-                </View>
-              </View>
-
-              {featuredCharacter ? (
-                <View style={styles.heroCharacterArea}>
-                  <Text variant="labelLarge" style={{ color: theme.colors.onPrimaryContainer, opacity: 0.7 }}>
-                    {bestCharacterData ? "Tu mejor personaje" : "Personaje destacado"}
-                  </Text>
-                  <View style={[styles.heroHalo, { backgroundColor: theme.colors.surface }]} />
-                  <Image
-                    source={{ uri: featuredCharacter.images?.fullImage }}
-                    style={styles.heroCharacterImage}
-                    resizeMode="contain"
-                  />
-                  <Text variant="displaySmall" style={{ color: theme.colors.onPrimaryContainer, marginTop: SPACING.s }}>
-                    {featuredCharacter.name}
-                  </Text>
-                  {bestCharacterData && (
-                    <Text variant="bodyMedium" style={{ color: theme.colors.onPrimaryContainer, opacity: 0.75 }}>
-                      {bestCharacter[1]} {bestCharacter[1] === 1 ? "combate ganado" : "combates ganados"}
-                    </Text>
-                  )}
-                </View>
-              ) : (
-                <Text variant="bodyMedium" style={{ color: theme.colors.onPrimaryContainer, opacity: 0.75, marginTop: SPACING.l, textAlign: "center" }}>
-                  Cargá tus personajes para verlos acá.
-                </Text>
-              )}
+            <View style={[styles.charsModalIcon, { backgroundColor: theme.colors.primaryContainer }]}>
+              <Text style={{ fontSize: 28 }}>🎮</Text>
             </View>
-
-            {/* --- Aviso de torneo en curso  --- */}
-            {showActiveTournamentCard && (
-              <Pressable
-                onPress={() =>
-                  navigation.navigate("Torneo", { screen: "TournamentDetail", params: { tournamentId: activeTournament.id } })
-                }
-              >
-                <View style={[styles.liveBanner, { backgroundColor: theme.colors.primary, borderColor: "rgba(255,255,255,0.35)" }]}>
-                  <View style={[styles.liveIconWrap, { backgroundColor: theme.colors.onPrimary }]}>
-                    <MaterialCommunityIcons name="lightning-bolt" size={22} color={theme.colors.primary} />
-                  </View>
-                  <View style={{ flex: 1, marginLeft: SPACING.m }}>
-                    <View style={styles.liveTag}>
-                      <Animated.View style={[styles.liveDot, { backgroundColor: theme.colors.onPrimary, opacity: livePulseOpacity }]} />
-                      <Text variant="labelSmall" style={[styles.liveTagText, { color: theme.colors.onPrimary }]}>
-                        EN VIVO
-                      </Text>
-                    </View>
-                    <Text variant="titleMedium" style={{ color: theme.colors.onPrimary, marginTop: 2 }}>
-                      Hay un torneo en curso
-                    </Text>
-                    <Text variant="bodySmall" style={{ color: theme.colors.onPrimary, opacity: 0.9, marginTop: 2 }}>
-                      Si querés chequear las batallas y resultados, tocá acá
-                    </Text>
-                  </View>
-                  <View style={[styles.liveChevronWrap, { backgroundColor: "rgba(255,255,255,0.18)" }]}>
-                    <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.onPrimary} />
-                  </View>
-                </View>
-              </Pressable>
-            )}
-
-            {/* --- Último torneo --- */}
-            {lastWinner ? (
-              <View style={[styles.premiumCard, styles.winnerCard, { backgroundColor: theme.colors.surface, borderColor: theme.custom.gold }]}>
-                <View style={[styles.goldStripe, { backgroundColor: theme.custom.gold }]} />
-                <View style={styles.winnerRow}>
-                  {lastWinnerCharacter && (
-                    <View style={[styles.winnerImageWrap, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.custom.gold }]}>
-                      <Image source={{ uri: lastWinnerCharacter.images?.fullImage }} style={styles.winnerImage} resizeMode="contain" />
-                    </View>
-                  )}
-                  <View style={{ flex: 1, marginLeft: SPACING.l }}>
-                    <Text variant="bodySmall" style={{ color: theme.custom.gold }}>Campeón del último torneo</Text>
-                    <Text variant="headlineMedium" style={{ color: theme.colors.onBackground }}>{lastWinner.playerName}</Text>
-                    {lastWinnerCharacter && (
-                      <Text variant="titleSmall" style={{ color: theme.colors.onSurfaceVariant }}>
-                        con {lastWinnerCharacter.name}
-                      </Text>
-                    )}
-                  </View>
-                  <Text style={{ fontSize: 34 }}>🏆</Text>
-                </View>
-              </View>
-            ) : (
-              <View style={[styles.premiumCard, styles.emptyStateCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
-                <Text style={{ fontSize: 26 }}>🥋</Text>
-                <Text variant="titleMedium" style={{ color: theme.colors.onBackground, marginTop: SPACING.xs }}>
-                  Todavía no hay campeón
-                </Text>
-                <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, textAlign: "center", marginTop: SPACING.xs }}>
-                  Jugá el próximo torneo y quedate con la corona.
-                </Text>
-              </View>
-            )}
-
-            {/* --- Próximamente: invitaciones del Gremio --- */}
-            <ImageBackground
-              source={require("../../assets/invitacion.jpg")}
-              style={styles.inviteCard}
-              imageStyle={styles.inviteCardImage}
+            <Text variant="titleMedium" style={{ marginBottom: SPACING.xs, textAlign: "center", color: theme.colors.onSurface }}>
+              Todavía no cargaste personajes
+            </Text>
+            <Text variant="bodyMedium" style={{ textAlign: "center", marginBottom: SPACING.xl, color: theme.colors.onSurfaceVariant }}>
+              Antes de jugar necesitás cargar los personajes que sueles usar.
+            </Text>
+            <Button
+              mode="contained"
+              style={{ borderRadius: RADIUS.pill, width: "100%" }}
+              onPress={() => navigation.navigate("Perfil", { screen: "MyCharacters" })}
             >
-              <View style={styles.inviteVeil}>
-                <Text variant="titleMedium" style={styles.inviteTitle}>
-                  Próximamente: invitaciones del Gremio
-                </Text>
-                <Text variant="bodySmall" style={styles.inviteSubtitle}>
-                  Vas a poder coordinar la próxima reunión desde acá.
-                </Text>
-              </View>
-            </ImageBackground>
+              Cargar personajes
+            </Button>
+          </Modal>
+        </Portal>
 
-            {/* --- Próximamente: división de gastos --- */}
-            <View style={[styles.premiumCard, styles.expenseCard, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.colors.outline }]}>
-              <View style={{ flex: 1, paddingRight: SPACING.s }}>
-                <Text variant="titleMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                  Próximamente: división de gastos
-                </Text>
-                <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, opacity: 0.8, marginTop: SPACING.xs }}>
-                  Vas a poder cargar lo que gastó cada uno y dividirlo automáticamente.
-                </Text>
-              </View>
-              <Image
-                source={require("../../assets/coins.webp")}
-                style={styles.expenseCoinsImage}
+        <View style={{ width: "100%", maxWidth: maxContentWidth, alignSelf: "center", flex: 1 }}>
+          {initialLoading ? (
+            <View style={styles.loadingFullScreen}>
+              <Animated.Image
+                source={require("../../assets/logo.webp")}
+                style={[styles.loadingLogo, { tintColor: theme.colors.primary, transform: [{ rotate: spinDeg }] }]}
                 resizeMode="contain"
               />
             </View>
-          </Animated.View>
-        )}
-      </View>
-    </ScrollView>
+          ) : (
+            <Animated.View style={{ opacity: fadeAnim }}>
+              {/* --- Saludo + personaje destacado --- */}
+              <View style={[styles.heroCard, { backgroundColor: theme.colors.primaryContainer }]}>
+                <View style={styles.heroHeader}>
+                  <Avatar.Image size={56} source={{ uri: profile?.photoURL }} />
+                  <View style={{ marginLeft: SPACING.m }}>
+                    <Text variant="headlineSmall" style={{ color: theme.colors.onPrimaryContainer }}>
+                      Hola, {profile?.playerName || "jugador"} 👋
+                    </Text>
+                    <Text variant="titleSmall" style={{ color: theme.colors.onPrimaryContainer, opacity: 0.75 }}>
+                      Bienvenido a Smash 33
+                    </Text>
+                  </View>
+                </View>
+
+                {featuredCharacter ? (
+                  <View style={styles.heroCharacterArea}>
+                    <View style={[styles.heroHalo, { backgroundColor: theme.colors.surface }]} />
+                    <View style={styles.heroCharacterImageWrap}>
+                      <Image
+                        source={{ uri: featuredCharacter.images?.fullImage }}
+                        style={styles.heroCharacterImage}
+                        resizeMode="contain"
+                      />
+                    </View>
+                    <Text variant="displaySmall" style={{ color: theme.colors.onPrimaryContainer, marginTop: SPACING.s }}>
+                      {featuredCharacter.name}
+                    </Text>
+                    <Text variant="bodyMedium" style={{ color: theme.colors.onPrimaryContainer, opacity: 0.75 }}>
+                      ({featuredCharacterWins} {featuredCharacterWins === 1 ? "combate ganado" : "combates ganados"})
+                    </Text>
+                  </View>
+                ) : (
+                  <Text variant="bodyMedium" style={{ color: theme.colors.onPrimaryContainer, opacity: 0.75, marginTop: SPACING.l, textAlign: "center" }}>
+                    Cargá tus personajes para verlos acá.
+                  </Text>
+                )}
+              </View>
+
+              {/* --- Aviso de torneo en curso  --- */}
+              {showActiveTournamentCard && (
+                <Pressable
+                  onPress={() =>
+                    navigation.navigate("Torneo", { screen: "TournamentDetail", params: { tournamentId: activeTournament.id } })
+                  }
+                >
+                  <View style={[styles.liveBanner, { backgroundColor: theme.colors.primary, borderColor: "rgba(255,255,255,0.35)" }]}>
+                    <View style={[styles.liveIconWrap, { backgroundColor: theme.colors.onPrimary }]}>
+                      <MaterialCommunityIcons name="lightning-bolt" size={22} color={theme.colors.primary} />
+                    </View>
+                    <View style={{ flex: 1, marginLeft: SPACING.m }}>
+                      <View style={styles.liveTag}>
+                        <Animated.View style={[styles.liveDot, { backgroundColor: theme.colors.onPrimary, opacity: livePulseOpacity }]} />
+                        <Text variant="labelSmall" style={[styles.liveTagText, { color: theme.colors.onPrimary }]}>
+                          EN VIVO
+                        </Text>
+                      </View>
+                      <Text variant="titleMedium" style={{ color: theme.colors.onPrimary, marginTop: 2 }}>
+                        Hay un torneo en curso
+                      </Text>
+                      <Text variant="bodySmall" style={{ color: theme.colors.onPrimary, opacity: 0.9, marginTop: 2 }}>
+                        Si querés chequear las batallas y resultados, tocá acá
+                      </Text>
+                    </View>
+                    <View style={[styles.liveChevronWrap, { backgroundColor: "rgba(255,255,255,0.18)" }]}>
+                      <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.onPrimary} />
+                    </View>
+                  </View>
+                </Pressable>
+              )}
+
+              {/* --- Último torneo --- */}
+              {lastWinner ? (
+                <View style={[styles.premiumCard, styles.winnerCard, { backgroundColor: theme.colors.surface, borderColor: theme.custom.gold }]}>
+                  <View style={[styles.goldStripe, { backgroundColor: theme.custom.gold }]} />
+                  <View style={styles.winnerRow}>
+                    {lastWinnerCharacter && (
+                      <View style={[styles.winnerImageWrap, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.custom.gold }]}>
+                        <Image source={{ uri: lastWinnerCharacter.images?.fullImage }} style={styles.winnerImage} resizeMode="contain" />
+                      </View>
+                    )}
+                    <View style={{ flex: 1, marginLeft: SPACING.l }}>
+                      <Text variant="bodySmall" style={{ color: theme.custom.gold }}>Campeón del último torneo</Text>
+                      <Text variant="headlineMedium" style={{ color: theme.colors.onBackground }}>{lastWinner.playerName}</Text>
+                      {lastWinnerCharacter && (
+                        <Text variant="titleSmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                          con {lastWinnerCharacter.name}
+                        </Text>
+                      )}
+                    </View>
+                    <Text style={{ fontSize: 34 }}>🏆</Text>
+                  </View>
+                </View>
+              ) : (
+                <View style={[styles.premiumCard, styles.emptyStateCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+                  <Text style={{ fontSize: 26 }}>🥋</Text>
+                  <Text variant="titleMedium" style={{ color: theme.colors.onBackground, marginTop: SPACING.xs }}>
+                    Todavía no hay campeón
+                  </Text>
+                  <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, textAlign: "center", marginTop: SPACING.xs }}>
+                    Jugá el próximo torneo y quedate con la corona.
+                  </Text>
+                </View>
+              )}
+
+              {/* --- Próximamente: invitaciones del Gremio --- */}
+              <ImageBackground
+                source={require("../../assets/invitacion.jpg")}
+                style={styles.inviteCard}
+                imageStyle={styles.inviteCardImage}
+              >
+                <View style={styles.inviteVeil}>
+                  <Text variant="titleMedium" style={styles.inviteTitle}>
+                    Próximamente: invitaciones del Gremio
+                  </Text>
+                  <Text variant="bodySmall" style={styles.inviteSubtitle}>
+                    Vas a poder coordinar la próxima reunión desde acá.
+                  </Text>
+                </View>
+              </ImageBackground>
+
+              {/* --- Próximamente: división de gastos --- */}
+              <View style={[styles.premiumCard, styles.expenseCard, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.colors.outline }]}>
+                <View style={{ flex: 1, paddingRight: SPACING.s }}>
+                  <Text variant="titleMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                    Próximamente: división de gastos
+                  </Text>
+                  <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, opacity: 0.8, marginTop: SPACING.xs }}>
+                    Vas a poder cargar lo que gastó cada uno y dividirlo automáticamente.
+                  </Text>
+                </View>
+                <Image
+                  source={require("../../assets/coins.webp")}
+                  style={styles.expenseCoinsImage}
+                  resizeMode="contain"
+                />
+              </View>
+            </Animated.View>
+          )}
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -316,6 +312,12 @@ const styles = StyleSheet.create({
     height: 190,
     borderRadius: 95,
     opacity: 0.35,
+  },
+  heroCharacterImageWrap: {
+    width: 210,
+    height: 210,
+    alignItems: "center",
+    justifyContent: "center",
   },
   heroCharacterImage: { width: 210, height: 210 },
 

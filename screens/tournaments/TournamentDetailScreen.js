@@ -594,6 +594,10 @@ export default function TournamentDetailScreen({ route, navigation }) {
             <Text style={[styles.celebrationStar, { bottom: 140, left: 50 }]}>✦</Text>
             <Text style={[styles.celebrationStar, { bottom: 100, right: 30, left: undefined }]}>✦</Text>
 
+            <Text variant="displaySmall" style={styles.celebrationTitle}>
+              ¡Felicitaciones, {celebration?.playerName}!
+            </Text>
+
             <View style={styles.celebrationImageArea}>
               <Animated.View
                 style={[
@@ -610,9 +614,6 @@ export default function TournamentDetailScreen({ route, navigation }) {
               )}
             </View>
 
-            <Text variant="displaySmall" style={styles.celebrationTitle}>
-              ¡Felicitaciones, {celebration?.playerName}!
-            </Text>
             {celebrationCharacter && (
               <Text variant="titleMedium" style={styles.celebrationSubtitle}>
                 Campeón del torneo con {celebrationCharacter.name}
@@ -741,7 +742,7 @@ const styles = StyleSheet.create({
     position: "absolute", width: 250, height: 250, borderRadius: 125,
   },
   celebrationImage: { width: 310, height: 310 },
-  celebrationTitle: { color: "#241A05", textAlign: "center" },
+  celebrationTitle: { color: "#241A05", textAlign: "center", marginBottom: SPACING.l },
   celebrationSubtitle: { color: "#241A05", opacity: 0.75, marginTop: SPACING.xs, textAlign: "center" },
   confirmCard: {
     margin: SPACING.xxl,
