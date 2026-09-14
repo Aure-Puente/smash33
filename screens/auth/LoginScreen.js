@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { Button, Text, TextInput, useTheme } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { RADIUS, SPACING } from "../../theme";
 
@@ -9,6 +10,7 @@ import { RADIUS, SPACING } from "../../theme";
 export default function LoginScreen({ navigation }) {
   const theme = useTheme();
   const { login } = useAuth();
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -32,7 +34,10 @@ export default function LoginScreen({ navigation }) {
       style={{ flex: 1, backgroundColor: theme.colors.background }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[styles.container, { paddingTop: insets.top + SPACING.xxxl }]}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.brandBlock}>
           <View style={[styles.logoGlowWrap, { shadowColor: theme.colors.primary }]}>
             <Image
@@ -100,7 +105,7 @@ export default function LoginScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, paddingHorizontal: SPACING.xxl, paddingTop: SPACING.xxxl, paddingBottom: SPACING.xxxl },
+  container: { flexGrow: 1, paddingHorizontal: SPACING.xxl, paddingBottom: SPACING.xxxl },
   brandBlock: { alignItems: "center", marginBottom: SPACING.xxl },
   logoGlowWrap: {
     shadowOffset: { width: 0, height: 0 },
@@ -108,12 +113,12 @@ const styles = StyleSheet.create({
     shadowRadius: 28,
     elevation: 14,
   },
-  logo: { width: 208, height: 208 },
+  logo: { width: 264, height: 264 },
   brandText: {
     fontFamily: "Rajdhani_700Bold",
-    fontSize: 52,
+    fontSize: 30,
     letterSpacing: 1,
-    marginTop: -SPACING.m,
+    marginTop: -SPACING.xxl - 6,
   },
   form: { width: "100%" },
   input: { marginBottom: SPACING.m, fontSize: 16 },

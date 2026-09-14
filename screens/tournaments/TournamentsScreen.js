@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Easing, Image, StyleSheet, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Button, Text, useTheme } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { listenActiveTournament } from "../../services/firestoreService";
 import { RADIUS, SPACING } from "../../theme";
 import { Skeleton } from "../../components/Skeleton";
@@ -10,6 +11,7 @@ import { Skeleton } from "../../components/Skeleton";
 //JS:
 export default function TournamentsScreen({ navigation }) {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const [activeTournament, setActiveTournament] = useState(undefined); 
   const enterOpacity = useRef(new Animated.Value(0)).current;
   const enterY = useRef(new Animated.Value(10)).current;
@@ -62,7 +64,12 @@ export default function TournamentsScreen({ navigation }) {
 
   if (activeTournament === undefined || activeTournament) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.colors.background, paddingHorizontal: SPACING.xxl }]}>
+      <View
+        style={[
+          styles.center,
+          { backgroundColor: theme.colors.background, paddingHorizontal: SPACING.xxl, paddingTop: insets.top },
+        ]}
+      >
         <Skeleton width={84} height={84} radius={RADIUS.xl} style={{ marginBottom: SPACING.l }} />
         <Skeleton width="70%" height={20} style={{ marginBottom: SPACING.s }} />
         <Skeleton width="90%" height={14} />
@@ -77,6 +84,7 @@ export default function TournamentsScreen({ navigation }) {
         {
           backgroundColor: theme.colors.background,
           paddingHorizontal: SPACING.xxl,
+          paddingTop: insets.top,
           opacity: enterOpacity,
           transform: [{ translateY: enterY }, { scale: enterScale }],
         },
@@ -115,7 +123,7 @@ const styles = StyleSheet.create({
     height: 190,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: SPACING.l,
+    marginBottom: SPACING.xs,
   },
   logoHalo: {
     position: "absolute",

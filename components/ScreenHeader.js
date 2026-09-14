@@ -25,7 +25,7 @@ export default function ScreenHeader({ title, onBack, icon, logo, style }) {
           </View>
         )
       )}
-      <Text variant="titleLarge" style={{ color: theme.colors.onBackground, flex: 1 }}>{title}</Text>
+      <Text variant="headlineSmall" style={{ color: theme.colors.onBackground, flex: 1 }}>{title}</Text>
     </View>
   );
 }
@@ -37,5 +37,5 @@ const styles = StyleSheet.create({
     width: 34, height: 34, borderRadius: RADIUS.sm,
     alignItems: "center", justifyContent: "center", marginRight: SPACING.s,
   },
-  logo: { width: 30, height: 30, marginRight: SPACING.s },
+  logo: { width: 42, height: 42, marginRight: SPACING.s },
 });

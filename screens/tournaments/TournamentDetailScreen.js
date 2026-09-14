@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Button, IconButton, Modal, Portal, Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { getAllCharacters } from "../../services/charactersService";
 import {
@@ -109,6 +110,7 @@ export default function TournamentDetailScreen({ route, navigation }) {
   const { tournamentId } = route.params;
   const theme = useTheme();
   const { user, profile } = useAuth();
+  const insets = useSafeAreaInsets();
 
   const [tournament, setTournament] = useState(null);
   const [rounds, setRounds] = useState([]);
@@ -351,9 +353,13 @@ export default function TournamentDetailScreen({ route, navigation }) {
 
   return (
     <>
-      <ScrollView style={{ flex: 1, backgroundColor: theme.colors.background }} contentContainerStyle={{ padding: SPACING.l }}>
+      <ScrollView
+        style={{ flex: 1, backgroundColor: theme.colors.background }}
+        contentContainerStyle={{ padding: SPACING.l, paddingTop: insets.top + SPACING.l }}
+      >
         <ScreenHeader
           title={isFinished ? "Torneo finalizado" : "Torneo en vivo"}
+          logo
           onBack={isFinished ? () => navigation.goBack() : undefined}
         />
 

@@ -4,6 +4,7 @@ import { Animated, Easing, Image, ImageBackground, Pressable, ScrollView, StyleS
 import { useIsFocused } from "@react-navigation/native";
 import { Avatar, Button, Modal, Portal, Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { getAllCharacters } from "../../services/charactersService";
 import {
@@ -21,6 +22,7 @@ export default function HomeScreen({ navigation }) {
   const { profile, user } = useAuth();
   const { maxContentWidth } = useResponsive();
   const isFocused = useIsFocused();
+  const insets = useSafeAreaInsets();
   const [characters, setCharacters] = useState([]);
   const [lastTournament, setLastTournament] = useState(null);
   const [bestCharacter, setBestCharacter] = useState(null);
@@ -106,7 +108,12 @@ export default function HomeScreen({ navigation }) {
   const showActiveTournamentCard = activeTournament && !isTournamentParticipant;
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <ScrollView
+      contentContainerStyle={[
+        styles.container,
+        { backgroundColor: theme.colors.background, paddingTop: insets.top + SPACING.xl },
+      ]}
+    >
       <Portal>
         <Modal
           visible={showCharactersModal}

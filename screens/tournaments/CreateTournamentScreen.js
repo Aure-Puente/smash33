@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { FlatList, Image, Pressable, StyleSheet, View } from "react-native";
 import { Avatar, Button, Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { createTournament, getAllUsers, submitRound } from "../../services/firestoreService";
 import ScreenHeader from "../../components/ScreenHeader";
@@ -13,6 +14,7 @@ import { RADIUS, SPACING } from "../../theme";
 export default function CreateTournamentScreen({ navigation }) {
   const theme = useTheme();
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
 
   const [allUsers, setAllUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(true);
@@ -46,7 +48,7 @@ export default function CreateTournamentScreen({ navigation }) {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background, padding: SPACING.l }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.background, padding: SPACING.l, paddingTop: insets.top + SPACING.l }}>
       <ScreenHeader title="Nuevo torneo" onBack={() => navigation.goBack()} />
 
       <View style={styles.introRow}>

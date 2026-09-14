@@ -4,6 +4,7 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View
 import * as ImagePicker from "expo-image-picker";
 import { Avatar, Button, Text, TextInput, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { RADIUS, SPACING } from "../../theme";
 
@@ -11,6 +12,7 @@ import { RADIUS, SPACING } from "../../theme";
 export default function RegisterScreen({ navigation }) {
   const theme = useTheme();
   const { register } = useAuth();
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -53,7 +55,10 @@ export default function RegisterScreen({ navigation }) {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + SPACING.xxl }]}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text variant="headlineMedium" style={[styles.title, { color: theme.colors.onBackground }]}>Crear cuenta</Text>
         <Text variant="bodyMedium" style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}>
           Sumate al grupo y empezá a registrar tus torneos
@@ -137,7 +142,7 @@ export default function RegisterScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { paddingHorizontal: SPACING.xxl, paddingTop: SPACING.xxl, paddingBottom: SPACING.xxxl },
+  content: { paddingHorizontal: SPACING.xxl, paddingBottom: SPACING.xxxl },
   title: { textAlign: "center" },
   subtitle: { textAlign: "center", marginTop: SPACING.xs, marginBottom: SPACING.xl },
   avatarWrap: { alignItems: "center", marginBottom: SPACING.xl },

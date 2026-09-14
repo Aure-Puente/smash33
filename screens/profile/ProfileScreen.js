@@ -5,6 +5,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import { Avatar, Button, Text, TextInput, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { useThemeMode } from "../../contexts/ThemeContext";
 import { getFinishedTournaments, updateUserProfile, uploadProfilePhoto } from "../../services/firestoreService";
@@ -16,6 +17,7 @@ export default function ProfileScreen({ navigation }) {
   const theme = useTheme();
   const { user, profile, logout, refreshProfile } = useAuth();
   const { accent, setAccent } = useThemeMode();
+  const insets = useSafeAreaInsets();
   const [editing, setEditing] = useState(false);
   const [playerName, setPlayerName] = useState(profile?.playerName || "");
   const [saving, setSaving] = useState(false);
@@ -113,7 +115,10 @@ export default function ProfileScreen({ navigation }) {
         transform: [{ translateY: enterY }, { scale: enterScale }],
       }}
     >
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + SPACING.xl }]}
+      >
         <View style={styles.headerRow}>
           <Image
             source={require("../../assets/logo.webp")}
@@ -121,8 +126,8 @@ export default function ProfileScreen({ navigation }) {
             resizeMode="contain"
           />
           <View style={{ marginLeft: SPACING.m }}>
-            <Text variant="headlineSmall" style={{ color: theme.colors.onBackground }}>Perfil</Text>
-            <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Tu cuenta</Text>
+            <Text variant="headlineMedium" style={{ color: theme.colors.onBackground }}>Perfil</Text>
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>Tu cuenta</Text>
           </View>
         </View>
 
@@ -242,7 +247,7 @@ export default function ProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   content: { padding: SPACING.xl, paddingBottom: SPACING.xxxl },
   headerRow: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.xl },
-  headerLogo: { width: 30, height: 30 },
+  headerLogo: { width: 42, height: 42 },
   avatarSection: { alignItems: "center", marginBottom: SPACING.xl },
   avatarRing: { position: "relative", marginBottom: SPACING.m, borderWidth: 2, borderRadius: RADIUS.pill, padding: 3 },
   editPhotoBtn: {

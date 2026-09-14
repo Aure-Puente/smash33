@@ -4,6 +4,7 @@ import { FlatList, Image, StyleSheet, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Button, IconButton, Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { getAllCharacters } from "../../services/charactersService";
 import { addMyCharacter, getMyCharacterWinCounts, listenMyCharacters, removeMyCharacter } from "../../services/firestoreService";
@@ -19,6 +20,7 @@ const TOP_GOLD_BG = "rgba(242,184,75,0.16)";
 export default function MyCharactersScreen({ navigation }) {
   const theme = useTheme();
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   const [allCharacters, setAllCharacters] = useState([]);
   const [myCharacterIds, setMyCharacterIds] = useState([]);
   const [wins, setWins] = useState({});
@@ -52,7 +54,7 @@ export default function MyCharactersScreen({ navigation }) {
   const loading = !catalogLoaded || !mineLoaded;
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background, padding: SPACING.l }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.background, padding: SPACING.l, paddingTop: insets.top + SPACING.l }}>
       <ScreenHeader title="Mis personajes" logo onBack={() => navigation.goBack()} />
 
       <Button

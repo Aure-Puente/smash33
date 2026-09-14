@@ -5,6 +5,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { PieChart } from "react-native-chart-kit";
 import { Avatar, Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { getAllUsers, getFinishedTournaments, getPlayerDeepStats, getRounds } from "../../services/firestoreService";
 import { getAllCharacters } from "../../services/charactersService";
@@ -26,6 +27,7 @@ export default function StatsScreen() {
   const theme = useTheme();
   const { user } = useAuth();
   const { maxContentWidth } = useResponsive();
+  const insets = useSafeAreaInsets();
   const [view, setView] = useState("general");
 
   const [loading, setLoading] = useState(true);
@@ -144,7 +146,10 @@ export default function StatsScreen() {
   const nemesisCharacter = playerStats?.nemesis ? charById(playerStats.nemesis.characterId) : null;
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: theme.colors.background }} contentContainerStyle={{ padding: SPACING.l }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+      contentContainerStyle={{ padding: SPACING.l, paddingTop: insets.top + SPACING.l }}
+    >
       <View style={{ width: "100%", maxWidth: maxContentWidth, alignSelf: "center" }}>
         <View style={styles.headerRow}>
           <Image
@@ -153,8 +158,8 @@ export default function StatsScreen() {
             resizeMode="contain"
           />
           <View style={{ marginLeft: SPACING.m }}>
-            <Text variant="headlineSmall" style={{ color: theme.colors.onBackground }}>Estadísticas</Text>
-            <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Torneos y rendimiento</Text>
+            <Text variant="headlineMedium" style={{ color: theme.colors.onBackground }}>Estadísticas</Text>
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>Torneos y rendimiento</Text>
           </View>
         </View>
 
@@ -401,7 +406,7 @@ export default function StatsScreen() {
 
 const styles = StyleSheet.create({
   headerRow: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.l },
-  headerLogo: { width: 30, height: 30 },
+  headerLogo: { width: 42, height: 42 },
   toggle: { flexDirection: "row", borderRadius: RADIUS.pill, padding: 4, marginBottom: SPACING.l },
   toggleHalf: { flex: 1, alignItems: "center", paddingVertical: SPACING.s, borderRadius: RADIUS.pill },
   summaryCard: {

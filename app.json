@@ -5,6 +5,7 @@
     "version": "1.0.0",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -29,7 +30,18 @@
           "color": "#7C5CFF"
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/adaptiveIcon.png",
+          "imageWidth": 240,
+          "backgroundColor": "#0A0A0E",
+          "dark": {
+            "backgroundColor": "#0A0A0E"
+          }
+        }
+      ]
     ],
     "extra": {
       "eas": {

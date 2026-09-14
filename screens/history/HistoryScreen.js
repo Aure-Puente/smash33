@@ -4,6 +4,7 @@ import { Animated, Easing, FlatList, Image, Pressable, StyleSheet, View } from "
 import { useFocusEffect } from "@react-navigation/native";
 import { Avatar, Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getFinishedTournaments } from "../../services/firestoreService";
 import { getAllCharacters } from "../../services/charactersService";
 import { SkeletonRow } from "../../components/Skeleton";
@@ -31,6 +32,7 @@ function timeAgo(timestamp) {
 
 export default function HistoryScreen({ navigation }) {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const [history, setHistory] = useState([]);
   const [characters, setCharacters] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,6 +93,7 @@ export default function HistoryScreen({ navigation }) {
         flex: 1,
         backgroundColor: theme.colors.background,
         padding: SPACING.l,
+        paddingTop: insets.top + SPACING.l,
         opacity: enterOpacity,
         transform: [{ translateY: enterY }, { scale: enterScale }],
       }}
@@ -102,8 +105,8 @@ export default function HistoryScreen({ navigation }) {
           resizeMode="contain"
         />
         <View style={{ marginLeft: SPACING.m }}>
-          <Text variant="headlineSmall" style={{ color: theme.colors.onBackground }}>Historial</Text>
-          <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Torneos jugados</Text>
+          <Text variant="headlineMedium" style={{ color: theme.colors.onBackground }}>Historial</Text>
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>Torneos jugados</Text>
         </View>
       </View>
 
@@ -198,7 +201,7 @@ export default function HistoryScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   headerRow: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.l },
-  headerLogo: { width: 30, height: 30 },
+  headerLogo: { width: 42, height: 42 },
   card: { borderRadius: RADIUS.lg, borderWidth: 1, padding: SPACING.m },
   headerRow2: { flexDirection: "row", alignItems: "center" },
   winnerRow: { flexDirection: "row", alignItems: "center" },

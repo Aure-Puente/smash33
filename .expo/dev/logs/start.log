@@ -21,3 +21,28 @@
 {"_e":"metro:bundling:progress","_t":1789351320395,"id":"1","progress":0.999,"total":1445,"current":1445}
 {"_e":"metro:bundling:done","_t":1789351320467,"id":"1","total":1445,"ms":1200.4182}
 {"_e":"metro:client_log","_t":1789351346994,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"root:init","_t":1789353268549,"format":"v0-jsonl","version":"57.0.24"}
+{"_e":"env:mode","_t":1789353268551,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1789353268554,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1789353269382,"mode":"development","web":false,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1789353270146,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1789353270607,"plugins":[]}
+{"_e":"metro:instantiate","_t":1789353283306,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1789353290630,"id":"1","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1789353290631,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789353290636,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789353290736,"id":"1","progress":0.025195263290501382,"total":126,"current":20}
+{"_e":"metro:bundling:progress","_t":1789353290836,"id":"1","progress":0.04134444444444445,"total":300,"current":61}
+{"_e":"metro:bundling:progress","_t":1789353290945,"id":"1","progress":0.11272725151112044,"total":414,"current":139}
+{"_e":"metro:bundling:progress","_t":1789353291045,"id":"1","progress":0.14947278229985766,"total":538,"current":208}
+{"_e":"metro:bundling:progress","_t":1789353291145,"id":"1","progress":0.22514804985081543,"total":647,"current":307}
+{"_e":"metro:bundling:progress","_t":1789353291245,"id":"1","progress":0.364292555523567,"total":729,"current":440}
+{"_e":"metro:bundling:progress","_t":1789353291347,"id":"1","progress":0.42169429654701696,"total":887,"current":576}
+{"_e":"metro:bundling:progress","_t":1789353291447,"id":"1","progress":0.5022948891033956,"total":951,"current":674}
+{"_e":"metro:bundling:progress","_t":1789353291547,"id":"1","progress":0.6833572332495751,"total":1073,"current":887}
+{"_e":"metro:bundling:progress","_t":1789353291647,"id":"1","progress":0.832228813387159,"total":1174,"current":1071}
+{"_e":"metro:bundling:progress","_t":1789353291753,"id":"1","progress":0.832228813387159,"total":1345,"current":1188}
+{"_e":"metro:bundling:progress","_t":1789353291853,"id":"1","progress":0.9418006373622462,"total":1422,"current":1380}
+{"_e":"metro:bundling:done","_t":1789353291988,"id":"1","total":1422,"ms":1357.9191}
+{"_e":"metro:client_log","_t":1789353299250,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1789353502224,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
