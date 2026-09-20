@@ -12,7 +12,7 @@ const ICONS = {
   Estadisticas: "chart-bar",
   Torneo: "trophy",
   Historial: "history",
-  Perfil: "account-circle",
+  Mas: "menu",
 };
 
 const LABELS = {
@@ -20,7 +20,7 @@ const LABELS = {
   Estadisticas: "Stats",
   Torneo: "Torneo",
   Historial: "Historial",
-  Perfil: "Perfil",
+  Mas: "Más",
 };
 
 export default function AnimatedTabBar({ state, descriptors, navigation }) {
@@ -29,6 +29,9 @@ export default function AnimatedTabBar({ state, descriptors, navigation }) {
   const [innerWidth, setInnerWidth] = useState(0);
   const tabCount = state.routes.length;
   const tabWidth = innerWidth / tabCount;
+
+  const focusedOptions = descriptors[state.routes[state.index].key].options;
+  const isHidden = focusedOptions.tabBarStyle?.display === "none";
 
   const indicatorX = useRef(new Animated.Value(0)).current;
   const bounceScales = useRef(state.routes.map(() => new Animated.Value(1))).current;
@@ -56,6 +59,8 @@ export default function AnimatedTabBar({ state, descriptors, navigation }) {
   function handlePressOut(index) {
     Animated.spring(pressScales[index], { toValue: 1, useNativeDriver: true, speed: 14, bounciness: 10 }).start();
   }
+
+  if (isHidden) return null;
 
   return (
     <View style={[styles.wrapper, { backgroundColor: theme.colors.background, paddingBottom: Math.max(insets.bottom, SPACING.m) }]}>

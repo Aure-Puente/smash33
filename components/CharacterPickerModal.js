@@ -4,7 +4,17 @@ import { IconButton, Modal, Portal, Text, TouchableRipple, useTheme } from "reac
 import { RADIUS, SPACING } from "../theme";
 
 //JS:
-export default function CharacterPickerModal({ visible, onDismiss, characters, disabledIds = [], onSelect, title, emptyMessage }) {
+export default function CharacterPickerModal({
+  visible,
+  onDismiss,
+  characters,
+  disabledIds = [],
+  activeId,
+  onSelect,
+  title,
+  emptyMessage,
+  readOnly = false,
+}) {
   const theme = useTheme();
 
   return (
@@ -31,27 +41,37 @@ export default function CharacterPickerModal({ visible, onDismiss, characters, d
           numColumns={3}
           contentContainerStyle={{ paddingBottom: SPACING.l }}
           renderItem={({ item }) => {
-            const disabled = disabledIds.includes(item.fighterNumber);
+            const isActive = activeId != null && item.fighterNumber === activeId;
+            const used = !isActive && disabledIds.includes(item.fighterNumber);
+            const interactionDisabled = readOnly || used;
             return (
               <TouchableRipple
-                onPress={() => !disabled && onSelect(item)}
+                onPress={() => !interactionDisabled && onSelect?.(item)}
                 style={styles.item}
-                disabled={disabled}
+                disabled={interactionDisabled}
                 borderless
               >
                 <View
                   style={[
                     styles.itemContent,
                     { backgroundColor: theme.colors.surfaceVariant },
-                    disabled && { opacity: 0.4 },
+                    used && { opacity: 0.4 },
                   ]}
                 >
                   <View>
                     <Image source={{ uri: item.images?.iconImage }} style={styles.icon} />
-                    {disabled && (
+                    {used && (
                       <View style={styles.crossOverlay}>
                         <Text style={[styles.crossText, { color: theme.colors.error }]}>✕</Text>
                       </View>
+                    )}
+                    {isActive && (
+                      <View
+                        style={[
+                          styles.activeDot,
+                          { backgroundColor: theme.custom.gold, borderColor: theme.colors.surfaceVariant },
+                        ]}
+                      />
                     )}
                   </View>
                   <Text style={[styles.name, { color: theme.colors.onSurface }]} numberOfLines={1}>{item.name}</Text>
@@ -88,5 +108,9 @@ const styles = StyleSheet.create({
   icon: { width: 56, height: 56, borderRadius: RADIUS.sm, marginBottom: SPACING.xs },
   crossOverlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 4, alignItems: "center", justifyContent: "center" },
   crossText: { fontSize: 28, fontWeight: "bold" },
+  activeDot: {
+    position: "absolute", top: -2, right: -2,
+    width: 14, height: 14, borderRadius: 7, borderWidth: 2,
+  },
   name: { fontSize: 11, textAlign: "center" },
 });

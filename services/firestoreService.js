@@ -207,6 +207,62 @@ export async function deleteTournament(tournamentId) {
   await deleteDoc(doc(db, "tournaments", tournamentId));
 }
 
+export async function resetAllTournaments() {
+  const snap = await getDocs(collection(db, "tournaments"));
+  const ids = snap.docs.map((d) => d.id);
+  await Promise.all(ids.map((id) => deleteTournament(id)));
+  return ids.length;
+}
+
+// ---------- CONFIGURACIÓN DEL RANKING (curada a mano por el admin) ----------
+
+export async function getRankingSettings() {
+  try {
+    const snap = await getDoc(doc(db, "settings", "ranking"));
+    return snap.exists() ? snap.data() : { includedUids: [] };
+  } catch (e) {
+    console.log("Error leyendo la configuración del ranking:", e.message);
+    return { includedUids: [] };
+  }
+}
+
+export function listenRankingSettings(callback) {
+  return onSnapshot(doc(db, "settings", "ranking"), (snap) => {
+    callback(snap.exists() ? snap.data() : { includedUids: [] });
+  });
+}
+
+export async function setRankingIncludedUids(includedUids) {
+  await setDoc(doc(db, "settings", "ranking"), { includedUids }, { merge: true });
+}
+
+
+export async function deleteUserProfile(uid) {
+  const charsSnap = await getDocs(collection(db, "users", uid, "myCharacters"));
+  await Promise.all(charsSnap.docs.map((c) => deleteDoc(c.ref)));
+  await deleteDoc(doc(db, "users", uid));
+
+  const settingsSnap = await getDoc(doc(db, "settings", "ranking"));
+  if (settingsSnap.exists()) {
+    const includedUids = settingsSnap.data().includedUids || [];
+    if (includedUids.includes(uid)) {
+      await setDoc(doc(db, "settings", "ranking"), { includedUids: includedUids.filter((id) => id !== uid) }, { merge: true });
+    }
+  }
+}
+
+// ---------- HISTORIAL DE TEMPORADAS ----------
+
+export async function saveSeasonHistory(snapshot) {
+  await addDoc(collection(db, "seasonHistory"), { ...snapshot, savedAt: serverTimestamp() });
+}
+
+export async function getSeasonHistory() {
+  const q = query(collection(db, "seasonHistory"), orderBy("savedAt", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
 // ---------- INVITACIONES ----------
 
 export function listenActiveInvitation(callback) {

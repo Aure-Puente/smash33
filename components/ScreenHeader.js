@@ -5,7 +5,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { RADIUS, SPACING } from "../theme";
 
 //JS:
-export default function ScreenHeader({ title, onBack, icon, logo, style }) {
+export default function ScreenHeader({ title, subtitle, onBack, icon, logo, style }) {
   const theme = useTheme();
   return (
     <View style={[styles.row, style]}>
@@ -25,7 +25,12 @@ export default function ScreenHeader({ title, onBack, icon, logo, style }) {
           </View>
         )
       )}
-      <Text variant="headlineSmall" style={{ color: theme.colors.onBackground, flex: 1 }}>{title}</Text>
+      <View style={{ flex: 1 }}>
+        <Text variant="headlineSmall" style={{ color: theme.colors.onBackground }}>{title}</Text>
+        {subtitle && (
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>{subtitle}</Text>
+        )}
+      </View>
     </View>
   );
 }

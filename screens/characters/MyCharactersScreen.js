@@ -55,7 +55,7 @@ export default function MyCharactersScreen({ navigation }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background, padding: SPACING.l, paddingTop: insets.top + SPACING.l }}>
-      <ScreenHeader title="Mis personajes" logo onBack={() => navigation.goBack()} />
+      <ScreenHeader title="Mis personajes" logo onBack={() => navigation.navigate("MoreHome")} />
 
       <Button
         mode="contained"

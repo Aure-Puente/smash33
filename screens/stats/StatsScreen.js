@@ -1,9 +1,8 @@
 //Importaciones:
 import React, { useCallback, useState } from "react";
-import { Dimensions, Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Dimensions, FlatList, Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { PieChart } from "react-native-chart-kit";
-import { Avatar, Text, useTheme } from "react-native-paper";
+import { Avatar, Button, Modal, Portal, Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
@@ -11,7 +10,9 @@ import { getAllUsers, getFinishedTournaments, getPlayerDeepStats, getRounds } fr
 import { getAllCharacters } from "../../services/charactersService";
 import { useResponsive } from "../../utils/responsive";
 import IconBarRows from "../../components/IconBarRows";
-import { Skeleton, SkeletonRow } from "../../components/Skeleton";
+import AnimatedBar from "../../components/AnimatedBar";
+import AnimatedDonutChart from "../../components/AnimatedDonutChart";
+import { Skeleton } from "../../components/Skeleton";
 import { CHART_PALETTE, RADIUS, SPACING } from "../../theme";
 
 //JS:
@@ -22,6 +23,12 @@ const VIEW_OPTIONS = [
   { value: "general", label: "Generales" },
   { value: "jugador", label: "Por jugador" },
 ];
+
+function joinNames(names) {
+  if (names.length === 0) return "";
+  if (names.length === 1) return names[0];
+  return `${names.slice(0, -1).join(", ")} y ${names[names.length - 1]}`;
+}
 
 export default function StatsScreen() {
   const theme = useTheme();
@@ -40,6 +47,10 @@ export default function StatsScreen() {
   const [selectedUid, setSelectedUid] = useState(null);
   const [playerStats, setPlayerStats] = useState(null);
   const [loadingPlayer, setLoadingPlayer] = useState(false);
+
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [selectedFilterUids, setSelectedFilterUids] = useState([]);
+  const [activeFilterUids, setActiveFilterUids] = useState(null);
 
   const loadGeneral = useCallback(async () => {
     setLoading(true);
@@ -83,52 +94,104 @@ export default function StatsScreen() {
   const filteredTournamentIds = new Set(filteredTournaments.map((t) => t.id));
   const filteredRounds = allRounds.filter((r) => filteredTournamentIds.has(r.tournamentId));
 
-  const tournamentWinsByPlayer = {};
-  filteredTournaments.forEach((t) => {
-    const winner = t.participants?.find((p) => p.uid === t.winnerUid);
-    if (winner) tournamentWinsByPlayer[winner.playerName] = (tournamentWinsByPlayer[winner.playerName] || 0) + 1;
-  });
+  // Torneos donde jugaron EXACTAMENTE los seleccionados en el filtro, ni más
+  // ni menos participantes (coincidencia exacta, no "al menos estos").
+  const matchedTournaments =
+    activeFilterUids && activeFilterUids.length > 0
+      ? tournaments.filter((t) => {
+          const rosterUids = t.participantUids || [];
+          if (rosterUids.length !== activeFilterUids.length) return false;
+          return activeFilterUids.every((uid) => rosterUids.includes(uid));
+        })
+      : [];
+  const matchedTournamentIds = new Set(matchedTournaments.map((t) => t.id));
+  const matchedRounds = allRounds.filter((r) => matchedTournamentIds.has(r.tournamentId));
 
-  const roundWinsByPlayer = {};
-  filteredRounds.forEach((r) => {
-    const t = tournaments.find((tt) => tt.id === r.tournamentId);
-    const winner = t?.participants?.find((p) => p.uid === r.winnerUid);
-    if (winner) roundWinsByPlayer[winner.playerName] = (roundWinsByPlayer[winner.playerName] || 0) + 1;
-  });
-
-  const winsByCharacterPlayer = {}; 
-  filteredRounds.forEach((r) => {
-    const charId = r.characters?.[r.winnerUid];
-    if (!charId) return;
-    const t = tournaments.find((tt) => tt.id === r.tournamentId);
-    const winner = t?.participants?.find((p) => p.uid === r.winnerUid);
-    const playerName = winner?.playerName || "?";
-    const key = `${charId}|${playerName}`;
-    winsByCharacterPlayer[key] = (winsByCharacterPlayer[key] || 0) + 1;
-  });
-
-  const pieData = Object.entries(tournamentWinsByPlayer).map(([name, count], i) => ({
-    name,
-    population: count,
-    color: CHART_PALETTE[i % CHART_PALETTE.length],
-    legendFontColor: theme.colors.onSurfaceVariant,
-    legendFontSize: 12,
-  }));
-
-  const roundWinsRows = Object.entries(roundWinsByPlayer)
-    .sort((a, b) => b[1] - a[1])
-    .map(([name, count]) => ({ id: name, name, value: count }));
-  const maxRoundWins = Math.max(...roundWinsRows.map((r) => r.value), 1);
-
-  const characterRowsGlobal = Object.entries(winsByCharacterPlayer)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([key, count]) => {
-      const [charId, playerName] = key.split("|");
-      return { id: key, iconUrl: charById(charId)?.images?.iconImage, value: count, subLabel: playerName };
+  // Agregaciones compartidas por "Generales" y "Filtradas": torneos ganados
+  // por jugador (-> dona), combates ganados por jugador (-> ranking) y
+  // combates ganados por personaje (-> IconBarRows).
+  function computeAggregates(tourneyList, roundsList) {
+    const tournamentWinsByPlayer = {};
+    tourneyList.forEach((t) => {
+      const winner = t.participants?.find((p) => p.uid === t.winnerUid);
+      if (winner) tournamentWinsByPlayer[winner.playerName] = (tournamentWinsByPlayer[winner.playerName] || 0) + 1;
     });
 
+    const roundWinsByPlayer = {};
+    roundsList.forEach((r) => {
+      const t = tournaments.find((tt) => tt.id === r.tournamentId);
+      const winner = t?.participants?.find((p) => p.uid === r.winnerUid);
+      if (winner) roundWinsByPlayer[winner.playerName] = (roundWinsByPlayer[winner.playerName] || 0) + 1;
+    });
+
+    const winsByCharacterPlayer = {};
+    roundsList.forEach((r) => {
+      const charId = r.characters?.[r.winnerUid];
+      if (!charId) return;
+      const t = tournaments.find((tt) => tt.id === r.tournamentId);
+      const winner = t?.participants?.find((p) => p.uid === r.winnerUid);
+      const playerName = winner?.playerName || "?";
+      const key = `${charId}|${playerName}`;
+      winsByCharacterPlayer[key] = (winsByCharacterPlayer[key] || 0) + 1;
+    });
+
+    const pieData = Object.entries(tournamentWinsByPlayer).map(([name, count], i) => ({
+      name,
+      population: count,
+      color: CHART_PALETTE[i % CHART_PALETTE.length],
+      legendFontColor: theme.colors.onSurfaceVariant,
+      legendFontSize: 12,
+    }));
+    const pieSignature = pieData.map((p) => `${p.name}:${p.population}`).join("|");
+    const donutData = pieData.map((p) => ({ label: p.name, value: p.population, color: p.color }));
+    const totalPieWins = pieData.reduce((sum, p) => sum + p.population, 0);
+
+    const roundWinsRows = Object.entries(roundWinsByPlayer)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count]) => ({ id: name, name, value: count }));
+    const maxRoundWins = Math.max(...roundWinsRows.map((r) => r.value), 1);
+
+    const characterRowsGlobal = Object.entries(winsByCharacterPlayer)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([key, count]) => {
+        const [charId, playerName] = key.split("|");
+        return { id: key, iconUrl: charById(charId)?.images?.iconImage, value: count, subLabel: playerName };
+      });
+
+    return { pieData, pieSignature, donutData, totalPieWins, roundWinsRows, maxRoundWins, characterRowsGlobal };
+  }
+
+  const generalStats = computeAggregates(filteredTournaments, filteredRounds);
+  const matchedStats = computeAggregates(matchedTournaments, matchedRounds);
+
   const chartWidth = Math.min(Dimensions.get("window").width - 32, maxContentWidth - 32);
+  const donutSize = Math.min(180, chartWidth);
+
+  function toggleFilterUid(uid) {
+    setSelectedFilterUids((prev) => (prev.includes(uid) ? prev.filter((id) => id !== uid) : [...prev, uid]));
+  }
+
+  function openFilterModal() {
+    setSelectedFilterUids(activeFilterUids || []);
+    setFilterModalOpen(true);
+  }
+
+  function applyFilter() {
+    setActiveFilterUids(selectedFilterUids);
+    setView("filtradas");
+    setFilterModalOpen(false);
+  }
+
+  function clearFilter() {
+    setActiveFilterUids(null);
+    setSelectedFilterUids([]);
+    setView("general");
+  }
+
+  const filteredNames = (activeFilterUids || [])
+    .map((uid) => userByUid(uid)?.playerName)
+    .filter(Boolean);
 
   // ---- Por jugador ----
   const selectedUser = userByUid(selectedUid);
@@ -164,31 +227,72 @@ export default function StatsScreen() {
         </View>
 
         <View style={[styles.toggle, { backgroundColor: theme.colors.surfaceVariant }]}>
-          {VIEW_OPTIONS.map((opt) => {
-            const active = view === opt.value;
-            return (
-              <Pressable
-                key={opt.value}
-                onPress={() => setView(opt.value)}
-                style={[styles.toggleHalf, active && { backgroundColor: theme.colors.primary }]}
-              >
-                <Text style={{ fontWeight: "700", fontSize: 13, color: active ? theme.colors.onPrimary : theme.colors.onSurfaceVariant }}>
-                  {opt.label}
-                </Text>
-              </Pressable>
-            );
-          })}
+          <Pressable
+            onPress={() => setView("general")}
+            style={[styles.toggleThird, view === "general" && { backgroundColor: theme.colors.primary }]}
+          >
+            <Text numberOfLines={1} style={{ fontWeight: "700", fontSize: 12, color: view === "general" ? theme.colors.onPrimary : theme.colors.onSurfaceVariant }}>
+              Generales
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={activeFilterUids ? clearFilter : openFilterModal}
+            style={[styles.toggleThird, view === "filtradas" && { backgroundColor: theme.colors.primary }]}
+          >
+            <Text
+              numberOfLines={1}
+              style={{ fontWeight: "700", fontSize: 12, color: view === "filtradas" ? theme.colors.onPrimary : theme.colors.onSurfaceVariant }}
+            >
+              {activeFilterUids ? "Quitar filtro" : "Filtradas"}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setView("jugador")}
+            style={[styles.toggleThird, view === "jugador" && { backgroundColor: theme.colors.primary }]}
+          >
+            <Text numberOfLines={1} style={{ fontWeight: "700", fontSize: 12, color: view === "jugador" ? theme.colors.onPrimary : theme.colors.onSurfaceVariant }}>
+              Por jugador
+            </Text>
+          </Pressable>
         </View>
 
         {view === "general" ? (
           loading ? (
             <View>
-              <Skeleton height={78} radius={RADIUS.lg} style={{ marginBottom: SPACING.l }} />
-              <Skeleton width="60%" height={16} style={{ marginBottom: SPACING.s }} />
-              <Skeleton height={200} radius={RADIUS.lg} style={{ marginBottom: SPACING.xl }} />
-              <Skeleton width="60%" height={16} style={{ marginBottom: SPACING.s }} />
-              <SkeletonRow style={{ marginBottom: SPACING.s }} />
-              <SkeletonRow style={{ marginBottom: SPACING.s }} />
+              <View style={[styles.summaryCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+                <View style={{ flex: 1 }}>
+                  <Skeleton width={64} height={30} style={{ marginBottom: SPACING.xs }} />
+                  <Skeleton width={110} height={12} />
+                </View>
+                <Skeleton width={120} height={34} radius={RADIUS.pill} />
+              </View>
+              <Skeleton width="70%" height={12} style={{ marginTop: SPACING.s, marginBottom: SPACING.l }} />
+
+              <Skeleton width={170} height={14} style={{ marginBottom: SPACING.s }} />
+              <View style={[styles.chartCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+                <Skeleton width={180} height={180} radius={90} />
+              </View>
+
+              <Skeleton width={190} height={14} style={{ marginBottom: SPACING.s }} />
+              <View style={{ marginBottom: SPACING.l }}>
+                {[0, 1, 2, 3].map((i) => (
+                  <View key={i} style={styles.rankRow}>
+                    <Skeleton width={22} height={22} radius={RADIUS.pill} />
+                    <Skeleton width={70} height={12} style={{ marginLeft: SPACING.s, marginRight: SPACING.s }} />
+                    <Skeleton height={12} radius={RADIUS.sm} style={{ flex: 1 }} />
+                    <Skeleton width={20} height={12} style={{ marginLeft: SPACING.s }} />
+                  </View>
+                ))}
+              </View>
+
+              <Skeleton width={200} height={14} style={{ marginBottom: SPACING.s }} />
+              {[0, 1, 2, 3, 4].map((i) => (
+                <View key={i} style={{ flexDirection: "row", alignItems: "center", marginBottom: SPACING.s }}>
+                  <Skeleton width={32} height={32} radius={RADIUS.sm} style={{ marginRight: SPACING.m }} />
+                  <Skeleton height={14} radius={RADIUS.sm} style={{ flex: 1, marginRight: SPACING.s }} />
+                  <Skeleton width={24} height={12} />
+                </View>
+              ))}
             </View>
           ) : (
           <>
@@ -248,17 +352,24 @@ export default function StatsScreen() {
             </Text>
 
             <Text variant="titleSmall" style={[styles.sectionTitle, { color: theme.colors.onBackground, marginTop: 0 }]}>Torneos ganados por jugador</Text>
-            {pieData.length > 0 ? (
+            {generalStats.pieData.length > 0 ? (
               <View style={[styles.chartCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
-                <PieChart
-                  data={pieData}
-                  width={chartWidth}
-                  height={200}
-                  chartConfig={{ color: () => theme.colors.primary }}
-                  accessor="population"
-                  backgroundColor="transparent"
-                  paddingLeft="8"
+                <AnimatedDonutChart
+                  data={generalStats.donutData}
+                  size={donutSize}
+                  strokeWidth={26}
+                  animKey={`general-${onlyMyTournaments}-${generalStats.pieSignature}`}
+                  centerValue={generalStats.totalPieWins}
+                  centerLabel={generalStats.totalPieWins === 1 ? "torneo" : "torneos"}
                 />
+                <View style={styles.legendWrap}>
+                  {generalStats.pieData.map((p) => (
+                    <View key={p.name} style={styles.legendItem}>
+                      <View style={[styles.legendDot, { backgroundColor: p.color }]} />
+                      <Text style={{ fontSize: 12, color: theme.colors.onSurfaceVariant }}>{p.name} ({p.population})</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
             ) : (
               <Text style={{ color: theme.colors.onSurfaceVariant, marginBottom: SPACING.l }}>
@@ -267,17 +378,20 @@ export default function StatsScreen() {
             )}
 
             <Text variant="titleSmall" style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Combates ganados por jugador</Text>
-            {roundWinsRows.length > 0 ? (
+            {generalStats.roundWinsRows.length > 0 ? (
               <View style={{ marginBottom: SPACING.l }}>
-                {roundWinsRows.map((row, index) => (
+                {generalStats.roundWinsRows.map((row, index) => (
                   <View key={row.id} style={styles.rankRow}>
                     <View style={[styles.rankBadge, { backgroundColor: theme.colors.surfaceVariant }]}>
                       <Text style={{ fontSize: 11, fontWeight: "700", color: theme.colors.onSurfaceVariant }}>{index + 1}</Text>
                     </View>
                     <Text style={{ width: 84, color: theme.colors.onSurface }} numberOfLines={1}>{row.name}</Text>
-                    <View style={[styles.barTrack, { backgroundColor: theme.colors.surfaceVariant }]}>
-                      <View style={[styles.barFill, { backgroundColor: theme.colors.primary, width: `${(row.value / maxRoundWins) * 100}%` }]} />
-                    </View>
+                    <AnimatedBar
+                      value={row.value}
+                      max={generalStats.maxRoundWins}
+                      resetKey={`general-${onlyMyTournaments}`}
+                      style={styles.barTrack}
+                    />
                     <Text style={{ width: 24, textAlign: "right", fontWeight: "700", color: theme.colors.onBackground }}>{row.value}</Text>
                   </View>
                 ))}
@@ -290,10 +404,114 @@ export default function StatsScreen() {
 
             <Text variant="titleSmall" style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Combates ganados por personaje</Text>
             <IconBarRows
-              data={characterRowsGlobal}
+              data={generalStats.characterRowsGlobal}
               emptyMessage={onlyMyTournaments ? "Sin datos en los torneos en los que jugaste." : undefined}
+              resetKey={`general-${onlyMyTournaments}`}
             />
           </>
+          )
+        ) : view === "filtradas" ? (
+          loading ? (
+            <View>
+              <View style={[styles.summaryCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+                <View style={{ flex: 1 }}>
+                  <Skeleton width={64} height={30} style={{ marginBottom: SPACING.xs }} />
+                  <Skeleton width={110} height={12} />
+                </View>
+              </View>
+              <Skeleton width="70%" height={12} style={{ marginTop: SPACING.s, marginBottom: SPACING.l }} />
+              <Skeleton width={170} height={14} style={{ marginBottom: SPACING.s }} />
+              <View style={[styles.chartCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+                <Skeleton width={180} height={180} radius={90} />
+              </View>
+            </View>
+          ) : matchedTournaments.length === 0 ? (
+            <View style={styles.emptyPlayerState}>
+              <View style={[styles.emptyIconBadge, { backgroundColor: theme.colors.primaryContainer }]}>
+                <MaterialCommunityIcons name="account-multiple-remove-outline" size={30} color={theme.colors.primary} />
+              </View>
+              <Text variant="titleMedium" style={{ color: theme.colors.onBackground, marginTop: SPACING.m }}>Sin coincidencias</Text>
+              <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, textAlign: "center", marginTop: SPACING.xs }}>
+                {filteredNames.length > 0
+                  ? `${joinNames(filteredNames)} nunca compitieron juntos en el mismo torneo.`
+                  : "Elegí al menos un jugador para comparar."}
+              </Text>
+              <Button mode="outlined" style={{ borderRadius: RADIUS.pill, marginTop: SPACING.l }} onPress={openFilterModal}>
+                Cambiar selección
+              </Button>
+            </View>
+          ) : (
+            <>
+              <View style={[styles.summaryCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+                <View style={{ flex: 1 }}>
+                  <View style={styles.summaryValueRow}>
+                    <MaterialCommunityIcons name="trophy" size={26} color={theme.custom.gold} style={{ marginRight: SPACING.s }} />
+                    <Text variant="displaySmall" style={{ color: theme.colors.primary }}>{matchedTournaments.length}</Text>
+                  </View>
+                  <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>Torneos jugados juntos</Text>
+                </View>
+                <Pressable onPress={openFilterModal} style={[styles.editFilterBtn, { backgroundColor: theme.colors.surfaceVariant }]}>
+                  <MaterialCommunityIcons name="pencil-outline" size={16} color={theme.colors.onSurfaceVariant} />
+                </Pressable>
+              </View>
+
+              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: -SPACING.s, marginBottom: SPACING.l }}>
+                Comparando a {joinNames(filteredNames)}
+              </Text>
+
+              <Text variant="titleSmall" style={[styles.sectionTitle, { color: theme.colors.onBackground, marginTop: 0 }]}>Torneos ganados por jugador</Text>
+              {matchedStats.pieData.length > 0 ? (
+                <View style={[styles.chartCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+                  <AnimatedDonutChart
+                    data={matchedStats.donutData}
+                    size={donutSize}
+                    strokeWidth={26}
+                    animKey={`filtradas-${(activeFilterUids || []).join(",")}-${matchedStats.pieSignature}`}
+                    centerValue={matchedStats.totalPieWins}
+                    centerLabel={matchedStats.totalPieWins === 1 ? "torneo" : "torneos"}
+                  />
+                  <View style={styles.legendWrap}>
+                    {matchedStats.pieData.map((p) => (
+                      <View key={p.name} style={styles.legendItem}>
+                        <View style={[styles.legendDot, { backgroundColor: p.color }]} />
+                        <Text style={{ fontSize: 12, color: theme.colors.onSurfaceVariant }}>{p.name} ({p.population})</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              ) : (
+                <Text style={{ color: theme.colors.onSurfaceVariant, marginBottom: SPACING.l }}>Sin datos todavía.</Text>
+              )}
+
+              <Text variant="titleSmall" style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Combates ganados por jugador</Text>
+              {matchedStats.roundWinsRows.length > 0 ? (
+                <View style={{ marginBottom: SPACING.l }}>
+                  {matchedStats.roundWinsRows.map((row, index) => (
+                    <View key={row.id} style={styles.rankRow}>
+                      <View style={[styles.rankBadge, { backgroundColor: theme.colors.surfaceVariant }]}>
+                        <Text style={{ fontSize: 11, fontWeight: "700", color: theme.colors.onSurfaceVariant }}>{index + 1}</Text>
+                      </View>
+                      <Text style={{ width: 84, color: theme.colors.onSurface }} numberOfLines={1}>{row.name}</Text>
+                      <AnimatedBar
+                        value={row.value}
+                        max={matchedStats.maxRoundWins}
+                        resetKey={`filtradas-${(activeFilterUids || []).join(",")}`}
+                        style={styles.barTrack}
+                      />
+                      <Text style={{ width: 24, textAlign: "right", fontWeight: "700", color: theme.colors.onBackground }}>{row.value}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <Text style={{ color: theme.colors.onSurfaceVariant, marginBottom: SPACING.l }}>Sin datos todavía.</Text>
+              )}
+
+              <Text variant="titleSmall" style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Combates ganados por personaje</Text>
+              <IconBarRows
+                data={matchedStats.characterRowsGlobal}
+                resetKey={`filtradas-${(activeFilterUids || []).join(",")}`}
+              />
+            </>
           )
         ) : (
           <>
@@ -333,10 +551,32 @@ export default function StatsScreen() {
 
             {selectedUid && (loadingPlayer ? (
               <View style={{ marginTop: SPACING.l }}>
-                <Skeleton height={92} radius={RADIUS.lg} style={{ marginBottom: SPACING.l }} />
-                <Skeleton width="60%" height={16} style={{ marginBottom: SPACING.s }} />
-                <SkeletonRow style={{ marginBottom: SPACING.s }} />
-                <SkeletonRow />
+                <View style={[styles.playerCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+                  <View style={styles.playerCardHeader}>
+                    <Skeleton width={44} height={44} radius={RADIUS.pill} />
+                    <Skeleton width={120} height={16} style={{ marginLeft: SPACING.m }} />
+                  </View>
+                  <View style={[styles.playerCardDivider, { backgroundColor: theme.colors.outline }]} />
+                  <View style={styles.playerStatsRow}>
+                    <View style={styles.playerStatBlock}>
+                      <Skeleton width={36} height={22} style={{ marginBottom: SPACING.xs }} />
+                      <Skeleton width={80} height={10} />
+                    </View>
+                    <View style={styles.playerStatBlock}>
+                      <Skeleton width={22} height={22} radius={RADIUS.pill} style={{ marginBottom: SPACING.xs }} />
+                      <Skeleton width={70} height={10} />
+                    </View>
+                  </View>
+                </View>
+
+                <Skeleton width={210} height={14} style={{ marginTop: SPACING.l, marginBottom: SPACING.s }} />
+                {[0, 1, 2, 3].map((i) => (
+                  <View key={i} style={{ flexDirection: "row", alignItems: "center", marginBottom: SPACING.s }}>
+                    <Skeleton width={32} height={32} radius={RADIUS.sm} style={{ marginRight: SPACING.m }} />
+                    <Skeleton height={14} radius={RADIUS.sm} style={{ flex: 1, marginRight: SPACING.s }} />
+                    <Skeleton width={24} height={12} />
+                  </View>
+                ))}
               </View>
             ) : (
               <>
@@ -368,7 +608,7 @@ export default function StatsScreen() {
                 </View>
 
                 <Text variant="titleSmall" style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Personajes y combates ganados</Text>
-                <IconBarRows data={playerCharacterRows} emptyMessage="Todavía no ganó ningún combate." />
+                <IconBarRows data={playerCharacterRows} emptyMessage="Todavía no ganó ningún combate." resetKey={selectedUid} />
 
                 {nemesisOpponent && nemesisCharacter && (
                   <View style={[styles.nemesisCard, { backgroundColor: NEMESIS_BG, borderColor: NEMESIS_COLOR }]}>
@@ -400,6 +640,63 @@ export default function StatsScreen() {
           </>
         )}
       </View>
+
+      <Portal>
+        <Modal
+          visible={filterModalOpen}
+          onDismiss={() => setFilterModalOpen(false)}
+          contentContainerStyle={[styles.filterModal, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
+        >
+          <View style={styles.handle}>
+            <View style={[styles.handleBar, { backgroundColor: theme.colors.outline }]} />
+          </View>
+          <Text variant="titleMedium" style={{ color: theme.colors.onSurface, marginBottom: SPACING.xs, paddingHorizontal: SPACING.m }}>
+            Elegí con quién comparar
+          </Text>
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginBottom: SPACING.s, paddingHorizontal: SPACING.m }}>
+            Se muestran solo los torneos donde jugaron todos los que elijas, juntos.
+          </Text>
+          <FlatList
+            data={users}
+            keyExtractor={(u) => u.uid}
+            contentContainerStyle={{ paddingBottom: SPACING.s }}
+            renderItem={({ item }) => {
+              const checked = selectedFilterUids.includes(item.uid);
+              return (
+                <Pressable onPress={() => toggleFilterUid(item.uid)}>
+                  <View style={[styles.filterOption, checked && { backgroundColor: theme.colors.primaryContainer }]}>
+                    <Avatar.Image size={30} source={{ uri: item.photoURL }} />
+                    <Text
+                      style={{
+                        marginLeft: SPACING.m,
+                        flex: 1,
+                        color: checked ? theme.colors.onPrimaryContainer : theme.colors.onSurface,
+                        fontWeight: checked ? "700" : "400",
+                      }}
+                    >
+                      {item.playerName}
+                    </Text>
+                    <MaterialCommunityIcons
+                      name={checked ? "checkbox-marked" : "checkbox-blank-outline"}
+                      size={20}
+                      color={checked ? theme.colors.primary : theme.colors.onSurfaceVariant}
+                    />
+                  </View>
+                </Pressable>
+              );
+            }}
+          />
+          <Button
+            mode="contained"
+            disabled={selectedFilterUids.length === 0}
+            style={{ borderRadius: RADIUS.pill, marginHorizontal: SPACING.m, marginTop: SPACING.s, marginBottom: SPACING.l }}
+            contentStyle={{ paddingVertical: SPACING.xs }}
+            onPress={applyFilter}
+          >
+            {selectedFilterUids.length > 0 ? `Aplicar filtro (${selectedFilterUids.length})` : "Elegí al menos uno"}
+          </Button>
+        </Modal>
+      </Portal>
     </ScrollView>
   );
 }
@@ -408,7 +705,7 @@ const styles = StyleSheet.create({
   headerRow: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.l },
   headerLogo: { width: 42, height: 42 },
   toggle: { flexDirection: "row", borderRadius: RADIUS.pill, padding: 4, marginBottom: SPACING.l },
-  toggleHalf: { flex: 1, alignItems: "center", paddingVertical: SPACING.s, borderRadius: RADIUS.pill },
+  toggleThird: { flex: 1, alignItems: "center", paddingVertical: SPACING.s, borderRadius: RADIUS.pill },
   summaryCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -431,15 +728,21 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.pill,
   },
   tournamentFilterLabel: { fontSize: 13, fontWeight: "700", marginLeft: 5 },
-  chartCard: { borderRadius: RADIUS.lg, borderWidth: 1, marginBottom: SPACING.xl, alignItems: "center", paddingVertical: SPACING.s },
+  editFilterBtn: {
+    width: 34, height: 34, borderRadius: RADIUS.pill,
+    alignItems: "center", justifyContent: "center",
+  },
+  chartCard: { borderRadius: RADIUS.lg, borderWidth: 1, marginBottom: SPACING.xl, alignItems: "center", paddingVertical: SPACING.l },
+  legendWrap: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", marginTop: SPACING.m, paddingHorizontal: SPACING.m },
+  legendItem: { flexDirection: "row", alignItems: "center", marginHorizontal: SPACING.s, marginBottom: SPACING.xs },
+  legendDot: { width: 10, height: 10, borderRadius: 5, marginRight: 6 },
   sectionTitle: { marginTop: SPACING.s, marginBottom: SPACING.s },
   rankRow: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.s },
   rankBadge: {
     width: 22, height: 22, borderRadius: RADIUS.pill,
     alignItems: "center", justifyContent: "center", marginRight: SPACING.s,
   },
-  barTrack: { flex: 1, height: 12, borderRadius: RADIUS.sm, overflow: "hidden", marginHorizontal: SPACING.s },
-  barFill: { height: "100%", borderRadius: RADIUS.sm },
+  barTrack: { flex: 1, height: 12, borderRadius: RADIUS.sm, marginHorizontal: SPACING.s },
   chipsRow: { flexDirection: "row", paddingBottom: SPACING.xs },
   emptyPlayerState: {
     alignItems: "center", justifyContent: "center",
@@ -463,4 +766,14 @@ const styles = StyleSheet.create({
   nemesisHeader: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.s },
   nemesisBody: { flexDirection: "row", alignItems: "center" },
   nemesisChip: { paddingHorizontal: SPACING.s, paddingVertical: 4, borderRadius: RADIUS.pill },
+  filterModal: {
+    marginHorizontal: SPACING.l,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    maxHeight: "75%",
+    paddingTop: SPACING.s,
+  },
+  handle: { alignItems: "center", marginBottom: SPACING.s },
+  handleBar: { width: 40, height: 4, borderRadius: RADIUS.pill },
+  filterOption: { flexDirection: "row", alignItems: "center", paddingHorizontal: SPACING.m, paddingVertical: SPACING.s },
 });

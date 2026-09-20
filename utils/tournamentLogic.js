@@ -1,5 +1,4 @@
 //TournamentLogic:
-
 export const POINTS_TO_WIN = 3;
 
 export function recomputeTournamentState(roster, rounds) {
@@ -17,11 +16,15 @@ export function recomputeTournamentState(roster, rounds) {
   for (const round of sorted) {
     const characters = round.characters || {};
     for (const player of state) {
+      if (!Object.prototype.hasOwnProperty.call(characters, player.uid)) continue;
       const characterId = characters[player.uid];
-      if (!characterId) continue;
-      player.currentCharacterId = characterId;
-      if (!player.usedCharacterIds.includes(characterId)) {
-        player.usedCharacterIds.push(characterId);
+      if (characterId) {
+        player.currentCharacterId = characterId;
+        if (!player.usedCharacterIds.includes(characterId)) {
+          player.usedCharacterIds.push(characterId);
+        }
+      } else {
+        player.currentCharacterId = null;
       }
     }
     if (round.winnerUid) {

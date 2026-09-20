@@ -7,13 +7,10 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { getAllCharacters } from "../../services/charactersService";
-import {
-  getLastFinishedTournament,
-  getMyCharacterWinCounts,
-  listenActiveTournament,
-  listenMyCharacters,
-} from "../../services/firestoreService";
+import { getAllUsers, getFinishedTournaments as getAllFinished, getLastFinishedTournament, getMyCharacterWinCounts, getRounds, listenActiveTournament, listenMyCharacters, listenRankingSettings } from "../../services/firestoreService";
 import { useResponsive } from "../../utils/responsive";
+import { computeRankingData } from "../../utils/rankingCalc";
+import { getSeasonInfo, SEASONS } from "../../utils/season";
 import { RADIUS, SPACING } from "../../theme";
 
 //js:
@@ -30,14 +27,18 @@ export default function HomeScreen({ navigation }) {
   const [loadingExtra, setLoadingExtra] = useState(true);
   const [myCharacterIds, setMyCharacterIds] = useState([]);
   const [myCharactersChecked, setMyCharactersChecked] = useState(false);
-  // Semilla fija por sesión: elige un mismo personaje al azar mientras la
-  // app sigue abierta, y solo cambia si se cierra y se vuelve a abrir.
+  const [myStats, setMyStats] = useState({ played: 0, won: 0 });
+  const [myTierInfo, setMyTierInfo] = useState(null);
   const [randomSeed] = useState(() => Math.floor(Math.random() * 1000));
   const initialLoading = loadingExtra;
   const spinAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const livePulse = useRef(new Animated.Value(0)).current;
+  const mascotFloat = useRef(new Animated.Value(0)).current;
+
+  const seasonInfo = getSeasonInfo();
+  const season = SEASONS[seasonInfo.key];
 
   useEffect(() => {
     if (!initialLoading) return;
@@ -65,8 +66,21 @@ export default function HomeScreen({ navigation }) {
     return () => loop.stop();
   }, [livePulse]);
 
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(mascotFloat, { toValue: 1, duration: 1500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(mascotFloat, { toValue: 0, duration: 1500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [mascotFloat]);
+
   const spinDeg = spinAnim.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
   const livePulseOpacity = livePulse.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] });
+  const mascotTranslate = mascotFloat.interpolate({ inputRange: [0, 1], outputRange: [0, -8] });
+  const mascotRotate = mascotFloat.interpolate({ inputRange: [0, 1], outputRange: ["-3deg", "3deg"] });
 
   useEffect(() => {
     const unsubMyChars = listenMyCharacters(user.uid, (docs) => {
@@ -93,13 +107,39 @@ export default function HomeScreen({ navigation }) {
     };
   }, [user.uid]);
 
+  useEffect(() => {
+    let unsubSettings;
+    async function loadRankingSnapshot() {
+      const [allUsers, finished, allCharactersForRanking] = await Promise.all([getAllUsers(), getAllFinished(), getAllCharacters()]);
+      const roundsByTournament = await Promise.all(
+        finished.map(async (t) => (await getRounds(t.id)).map((r) => ({ ...r, tournamentId: t.id })))
+      );
+      const allRounds = roundsByTournament.flat().filter((r) => r.roundNumber > 0);
+
+      const mine = finished.filter((t) => t.participantUids?.includes(user.uid));
+      const won = mine.filter((t) => t.winnerUid === user.uid).length;
+      setMyStats({ played: mine.length, won });
+
+      unsubSettings = listenRankingSettings((settings) => {
+        const includedUids = settings.includedUids || [];
+        const { qualified } = computeRankingData({ users: allUsers, finished, allRounds, allCharacters: allCharactersForRanking, includedUids });
+        const myIndex = qualified.findIndex((q) => q.uid === user.uid);
+        if (myIndex === -1) {
+          setMyTierInfo(null);
+        } else {
+          setMyTierInfo({ position: myIndex + 1, total: qualified.length });
+        }
+      });
+    }
+    loadRankingSnapshot().catch((e) => console.log("Error cargando posición en el ranking:", e.message));
+    return () => unsubSettings && unsubSettings();
+  }, [user.uid]);
+
   const charById = (id) => characters.find((c) => c.fighterNumber === id);
 
   const lastWinner = lastTournament?.participants?.find((p) => p.uid === lastTournament.winnerUid);
   const lastWinnerCharacter = lastWinner ? charById(lastWinner.currentCharacterId) : null;
 
-  // Personaje destacado: uno al azar entre los que el usuario cargó en "Mis
-  // personajes" (no del catálogo completo).
   const myCharacterList = characters.filter((c) => myCharacterIds.includes(c.fighterNumber));
   const featuredCharacter =
     myCharacterList.length > 0 ? myCharacterList[randomSeed % myCharacterList.length] : null;
@@ -130,7 +170,7 @@ export default function HomeScreen({ navigation }) {
             <Button
               mode="contained"
               style={{ borderRadius: RADIUS.pill, width: "100%" }}
-              onPress={() => navigation.navigate("Perfil", { screen: "MyCharacters" })}
+              onPress={() => navigation.navigate("Mas", { screen: "MyCharacters" })}
             >
               Cargar personajes
             </Button>
@@ -172,10 +212,10 @@ export default function HomeScreen({ navigation }) {
                         resizeMode="contain"
                       />
                     </View>
-                    <Text variant="displaySmall" style={{ color: theme.colors.onPrimaryContainer, marginTop: SPACING.s }}>
+                    <Text variant="titleLarge" style={{ color: theme.colors.onPrimaryContainer, marginTop: SPACING.xs }}>
                       {featuredCharacter.name}
                     </Text>
-                    <Text variant="bodyMedium" style={{ color: theme.colors.onPrimaryContainer, opacity: 0.75 }}>
+                    <Text variant="bodySmall" style={{ color: theme.colors.onPrimaryContainer, opacity: 0.75 }}>
                       ({featuredCharacterWins} {featuredCharacterWins === 1 ? "combate ganado" : "combates ganados"})
                     </Text>
                   </View>
@@ -186,8 +226,103 @@ export default function HomeScreen({ navigation }) {
                 )}
               </View>
 
-              {/* --- Aviso de torneo en curso  --- */}
-              {showActiveTournamentCard && (
+              {/* --- Mini stats personales + posición en el ranking --- */}
+              <View style={styles.miniStatsRow}>
+                <View style={[styles.miniStatPill, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+                  <MaterialCommunityIcons name="controller-classic-outline" size={16} color={theme.colors.primary} />
+                  <Text variant="titleMedium" style={{ color: theme.colors.onBackground, marginTop: 2 }}>{myStats.played}</Text>
+                  <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Jugados</Text>
+                </View>
+                <View style={[styles.miniStatPill, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+                  <MaterialCommunityIcons name="trophy" size={16} color={theme.custom.gold} />
+                  <Text variant="titleMedium" style={{ color: theme.custom.gold, marginTop: 2 }}>{myStats.won}</Text>
+                  <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Ganados</Text>
+                </View>
+                {myTierInfo && (
+                  <Pressable
+                    style={[styles.miniStatPill, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
+                    onPress={() => navigation.navigate("Mas", { screen: "WorldRanking" })}
+                  >
+                    <MaterialCommunityIcons name="podium-gold" size={16} color={theme.colors.primary} />
+                    <Text variant="titleMedium" style={{ color: theme.colors.onBackground, marginTop: 2 }}>{myTierInfo.position}°</Text>
+                    <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Ranking33</Text>
+                  </Pressable>
+                )}
+              </View>
+
+              {/* --- Último torneo --- */}
+              {lastWinner ? (
+                <Pressable onPress={() => navigation.navigate("Historial")}>
+                  <View style={[styles.winnerCard, { backgroundColor: theme.colors.surface, borderColor: theme.custom.gold }]}>
+                    <View style={styles.winnerRow}>
+                      <View style={styles.winnerImageArea}>
+                        <View style={[styles.winnerHalo, { backgroundColor: theme.custom.gold }]} />
+                        {lastWinnerCharacter && (
+                          <Image source={{ uri: lastWinnerCharacter.images?.fullImage }} style={styles.winnerImage} resizeMode="contain" />
+                        )}
+                      </View>
+                      <View style={{ flex: 1, marginLeft: SPACING.l }}>
+                        <View style={styles.winnerBadgeRow}>
+                          <View style={[styles.winnerTrophyBadge, { backgroundColor: theme.custom.gold }]}>
+                            <MaterialCommunityIcons name="trophy" size={13} color="#241A05" />
+                          </View>
+                          <Text variant="labelSmall" style={{ color: theme.custom.gold, fontWeight: "700", marginLeft: 6 }}>
+                            CAMPEÓN DEL ÚLTIMO TORNEO
+                          </Text>
+                        </View>
+                        <Text variant="headlineMedium" style={{ color: theme.colors.onBackground, marginTop: 2 }}>{lastWinner.playerName}</Text>
+                        {lastWinnerCharacter && (
+                          <Text variant="titleSmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                            con {lastWinnerCharacter.name}
+                          </Text>
+                        )}
+                      </View>
+                      <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.onSurfaceVariant} />
+                    </View>
+                  </View>
+                </Pressable>
+              ) : (
+                <View style={[styles.premiumCard, styles.emptyStateCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+                  <Text style={{ fontSize: 26 }}>🥋</Text>
+                  <Text variant="titleMedium" style={{ color: theme.colors.onBackground, marginTop: SPACING.xs }}>
+                    Todavía no hay campeón
+                  </Text>
+                  <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, textAlign: "center", marginTop: SPACING.xs }}>
+                    Jugá el próximo torneo y quedate con la corona.
+                  </Text>
+                </View>
+              )}
+
+              {/* --- Acceso directo al Ranking Smash 33 --- */}
+              <Pressable onPress={() => navigation.navigate("Mas", { screen: "WorldRanking" })}>
+                <View style={[styles.rankingCard, { backgroundColor: theme.colors.primaryContainer, borderColor: theme.colors.primary }]}>
+                  <View style={{ flex: 1 }}>
+                    <View style={styles.liveTag}>
+                      <Animated.View style={[styles.liveDot, { backgroundColor: theme.colors.primary, opacity: livePulseOpacity }]} />
+                      <Text variant="labelSmall" style={{ color: theme.colors.primary, fontWeight: "700", letterSpacing: 0.5, marginLeft: 5 }}>
+                        EN VIVO
+                      </Text>
+                    </View>
+                    <Text variant="titleMedium" style={{ color: theme.colors.onPrimaryContainer, fontWeight: "800", marginTop: 2 }}>
+                      Temporada de {season.label}
+                    </Text>
+                    <Text style={{ color: theme.colors.onPrimaryContainer, opacity: 0.85, fontSize: 12, marginTop: 2 }}>
+                      Andá a ver el Ranking Smash 33
+                    </Text>
+                  </View>
+                  {season.mascotAsset && (
+                    <Animated.Image
+                      source={season.mascotAsset}
+                      style={[styles.rankingMascot, { transform: [{ translateY: mascotTranslate }, { rotate: mascotRotate }] }]}
+                      resizeMode="contain"
+                    />
+                  )}
+                  <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.onPrimaryContainer} />
+                </View>
+              </Pressable>
+
+              {/* --- Aviso de torneo en curso, o acceso directo a crear uno --- */}
+              {showActiveTournamentCard ? (
                 <Pressable
                   onPress={() =>
                     navigation.navigate("Torneo", { screen: "TournamentDetail", params: { tournamentId: activeTournament.id } })
@@ -216,41 +351,40 @@ export default function HomeScreen({ navigation }) {
                     </View>
                   </View>
                 </Pressable>
+              ) : (
+                !activeTournament && (
+                  <Pressable onPress={() => navigation.navigate("Torneo", { screen: "CreateTournament" })}>
+                    <View style={[styles.liveBanner, { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary }]}>
+                      <View style={[styles.liveIconWrap, { backgroundColor: theme.colors.primaryContainer }]}>
+                        <MaterialCommunityIcons name="plus" size={22} color={theme.colors.primary} />
+                      </View>
+                      <View style={{ flex: 1, marginLeft: SPACING.m }}>
+                        <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>¿Armamos un torneo?</Text>
+                        <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>No hay ninguno en curso ahora mismo</Text>
+                      </View>
+                      <View style={[styles.liveChevronWrap, { backgroundColor: theme.colors.surfaceVariant }]}>
+                        <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.onSurfaceVariant} />
+                      </View>
+                    </View>
+                  </Pressable>
+                )
               )}
 
-              {/* --- Último torneo --- */}
-              {lastWinner ? (
-                <View style={[styles.premiumCard, styles.winnerCard, { backgroundColor: theme.colors.surface, borderColor: theme.custom.gold }]}>
-                  <View style={[styles.goldStripe, { backgroundColor: theme.custom.gold }]} />
-                  <View style={styles.winnerRow}>
-                    {lastWinnerCharacter && (
-                      <View style={[styles.winnerImageWrap, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.custom.gold }]}>
-                        <Image source={{ uri: lastWinnerCharacter.images?.fullImage }} style={styles.winnerImage} resizeMode="contain" />
-                      </View>
-                    )}
-                    <View style={{ flex: 1, marginLeft: SPACING.l }}>
-                      <Text variant="bodySmall" style={{ color: theme.custom.gold }}>Campeón del último torneo</Text>
-                      <Text variant="headlineMedium" style={{ color: theme.colors.onBackground }}>{lastWinner.playerName}</Text>
-                      {lastWinnerCharacter && (
-                        <Text variant="titleSmall" style={{ color: theme.colors.onSurfaceVariant }}>
-                          con {lastWinnerCharacter.name}
-                        </Text>
-                      )}
-                    </View>
-                    <Text style={{ fontSize: 34 }}>🏆</Text>
+              {/* --- Próximamente: Elijah (estadísticas del primero eliminado) --- */}
+              <View style={[styles.premiumCard, styles.elijahCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary, borderWidth: 1.5 }]}>
+                <View style={styles.elijahImageWrap}>
+                  <Image source={require("../../assets/elijah.png")} style={styles.elijahImage} resizeMode="cover" />
+                  <View style={[styles.elijahBadge, { backgroundColor: theme.colors.primary, borderColor: theme.colors.surface }]}>
+                    <MaterialCommunityIcons name="exit-run" size={13} color={theme.colors.onPrimary} />
                   </View>
                 </View>
-              ) : (
-                <View style={[styles.premiumCard, styles.emptyStateCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
-                  <Text style={{ fontSize: 26 }}>🥋</Text>
-                  <Text variant="titleMedium" style={{ color: theme.colors.onBackground, marginTop: SPACING.xs }}>
-                    Todavía no hay campeón
-                  </Text>
-                  <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, textAlign: "center", marginTop: SPACING.xs }}>
-                    Jugá el próximo torneo y quedate con la corona.
+                <View style={{ flex: 1, marginLeft: SPACING.m }}>
+                  <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>Próximamente: Elijah</Text>
+                  <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: SPACING.xs }}>
+                    Registro y estadísticas de quien queda afuera primero en cada ronda.
                   </Text>
                 </View>
-              )}
+              </View>
 
               {/* --- Próximamente: invitaciones del Gremio --- */}
               <ImageBackground
@@ -267,23 +401,6 @@ export default function HomeScreen({ navigation }) {
                   </Text>
                 </View>
               </ImageBackground>
-
-              {/* --- Próximamente: división de gastos --- */}
-              <View style={[styles.premiumCard, styles.expenseCard, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.colors.outline }]}>
-                <View style={{ flex: 1, paddingRight: SPACING.s }}>
-                  <Text variant="titleMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                    Próximamente: división de gastos
-                  </Text>
-                  <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, opacity: 0.8, marginTop: SPACING.xs }}>
-                    Vas a poder cargar lo que gastó cada uno y dividirlo automáticamente.
-                  </Text>
-                </View>
-                <Image
-                  source={require("../../assets/coins.webp")}
-                  style={styles.expenseCoinsImage}
-                  resizeMode="contain"
-                />
-              </View>
             </Animated.View>
           )}
         </View>
@@ -307,19 +424,26 @@ const styles = StyleSheet.create({
   heroCharacterArea: { alignItems: "center", paddingTop: SPACING.s, paddingBottom: SPACING.xs },
   heroHalo: {
     position: "absolute",
-    top: 26,
-    width: 190,
-    height: 190,
-    borderRadius: 95,
+    top: 18,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
     opacity: 0.35,
   },
   heroCharacterImageWrap: {
-    width: 210,
-    height: 210,
+    width: 150,
+    height: 150,
     alignItems: "center",
     justifyContent: "center",
   },
-  heroCharacterImage: { width: 210, height: 210 },
+  heroCharacterImage: { width: 150, height: 150 },
+
+  miniStatsRow: { flexDirection: "row", gap: SPACING.s, marginBottom: SPACING.l },
+  miniStatPill: {
+    flex: 1, alignItems: "center",
+    borderRadius: RADIUS.lg, borderWidth: 1,
+    paddingVertical: SPACING.m,
+  },
 
   liveBanner: {
     flexDirection: "row",
@@ -347,6 +471,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
+  winnerCard: {
+    borderRadius: RADIUS.xl,
+    borderWidth: 1.5,
+    marginBottom: SPACING.l,
+    padding: SPACING.l,
+  },
+  winnerRow: { flexDirection: "row", alignItems: "center" },
+  winnerImageArea: { width: 90, height: 90, alignItems: "center", justifyContent: "center" },
+  winnerHalo: { position: "absolute", width: 82, height: 82, borderRadius: 41, opacity: 0.18 },
+  winnerImage: { width: 90, height: 90 },
+  winnerBadgeRow: { flexDirection: "row", alignItems: "center" },
+  winnerTrophyBadge: {
+    width: 22, height: 22, borderRadius: 11,
+    alignItems: "center", justifyContent: "center",
+  },
+
   premiumCard: {
     borderRadius: RADIUS.xl,
     marginBottom: SPACING.l,
@@ -354,29 +494,35 @@ const styles = StyleSheet.create({
     padding: SPACING.l,
     overflow: "hidden",
   },
-  winnerCard: { paddingVertical: SPACING.xl },
-  goldStripe: {
+  emptyStateCard: { alignItems: "center" },
+
+  elijahCard: { flexDirection: "row", alignItems: "center" },
+  elijahImageWrap: { width: 92, height: 92 },
+  elijahImage: { width: 92, height: 92, borderRadius: 46 },
+  elijahBadge: {
     position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
-  },
-  winnerRow: { flexDirection: "row", alignItems: "center" },
-  winnerImageWrap: {
-    width: 110,
-    height: 110,
-    borderRadius: RADIUS.l,
+    bottom: -2,
+    right: -2,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
-    overflow: "hidden",
   },
-  winnerImage: { width: "100%", height: "100%" },
-  emptyStateCard: { alignItems: "center" },
+
+  rankingCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: RADIUS.xl,
+    borderWidth: 2,
+    padding: SPACING.l,
+    marginBottom: SPACING.l,
+  },
+  rankingMascot: { width: 40, height: 40, marginHorizontal: SPACING.s },
 
   inviteCard: {
-    height: 190,
+    height: 140,
     borderRadius: RADIUS.xl,
     marginBottom: SPACING.l,
     overflow: "hidden",
@@ -392,13 +538,6 @@ const styles = StyleSheet.create({
   },
   inviteTitle: { color: "#FFF7E6", fontWeight: "600" },
   inviteSubtitle: { color: "#FFF7E6", opacity: 0.85, marginTop: SPACING.xs / 2 },
-
-  expenseCard: { flexDirection: "row", alignItems: "center", paddingRight: SPACING.xs },
-  expenseCoinsImage: {
-    width: 148,
-    height: 148,
-    transform: [{ rotate: "-8deg" }],
-  },
 
   charsModal: { margin: SPACING.xxl, borderRadius: RADIUS.xl, borderWidth: 1, padding: SPACING.xl, alignItems: "center" },
   charsModalIcon: {

@@ -2,9 +2,10 @@
 import { Image, StyleSheet, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { RADIUS, SPACING } from "../theme";
+import AnimatedBar from "./AnimatedBar";
 
 //JS:
-export default function IconBarRows({ data, emptyMessage }) {
+export default function IconBarRows({ data, emptyMessage, resetKey }) {
   const theme = useTheme();
   if (!data.length) {
     return <Text style={{ color: theme.colors.onSurfaceVariant, marginBottom: SPACING.m }}>{emptyMessage || "Sin datos todavía."}</Text>;
@@ -21,9 +22,13 @@ export default function IconBarRows({ data, emptyMessage }) {
               <Text style={[styles.subLabel, { color: theme.colors.onSurfaceVariant }]} numberOfLines={1}>{item.subLabel}</Text>
             )}
           </View>
-          <View style={[styles.barTrack, { backgroundColor: theme.colors.surfaceVariant }]}>
-            <View style={[styles.barFill, { backgroundColor: theme.colors.primary, width: `${(item.value / max) * 100}%` }]} />
-          </View>
+          <AnimatedBar
+            value={item.value}
+            max={max}
+            resetKey={resetKey}
+            height={14}
+            style={styles.barTrack}
+          />
           <Text style={[styles.value, { color: theme.colors.onSurface }]}>{item.value}</Text>
         </View>
       ))}
@@ -36,7 +41,6 @@ const styles = StyleSheet.create({
   iconColumn: { width: 40, alignItems: "center", marginRight: SPACING.s },
   icon: { width: 32, height: 32, borderRadius: RADIUS.sm },
   subLabel: { fontSize: 10, marginTop: 2, maxWidth: 40, textAlign: "center" },
-  barTrack: { flex: 1, height: 14, borderRadius: RADIUS.sm, overflow: "hidden" },
-  barFill: { height: "100%", borderRadius: RADIUS.sm },
+  barTrack: { flex: 1 },
   value: { width: 28, textAlign: "right", marginLeft: SPACING.s, fontSize: 12, fontWeight: "700" },
 });

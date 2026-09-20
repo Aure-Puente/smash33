@@ -118,18 +118,22 @@ export default function TournamentDetailScreen({ route, navigation }) {
   const [characters, setCharacters] = useState([]);
   const [myCharsByUid, setMyCharsByUid] = useState({});
 
+  const [pendingWinnerUid, setPendingWinnerUid] = useState(null);
   const [pickingWinner, setPickingWinner] = useState(false);
   const [winnerUid, setWinnerUid] = useState(null);
-  const [loserCharPicks, setLoserCharPicks] = useState({});
+  const [loserCharPicks, setLoserCharPicks] = useState({}); 
   const [pickerForUid, setPickerForUid] = useState(null);
-  const [pickerMode, setPickerMode] = useState("loser"); 
+  const [pickerMode, setPickerMode] = useState("assign");
   const [editingRoundId, setEditingRoundId] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [celebration, setCelebration] = useState(null); 
+  const [celebration, setCelebration] = useState(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [showMyCharacters, setShowMyCharacters] = useState(false);
 
   const celebrationFloat = useRef(new Animated.Value(0)).current;
   const celebrationHaloPulse = useRef(new Animated.Value(0)).current;
+  const matchPointPulse = useRef(new Animated.Value(0)).current;
+  const prevStatusRef = useRef(null);
 
   useEffect(() => {
     if (!celebration) return;
@@ -155,9 +159,21 @@ export default function TournamentDetailScreen({ route, navigation }) {
     };
   }, [celebration, celebrationFloat, celebrationHaloPulse]);
 
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(matchPointPulse, { toValue: 1, duration: 700, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(matchPointPulse, { toValue: 0, duration: 700, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [matchPointPulse]);
+
   const celebrationFloatTranslate = celebrationFloat.interpolate({ inputRange: [0, 1], outputRange: [0, -12] });
   const celebrationHaloScale = celebrationHaloPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] });
   const celebrationHaloOpacity = celebrationHaloPulse.interpolate({ inputRange: [0, 1], outputRange: [0.4, 0.65] });
+  const matchPointScale = matchPointPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.06] });
 
   useEffect(() => {
     getAllCharacters().then(setCharacters);
@@ -177,11 +193,22 @@ export default function TournamentDetailScreen({ route, navigation }) {
     return () => unsubs.forEach((u) => u());
   }, [tournament?.id]);
 
+  useEffect(() => {
+    const prevStatus = prevStatusRef.current;
+    prevStatusRef.current = tournament?.status;
+    if (prevStatus && prevStatus !== "finished" && tournament?.status === "finished") {
+      const winner = tournament.participants?.find((p) => p.uid === tournament.winnerUid);
+      if (winner) {
+        setCelebration({ playerName: winner.playerName, characterId: winner.currentCharacterId });
+      }
+    }
+  }, [tournament?.status]);
+
   const isCreator = tournament && user && tournament.createdBy === user.uid;
   const isFinished = tournament?.status === "finished";
   const isParticipant = tournament?.participantUids?.includes(user.uid);
   const participants = tournament?.participants || [];
-  const allHaveInitialCharacter = participants.length > 0 && participants.every((p) => !!p.currentCharacterId);
+  const allHaveCurrentCharacter = participants.length > 0 && participants.every((p) => !!p.currentCharacterId);
 
   const charById = useMemo(() => {
     const map = {};
@@ -197,37 +224,36 @@ export default function TournamentDetailScreen({ route, navigation }) {
     await applyRecomputedState({ tournamentId, participants: newParticipants, winnerUid: newWinnerUid, isFinished: finished });
   }
 
-  async function assignInitialCharacter(uid, characterId) {
-    const round0 = rounds.find((r) => r.roundNumber === 0);
-    if (!round0) return;
+  async function assignCurrentCharacter(uid, characterId) {
+    const latestRound = rounds[rounds.length - 1];
+    if (!latestRound) return;
     setBusy(true);
     try {
-      const newCharacters = { ...round0.characters, [uid]: characterId };
-      await correctRound({ tournamentId, roundId: round0.id, winnerUid: null, characters: newCharacters });
-      const updatedRounds = rounds.map((r) => (r.id === round0.id ? { ...r, characters: newCharacters } : r));
+      const newCharacters = { ...latestRound.characters, [uid]: characterId };
+      await correctRound({ tournamentId, roundId: latestRound.id, winnerUid: latestRound.winnerUid, characters: newCharacters });
+      const updatedRounds = rounds.map((r) => (r.id === latestRound.id ? { ...r, characters: newCharacters } : r));
       await persistState(updatedRounds);
     } finally {
       setBusy(false);
     }
   }
 
-  function openInitialPicker(uid) {
-    setPickerMode("initial");
+  function openAssignPicker(uid) {
+    setPickerMode("assign");
     setPickerForUid(uid);
   }
 
   function openLoserPicker(uid) {
-    setPickingWinner(false);
     setPickerMode("loser");
     setPickerForUid(uid);
   }
 
   function handlePickerSelect(character) {
-    if (pickerMode === "initial") {
-      assignInitialCharacter(pickerForUid, character.fighterNumber);
+    if (pickerMode === "assign") {
+      assignCurrentCharacter(pickerForUid, character.fighterNumber);
     } else {
       setLoserCharPicks((prev) => ({ ...prev, [pickerForUid]: character.fighterNumber }));
-      setPickingWinner(true); 
+      setPickingWinner(true);
     }
     setPickerForUid(null);
   }
@@ -251,12 +277,14 @@ export default function TournamentDetailScreen({ route, navigation }) {
   function startRegisterRound() {
     setEditingRoundId(null);
     setWinnerUid(null);
+    setPendingWinnerUid(null);
     setLoserCharPicks({});
     setPickingWinner(true);
   }
 
   function startEditRound(round) {
     setEditingRoundId(round.id);
+    setPendingWinnerUid(null);
     setWinnerUid(round.winnerUid);
     const picks = {};
     Object.entries(round.characters || {}).forEach(([uid, charId]) => {
@@ -264,6 +292,13 @@ export default function TournamentDetailScreen({ route, navigation }) {
     });
     setLoserCharPicks(picks);
     setPickingWinner(true);
+  }
+
+  function closeRoundModal() {
+    setPickingWinner(false);
+    setPendingWinnerUid(null);
+    setWinnerUid(null);
+    setEditingRoundId(null);
   }
 
   function willFinishFor(uid) {
@@ -291,6 +326,7 @@ export default function TournamentDetailScreen({ route, navigation }) {
   const allLoserPicksReady = willFinishTournament || (winnerUid && losers.every((p) => !!loserCharPicks[p.uid]));
   const winnerParticipant = winnerUid ? participants.find((p) => p.uid === winnerUid) : null;
   const winnerCharacter = winnerParticipant ? charById[winnerParticipant.currentCharacterId] : null;
+  const pendingWinnerParticipant = pendingWinnerUid ? participants.find((p) => p.uid === pendingWinnerUid) : null;
 
   async function confirmRound(uidOverride) {
     const winUid = uidOverride ?? winnerUid;
@@ -300,7 +336,9 @@ export default function TournamentDetailScreen({ route, navigation }) {
     if (!willFinish) {
       participants
         .filter((p) => p.uid !== winUid)
-        .forEach((p) => { characterMap[p.uid] = loserCharPicks[p.uid]; });
+        .forEach((p) => {
+          characterMap[p.uid] = editingRoundId ? (loserCharPicks[p.uid] ?? null) : null;
+        });
     }
 
     setBusy(true);
@@ -314,16 +352,15 @@ export default function TournamentDetailScreen({ route, navigation }) {
         await submitRound({ tournamentId, roundNumber: nextRoundNumber, winnerUid: winUid, characters: characterMap });
         await persistState([...rounds, { roundNumber: nextRoundNumber, winnerUid: winUid, characters: characterMap }]);
       }
-
-      if (willFinish && !editingRoundId) {
-        setCelebration({ playerName: winner.playerName, characterId: winner.currentCharacterId });
-      }
-
-      setPickingWinner(false);
-      setEditingRoundId(null);
+      closeRoundModal();
     } finally {
       setBusy(false);
     }
+  }
+
+  async function finalizeWinner(uid) {
+    setPendingWinnerUid(null);
+    await confirmRound(uid);
   }
 
   function exitCelebration() {
@@ -346,6 +383,12 @@ export default function TournamentDetailScreen({ route, navigation }) {
   const pickerCharacterList =
     pickerForUid && myCharsByUid[pickerForUid]?.length > 0
       ? characters.filter((c) => myCharsByUid[pickerForUid].includes(c.fighterNumber))
+      : characters;
+
+  const myParticipant = participants.find((p) => p.uid === user.uid);
+  const myCharacterList =
+    myCharsByUid[user.uid]?.length > 0
+      ? characters.filter((c) => myCharsByUid[user.uid].includes(c.fighterNumber))
       : characters;
 
   const visibleRounds = rounds.filter((r) => r.roundNumber > 0);
@@ -384,51 +427,96 @@ export default function TournamentDetailScreen({ route, navigation }) {
             />
           </View>
         )}
+
         {participants
           .slice()
           .sort((a, b) => b.points - a.points)
           .map((p) => {
             const character = charById[p.currentCharacterId];
-            return (
+            const isPending = !character && !isFinished;
+            const canAssign = isCreator && !isFinished;
+            const isMatchPoint = !isFinished && p.points === POINTS_TO_WIN - 1;
+            const isChampion = isFinished && p.uid === tournament.winnerUid;
+
+            let cardBg = theme.colors.surface;
+            let cardBorder = theme.colors.outline;
+            let cardBorderWidth = 1;
+            if (!isFinished) {
+              if (isPending) {
+                cardBg = theme.colors.surfaceVariant;
+              } else {
+                cardBg = theme.colors.primaryContainer;
+                cardBorder = theme.colors.primary;
+                cardBorderWidth = 1.5;
+              }
+            }
+            if (isChampion) {
+              cardBorder = theme.custom.gold;
+              cardBorderWidth = 2;
+            }
+
+            const nameColor = !isFinished && !isPending ? theme.colors.onPrimaryContainer : theme.colors.onSurface;
+            const subColor = !isFinished && !isPending ? theme.colors.onPrimaryContainer : theme.colors.onSurfaceVariant;
+            const capsuleBg = isMatchPoint
+              ? theme.custom.gold
+              : (!isFinished && !isPending ? theme.colors.surface : theme.colors.primaryContainer);
+            const capsuleTextColor = isMatchPoint ? "#241A05" : theme.colors.primary;
+
+            const cardInner = (
               <View
-                key={p.uid}
                 style={[
                   styles.playerCard,
-                  { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline },
-                  p.uid === tournament.winnerUid && isFinished && { borderColor: theme.custom.gold, borderWidth: 2 },
+                  { backgroundColor: cardBg, borderColor: cardBorder, borderWidth: cardBorderWidth },
+                  isPending && { opacity: 0.65 },
                 ]}
               >
-                <CharacterAvatar theme={theme} character={character} size={60} radius={RADIUS.lg} />
+                <View>
+                  <CharacterAvatar theme={theme} character={character} size={60} radius={RADIUS.lg} />
+                  {canAssign && (
+                    <View style={[styles.editBadge, { backgroundColor: theme.colors.primary, borderColor: cardBg }]}>
+                      <MaterialCommunityIcons name="pencil" size={11} color={theme.colors.onPrimary} />
+                    </View>
+                  )}
+                </View>
                 <View style={{ flex: 1, marginLeft: SPACING.m }}>
-                  <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>{p.playerName}</Text>
-                  <Text variant="titleSmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: SPACING.xs / 1.5 }}>
-                    {character?.name || "Sin personaje"}
+                  <Text variant="titleLarge" style={{ color: nameColor }}>{p.playerName}</Text>
+                  <Text variant="titleSmall" style={{ color: subColor, marginTop: SPACING.xs / 1.5 }}>
+                    {character?.name || (canAssign ? "Tocá para elegir personaje" : isPending ? "Esperando selección..." : "Sin personaje")}
                   </Text>
                 </View>
-                <View style={[styles.scoreCapsule, { backgroundColor: theme.colors.primaryContainer }]}>
-                  <Text style={[styles.scoreText, { color: theme.colors.primary }]}>{p.points}</Text>
-                </View>
+                <Animated.View
+                  style={[
+                    styles.scoreCapsule,
+                    { backgroundColor: capsuleBg },
+                    isMatchPoint && { transform: [{ scale: matchPointScale }] },
+                  ]}
+                >
+                  {isMatchPoint && (
+                    <View style={[styles.matchPointFireBadge, { borderColor: theme.colors.background }]}>
+                      <MaterialCommunityIcons name="fire" size={22} color={theme.custom.gold} />
+                    </View>
+                  )}
+                  <Text style={[styles.scoreText, { color: capsuleTextColor }]}>{p.points}</Text>
+                </Animated.View>
               </View>
+            );
+
+            return canAssign ? (
+              <Pressable key={p.uid} onPress={() => openAssignPicker(p.uid)}>
+                {cardInner}
+              </Pressable>
+            ) : (
+              <View key={p.uid}>{cardInner}</View>
             );
           })}
 
-        {isCreator && !isFinished && !allHaveInitialCharacter && (
-          <View style={[styles.sheetCard, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.colors.outline }]}>
-            <Text variant="titleSmall" style={{ marginBottom: SPACING.s, color: theme.colors.onSurface }}>Elegí los personajes iniciales</Text>
-            {participants.map((p) => (
-              <View key={p.uid} style={{ marginBottom: SPACING.s }}>
-                <CharacterChoiceRow
-                  theme={theme}
-                  playerName={p.playerName}
-                  character={charById[p.currentCharacterId]}
-                  onPress={() => openInitialPicker(p.uid)}
-                />
-              </View>
-            ))}
-          </View>
+        {isCreator && !isFinished && !allHaveCurrentCharacter && (
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginBottom: SPACING.m, textAlign: "center" }}>
+            Tocá las tarjetas de arriba para asignarle personaje a cada uno.
+          </Text>
         )}
 
-        {isCreator && !isFinished && allHaveInitialCharacter && (
+        {isCreator && !isFinished && allHaveCurrentCharacter && (
           <Button
             mode="contained"
             icon="trophy-outline"
@@ -437,6 +525,18 @@ export default function TournamentDetailScreen({ route, navigation }) {
             onPress={startRegisterRound}
           >
             Registrar resultado de ronda
+          </Button>
+        )}
+
+        {!isCreator && (
+          <Button
+            mode="outlined"
+            icon="cards"
+            style={[styles.registerButton, { marginBottom: SPACING.s }]}
+            contentStyle={{ paddingVertical: SPACING.xs }}
+            onPress={() => setShowMyCharacters(true)}
+          >
+            Mis personajes disponibles
           </Button>
         )}
 
@@ -473,14 +573,27 @@ export default function TournamentDetailScreen({ route, navigation }) {
           }
         />
       </ScrollView>
+
       <CharacterPickerModal
         visible={!!pickerForUid}
         onDismiss={handlePickerDismiss}
         characters={pickerCharacterList}
-        disabledIds={pickerMode === "loser" ? pickerParticipant?.usedCharacterIds || [] : []}
+        disabledIds={pickerParticipant?.usedCharacterIds || []}
+        activeId={pickerParticipant?.currentCharacterId}
         emptyMessage="Este jugador todavía no tiene personajes guardados en 'Mis personajes'."
-        title={pickerMode === "initial" ? "Elegí el personaje inicial" : "Elegí el nuevo personaje"}
+        title={pickerMode === "assign" ? "Elegí el personaje" : "Elegí el nuevo personaje"}
         onSelect={handlePickerSelect}
+      />
+
+      <CharacterPickerModal
+        visible={showMyCharacters}
+        onDismiss={() => setShowMyCharacters(false)}
+        characters={myCharacterList}
+        disabledIds={myParticipant?.usedCharacterIds || []}
+        activeId={myParticipant?.currentCharacterId}
+        emptyMessage="Todavía no tenés personajes guardados en 'Mis personajes'."
+        title="Mis personajes disponibles"
+        readOnly
       />
 
       <Portal>
@@ -495,7 +608,7 @@ export default function TournamentDetailScreen({ route, navigation }) {
               <Text variant="titleMedium" style={{ flex: 1, textAlign: "center", color: theme.colors.onBackground }}>
                 {editingRoundId ? "Corregir ronda" : "Registrar ronda"}
               </Text>
-              <IconButton icon="close" size={22} onPress={() => setPickingWinner(false)} />
+              <IconButton icon="close" size={22} onPress={closeRoundModal} />
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -510,7 +623,11 @@ export default function TournamentDetailScreen({ route, navigation }) {
                   {participants.map((p) => {
                     const character = charById[p.currentCharacterId];
                     return (
-                      <Pressable key={p.uid} onPress={() => selectWinner(p.uid)} style={{ marginBottom: SPACING.s }}>
+                      <Pressable
+                        key={p.uid}
+                        onPress={() => (editingRoundId ? selectWinner(p.uid) : setPendingWinnerUid(p.uid))}
+                        style={{ marginBottom: SPACING.s }}
+                      >
                         <View style={[styles.winnerBigRow, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
                           <CharacterAvatar theme={theme} character={character} size={52} radius={RADIUS.md} />
                           <View style={{ flex: 1, marginLeft: SPACING.m }}>
@@ -582,6 +699,36 @@ export default function TournamentDetailScreen({ route, navigation }) {
                 Confirmar
               </Button>
             )}
+          </View>
+        </Modal>
+      </Portal>
+
+      <Portal>
+        <Modal
+          visible={!!pendingWinnerUid}
+          onDismiss={() => setPendingWinnerUid(null)}
+          contentContainerStyle={[styles.confirmCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
+        >
+          <View style={[styles.confirmIconWrap, { backgroundColor: theme.colors.primaryContainer }]}>
+            <MaterialCommunityIcons name="trophy-outline" size={26} color={theme.colors.primary} />
+          </View>
+          <Text variant="titleMedium" style={{ textAlign: "center", marginBottom: SPACING.xs, color: theme.colors.onSurface }}>
+            ¿Marcar a {pendingWinnerParticipant?.playerName} como ganador?
+          </Text>
+          <Text variant="bodyMedium" style={{ textAlign: "center", color: theme.colors.onSurfaceVariant, marginBottom: SPACING.xl }}>
+            Se puede corregir desde el historial.
+          </Text>
+          <View style={styles.confirmActions}>
+            <Button mode="outlined" style={{ flex: 1, borderRadius: RADIUS.pill, marginRight: SPACING.s }} onPress={() => setPendingWinnerUid(null)}>
+              Cancelar
+            </Button>
+            <Button
+              mode="contained"
+              style={{ flex: 1, borderRadius: RADIUS.pill }}
+              onPress={() => finalizeWinner(pendingWinnerUid)}
+            >
+              Confirmar
+            </Button>
           </View>
         </Modal>
       </Portal>
@@ -700,9 +847,20 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg, borderWidth: 1,
     padding: SPACING.l, marginBottom: SPACING.m,
   },
+  editBadge: {
+    position: "absolute", bottom: -2, right: -2,
+    width: 20, height: 20, borderRadius: 10, borderWidth: 2,
+    alignItems: "center", justifyContent: "center",
+  },
   scoreCapsule: {
-    minWidth: 64, height: 56, borderRadius: RADIUS.pill,
-    alignItems: "center", justifyContent: "center", paddingHorizontal: SPACING.m,
+    width: 64, height: 56, borderRadius: RADIUS.pill,
+    alignItems: "center", justifyContent: "center",
+  },
+  matchPointFireBadge: {
+    position: "absolute", top: -10, right: -8,
+    width: 28, height: 28, borderRadius: 14, borderWidth: 2,
+    alignItems: "center", justifyContent: "center",
+    backgroundColor: "#241A05",
   },
   scoreText: { fontFamily: "Rajdhani_700Bold", fontSize: 30 },
 

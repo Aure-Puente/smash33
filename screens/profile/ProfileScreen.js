@@ -1,21 +1,22 @@
 //Importaciones:
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Animated, Easing, Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Animated, Easing, Image, ImageBackground, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
-import { Avatar, Button, Text, TextInput, useTheme } from "react-native-paper";
+import { Avatar, Button, IconButton, Text, TextInput, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { useThemeMode } from "../../contexts/ThemeContext";
-import { getFinishedTournaments, updateUserProfile, uploadProfilePhoto } from "../../services/firestoreService";
+import { getFinishedTournaments, getMyCharacterWinCounts, updateUserProfile, uploadProfilePhoto } from "../../services/firestoreService";
+import { getAllCharacters } from "../../services/charactersService";
 import { ACCENT_LIST, RADIUS, SPACING } from "../../theme";
 import { Skeleton } from "../../components/Skeleton";
 
 //JS:
 export default function ProfileScreen({ navigation }) {
   const theme = useTheme();
-  const { user, profile, logout, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { accent, setAccent } = useThemeMode();
   const insets = useSafeAreaInsets();
   const [editing, setEditing] = useState(false);
@@ -23,8 +24,14 @@ export default function ProfileScreen({ navigation }) {
   const [saving, setSaving] = useState(false);
   const [stats, setStats] = useState({ played: 0, won: 0 });
   const [statsLoading, setStatsLoading] = useState(true);
+  const [bestCharacter, setBestCharacter] = useState(null);
+  const [bestCharLoading, setBestCharLoading] = useState(true);
   const [colorOpen, setColorOpen] = useState(false);
+  const [swatchHeight, setSwatchHeight] = useState(0);
+  const scrollRef = useRef(null);
   const rotateAnim = useRef(new Animated.Value(0)).current;
+  const colorAnim = useRef(new Animated.Value(0)).current;
+  const bestCharFade = useRef(new Animated.Value(0)).current;
   const selectedAccent = ACCENT_LIST.find((a) => a.key === accent) || ACCENT_LIST[0];
   const enterOpacity = useRef(new Animated.Value(0)).current;
   const enterY = useRef(new Animated.Value(10)).current;
@@ -76,6 +83,24 @@ export default function ProfileScreen({ navigation }) {
     loadStats();
   }, [user.uid]);
 
+  useEffect(() => {
+    async function loadBestCharacter() {
+      setBestCharLoading(true);
+      const [allCharacters, wins] = await Promise.all([
+        getAllCharacters(),
+        getMyCharacterWinCounts(user.uid),
+      ]);
+      const [topCharId, topCount] = Object.entries(wins).sort((a, b) => b[1] - a[1])[0] || [];
+      const character = topCharId ? allCharacters.find((c) => c.fighterNumber === topCharId) : null;
+      if (character) {
+        setBestCharacter({ character, wins: topCount });
+        Animated.timing(bestCharFade, { toValue: 1, duration: 350, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+      }
+      setBestCharLoading(false);
+    }
+    loadBestCharacter();
+  }, [user.uid]);
+
   async function pickAndUploadPhoto() {
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1, 1], quality: 0.7 });
     if (!result.canceled) {
@@ -94,17 +119,20 @@ export default function ProfileScreen({ navigation }) {
   }
 
   function toggleColorOpen() {
-    Animated.timing(rotateAnim, { toValue: colorOpen ? 0 : 1, duration: 200, useNativeDriver: true }).start();
-    setColorOpen(!colorOpen);
+    const opening = !colorOpen;
+    Animated.timing(rotateAnim, { toValue: opening ? 1 : 0, duration: 220, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+    Animated.timing(colorAnim, { toValue: opening ? 1 : 0, duration: 260, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start(() => {
+      if (opening) scrollRef.current?.scrollToEnd({ animated: true });
+    });
+    setColorOpen(opening);
   }
 
   function selectAccent(key) {
     setAccent(key);
-    Animated.timing(rotateAnim, { toValue: 0, duration: 200, useNativeDriver: true }).start();
-    setColorOpen(false);
   }
 
   const rotateDeg = rotateAnim.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "180deg"] });
+  const swatchAnimatedHeight = colorAnim.interpolate({ inputRange: [0, 1], outputRange: [0, swatchHeight || 1] });
 
   return (
     <Animated.View
@@ -116,10 +144,12 @@ export default function ProfileScreen({ navigation }) {
       }}
     >
       <ScrollView
+        ref={scrollRef}
         style={{ flex: 1 }}
         contentContainerStyle={[styles.content, { paddingTop: insets.top + SPACING.xl }]}
       >
         <View style={styles.headerRow}>
+          <IconButton icon="arrow-left" size={22} style={styles.backBtn} onPress={() => navigation.goBack()} />
           <Image
             source={require("../../assets/logo.webp")}
             style={[styles.headerLogo, { tintColor: theme.colors.primary }]}
@@ -180,17 +210,44 @@ export default function ProfileScreen({ navigation }) {
           </View>
         )}
 
+        {bestCharLoading ? (
+          <Skeleton height={90} radius={RADIUS.lg} style={{ width: "100%", marginBottom: SPACING.s }} />
+        ) : (
+          bestCharacter && (
+            <Animated.View style={{ opacity: bestCharFade, marginBottom: SPACING.s }}>
+              <ImageBackground
+                source={bestCharacter.character.images?.bannerImage ? { uri: bestCharacter.character.images.bannerImage } : undefined}
+                imageStyle={styles.bestCharBannerImage}
+                style={[styles.bestCharBanner, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
+              >
+                <View style={styles.bestCharBannerText}>
+                  <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Tu mejor personaje</Text>
+                  <Text variant="titleMedium" style={{ color: theme.colors.onSurface }} numberOfLines={1}>
+                    {bestCharacter.character.name}
+                  </Text>
+                  <View style={[styles.bestCharWinsPill, { backgroundColor: theme.colors.surfaceVariant }]}>
+                    <MaterialCommunityIcons name="trophy" size={13} color={theme.custom.gold} style={{ marginRight: 4 }} />
+                    <Text style={{ fontSize: 12, fontWeight: "700", color: theme.colors.onSurfaceVariant }}>
+                      {bestCharacter.wins}
+                    </Text>
+                  </View>
+                </View>
+              </ImageBackground>
+            </Animated.View>
+          )
+        )}
+
+        <View style={[styles.badgesTeaseCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+          <View style={[styles.rowIconBadge, { backgroundColor: theme.colors.surfaceVariant }]}>
+            <MaterialCommunityIcons name="medal-outline" size={17} color={theme.colors.primary} />
+          </View>
+          <Text variant="bodyMedium" style={{ flex: 1, marginLeft: SPACING.m, color: theme.colors.onSurface }}>Mis insignias</Text>
+          <View style={[styles.comingSoonPill, { backgroundColor: theme.colors.surfaceVariant }]}>
+            <Text style={{ fontSize: 11, fontWeight: "700", color: theme.colors.onSurfaceVariant }}>Próximamente</Text>
+          </View>
+        </View>
+
         <View style={[styles.settingsCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
-          <Pressable onPress={() => navigation.navigate("MyCharacters")} style={styles.settingsRow}>
-            <View style={[styles.rowIconBadge, { backgroundColor: theme.colors.surfaceVariant }]}>
-              <MaterialCommunityIcons name="sword-cross" size={17} color={theme.colors.primary} />
-            </View>
-            <Text variant="bodyMedium" style={{ flex: 1, marginLeft: SPACING.m, color: theme.colors.onSurface }}>Mis personajes</Text>
-            <MaterialCommunityIcons name="chevron-right" size={20} color={theme.colors.onSurfaceVariant} />
-          </Pressable>
-
-          <View style={[styles.rowDivider, { backgroundColor: theme.colors.outline }]} />
-
           <Pressable onPress={toggleColorOpen} style={styles.settingsRow}>
             <View style={[styles.rowIconBadge, { backgroundColor: theme.colors.surfaceVariant }]}>
               <MaterialCommunityIcons name="palette-outline" size={17} color={theme.colors.primary} />
@@ -205,8 +262,14 @@ export default function ProfileScreen({ navigation }) {
             </Animated.View>
           </Pressable>
 
-          {colorOpen && (
-            <View style={styles.swatchGrid}>
+          <Animated.View style={{ height: swatchAnimatedHeight, opacity: colorAnim, overflow: "hidden" }}>
+            <View
+              style={styles.swatchGrid}
+              onLayout={(e) => {
+                const h = e.nativeEvent.layout.height;
+                if (h > 0 && Math.round(h) !== Math.round(swatchHeight)) setSwatchHeight(h);
+              }}
+            >
               {ACCENT_LIST.map((a) => {
                 const selected = accent === a.key;
                 return (
@@ -227,18 +290,8 @@ export default function ProfileScreen({ navigation }) {
                 );
               })}
             </View>
-          )}
+          </Animated.View>
         </View>
-
-        <Button
-          mode="outlined"
-          icon="logout"
-          textColor={theme.colors.error}
-          style={styles.logoutBtn}
-          onPress={logout}
-        >
-          Cerrar sesión
-        </Button>
       </ScrollView>
     </Animated.View>
   );
@@ -247,6 +300,7 @@ export default function ProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   content: { padding: SPACING.xl, paddingBottom: SPACING.xxxl },
   headerRow: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.xl },
+  backBtn: { marginLeft: -SPACING.s, marginRight: -SPACING.xs },
   headerLogo: { width: 42, height: 42 },
   avatarSection: { alignItems: "center", marginBottom: SPACING.xl },
   avatarRing: { position: "relative", marginBottom: SPACING.m, borderWidth: 2, borderRadius: RADIUS.pill, padding: 3 },
@@ -264,13 +318,49 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg, borderWidth: 1,
   },
   statValueRow: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.xs },
+  bestCharBanner: {
+    height: 90,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    marginBottom: SPACING.s,
+    overflow: "hidden",
+    justifyContent: "center",
+  },
+  bestCharBannerImage: {
+    resizeMode: "cover",
+  },
+  bestCharBannerText: {
+    paddingHorizontal: SPACING.m,
+    maxWidth: "55%",
+  },
+  bestCharWinsPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    paddingHorizontal: SPACING.s,
+    paddingVertical: 4,
+    borderRadius: RADIUS.pill,
+    marginTop: SPACING.xs,
+  },
+  badgesTeaseCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    padding: SPACING.m,
+    marginBottom: SPACING.l,
+  },
+  comingSoonPill: {
+    paddingHorizontal: SPACING.s,
+    paddingVertical: 4,
+    borderRadius: RADIUS.pill,
+  },
   settingsCard: { borderRadius: RADIUS.lg, borderWidth: 1, marginBottom: SPACING.l, overflow: "hidden" },
   settingsRow: { flexDirection: "row", alignItems: "center", padding: SPACING.m },
   rowIconBadge: {
     width: 34, height: 34, borderRadius: RADIUS.sm,
     alignItems: "center", justifyContent: "center",
   },
-  rowDivider: { height: 1, marginLeft: SPACING.m + 34 + SPACING.m },
   selectedDot: { width: 14, height: 14, borderRadius: RADIUS.pill },
   swatchGrid: {
     flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between",
@@ -278,5 +368,4 @@ const styles = StyleSheet.create({
   },
   swatchWrap: { alignItems: "center", width: "31%", marginTop: SPACING.m },
   swatch: { width: 46, height: 46, borderRadius: RADIUS.pill, alignItems: "center", justifyContent: "center" },
-  logoutBtn: { marginTop: SPACING.m, borderRadius: RADIUS.pill },
 });
