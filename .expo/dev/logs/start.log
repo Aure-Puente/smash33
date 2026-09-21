@@ -886,3 +886,90 @@
 {"_e":"metro:bundling:progress","_t":1789931887566,"id":"5","progress":0.999,"total":1481,"current":1481}
 {"_e":"metro:bundling:done","_t":1789931887645,"id":"5","total":1481,"ms":986.1085}
 {"_e":"metro:client_log","_t":1789931894391,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"root:init","_t":1789954048093,"format":"v0-jsonl","version":"57.0.24"}
+{"_e":"env:mode","_t":1789954048094,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1789954048098,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1789954048932,"mode":"development","web":false,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1789954049606,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1789954049998,"plugins":[]}
+{"_e":"metro:instantiate","_t":1789954062750,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1789954076178,"id":"6","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1789954076179,"id":"6","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789954076182,"id":"6","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789954076282,"id":"6","progress":0.037460978147762745,"total":310,"current":60}
+{"_e":"metro:bundling:progress","_t":1789954076384,"id":"6","progress":0.13148790682574468,"total":444,"current":161}
+{"_e":"metro:bundling:progress","_t":1789954076483,"id":"6","progress":0.3746659743417637,"total":562,"current":344}
+{"_e":"metro:bundling:progress","_t":1789954076583,"id":"6","progress":0.3746659743417637,"total":835,"current":506}
+{"_e":"metro:bundling:progress","_t":1789954076683,"id":"6","progress":0.5453729801649131,"total":956,"current":706}
+{"_e":"metro:bundling:progress","_t":1789954076783,"id":"6","progress":0.7071280991735538,"total":1100,"current":925}
+{"_e":"metro:bundling:progress","_t":1789954076883,"id":"6","progress":0.8094358349465905,"total":1276,"current":1148}
+{"_e":"metro:bundling:progress","_t":1789954076983,"id":"6","progress":0.9105553428836894,"total":1442,"current":1376}
+{"_e":"metro:bundling:done","_t":1789954077105,"id":"6","total":1442,"ms":926.2168}
+{"_e":"metro:client_log","_t":1789954084553,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1789955512119,"level":"error","data":["[Error: Call to function 'AudioPlayer.pause' has been rejected.\n→ Caused by: The 1st argument cannot be cast to type class expo.modules.audio.AudioPlayer (received class java.lang.Integer)\n→ Caused by: Cannot use shared object that was already released]"]}
+{"_e":"metro:client_log","_t":1789955512245,"level":"error","data":["[Error: Call to function 'AudioPlayer.pause' has been rejected.\n→ Caused by: The 1st argument cannot be cast to type class expo.modules.audio.AudioPlayer (received class java.lang.Integer)\n→ Caused by: Cannot use shared object that was already released]"]}
+{"_e":"metro:client_log","_t":1789955567611,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1789955584699,"level":"error","data":["[Error: Call to function 'AudioPlayer.pause' has been rejected.\n→ Caused by: The 1st argument cannot be cast to type class expo.modules.audio.AudioPlayer (received class java.lang.Integer)\n→ Caused by: Cannot use shared object that was already released]"]}
+{"_e":"metro:client_log","_t":1789955584865,"level":"error","data":["[Error: Call to function 'AudioPlayer.pause' has been rejected.\n→ Caused by: The 1st argument cannot be cast to type class expo.modules.audio.AudioPlayer (received class java.lang.Integer)\n→ Caused by: Cannot use shared object that was already released]"]}
+{"_e":"metro:client_log","_t":1789955584865,"level":"error","data":["[Error: Call to function 'AudioPlayer.pause' has been rejected.\n→ Caused by: The 1st argument cannot be cast to type class expo.modules.audio.AudioPlayer (received class java.lang.Integer)\n→ Caused by: Cannot use shared object that was already released]"]}
+{"_e":"root:init","_t":1789955602732,"format":"v0-jsonl","version":"57.0.24"}
+{"_e":"env:mode","_t":1789955602734,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1789955602738,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1789955603458,"mode":"development","web":false,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1789955604018,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1789955604353,"plugins":[]}
+{"_e":"metro:instantiate","_t":1789955617100,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1789955645006,"id":"6","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1789955645006,"id":"6","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789955645009,"id":"6","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789955645109,"id":"6","progress":0.038632580261593344,"total":290,"current":57}
+{"_e":"metro:bundling:progress","_t":1789955645209,"id":"6","progress":0.1645939135118498,"total":456,"current":185}
+{"_e":"metro:bundling:progress","_t":1789955645309,"id":"6","progress":0.2792411525831937,"total":721,"current":381}
+{"_e":"metro:bundling:progress","_t":1789955645409,"id":"6","progress":0.45950489346361084,"total":863,"current":585}
+{"_e":"metro:bundling:progress","_t":1789955645510,"id":"6","progress":0.6816233497008324,"total":992,"current":819}
+{"_e":"metro:bundling:progress","_t":1789955645641,"id":"6","progress":0.7325434502611495,"total":1138,"current":974}
+{"_e":"metro:bundling:progress","_t":1789955645741,"id":"6","progress":0.8441455645102098,"total":1305,"current":1199}
+{"_e":"metro:bundling:progress","_t":1789955645841,"id":"6","progress":0.969056707842574,"total":1475,"current":1452}
+{"_e":"metro:bundling:done","_t":1789955645945,"id":"6","total":1475,"ms":939.2097}
+{"_e":"metro:client_log","_t":1789955652866,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1789955665775,"level":"error","data":["[Error: Call to function 'AudioPlayer.pause' has been rejected.\n→ Caused by: The 1st argument cannot be cast to type class expo.modules.audio.AudioPlayer (received class java.lang.Integer)\n→ Caused by: Cannot use shared object that was already released]"]}
+{"_e":"metro:client_log","_t":1789955665826,"level":"error","data":["[Error: Call to function 'AudioPlayer.pause' has been rejected.\n→ Caused by: The 1st argument cannot be cast to type class expo.modules.audio.AudioPlayer (received class java.lang.Integer)\n→ Caused by: Cannot use shared object that was already released]"]}
+{"_e":"metro:client_log","_t":1789955665826,"level":"error","data":["[Error: Call to function 'AudioPlayer.pause' has been rejected.\n→ Caused by: The 1st argument cannot be cast to type class expo.modules.audio.AudioPlayer (received class java.lang.Integer)\n→ Caused by: Cannot use shared object that was already released]"]}
+{"_e":"metro:client_log","_t":1789955735067,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1789957295203,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1789957348921,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:bundling:started","_t":1789957825443,"id":"3y","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1789957825443,"id":"3y","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789957825504,"id":"3y","total":1,"ms":61.0572}
+{"_e":"metro:client_log","_t":1789957832295,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1789957868308,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1789958524841,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"root:init","_t":1789959662578,"format":"v0-jsonl","version":"57.0.24"}
+{"_e":"env:mode","_t":1789959662580,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1789959662583,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1789959663319,"mode":"development","web":false,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1789959663912,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1789959664301,"plugins":[]}
+{"_e":"metro:instantiate","_t":1789959677072,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1789959689001,"id":"5","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1789959689002,"id":"5","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789959689009,"id":"5","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789959689108,"id":"5","progress":0.02109123465505071,"total":241,"current":35}
+{"_e":"metro:bundling:progress","_t":1789959689208,"id":"5","progress":0.14778505928806956,"total":411,"current":158}
+{"_e":"metro:bundling:progress","_t":1789959689308,"id":"5","progress":0.21594257996500224,"total":609,"current":283}
+{"_e":"metro:bundling:progress","_t":1789959689408,"id":"5","progress":0.3912544479978379,"total":745,"current":466}
+{"_e":"metro:bundling:progress","_t":1789959689508,"id":"5","progress":0.5819271999761116,"total":915,"current":698}
+{"_e":"metro:bundling:progress","_t":1789959689608,"id":"5","progress":0.6727866960525858,"total":1018,"current":835}
+{"_e":"metro:bundling:progress","_t":1789959689710,"id":"5","progress":0.751898748871779,"total":1174,"current":1018}
+{"_e":"metro:bundling:progress","_t":1789959689810,"id":"5","progress":0.9068943077152015,"total":1342,"current":1278}
+{"_e":"metro:bundling:progress","_t":1789959689910,"id":"5","progress":0.999,"total":1491,"current":1491}
+{"_e":"metro:bundling:done","_t":1789959689986,"id":"5","total":1491,"ms":984.825}
+{"_e":"metro:client_log","_t":1789959697861,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:bundling:started","_t":1789959730776,"id":"a","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1789959730776,"id":"a","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789959730850,"id":"a","total":1,"ms":74.152}
+{"_e":"metro:client_log","_t":1789959745251,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1789959862592,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1789959862898,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1789959983973,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1789959984222,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}

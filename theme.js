@@ -1,9 +1,25 @@
 //Theme:
+import { Dimensions } from "react-native";
 import { MD3DarkTheme, MD3LightTheme } from "react-native-paper";
 
+
+const { width: DEVICE_WIDTH } = Dimensions.get("window");
+const IS_TABLET = DEVICE_WIDTH >= 700;
+export const TABLET_SCALE = 1.3;
+const SPACING_RADIUS_SCALE = IS_TABLET ? TABLET_SCALE : 1;
+const FONT_SCALE = IS_TABLET ? 1.2 : 1;
+
+function scaleObj(obj, factor) {
+  const out = {};
+  Object.keys(obj).forEach((k) => {
+    out[k] = Math.round(obj[k] * factor);
+  });
+  return out;
+}
+
 // ---- Escalas base ----
-export const RADIUS = { sm: 10, md: 14, lg: 18, xl: 24, pill: 999 };
-export const SPACING = { xs: 4, s: 8, m: 12, l: 16, xl: 20, xxl: 24, xxxl: 32 };
+export const RADIUS = scaleObj({ sm: 10, md: 14, lg: 18, xl: 24, pill: 999 }, SPACING_RADIUS_SCALE);
+export const SPACING = scaleObj({ xs: 4, s: 8, m: 12, l: 16, xl: 20, xxl: 24, xxxl: 32 }, SPACING_RADIUS_SCALE);
 
 export const FONT_FAMILY = {
   displayBold: "Rajdhani_700Bold",
@@ -123,7 +139,13 @@ const FONT_MAP = {
 function buildFonts(baseVariants) {
   const result = {};
   Object.keys(baseVariants).forEach((key) => {
-    result[key] = { ...baseVariants[key], fontFamily: FONT_MAP[key] || FONT_FAMILY.regular };
+    const variant = baseVariants[key];
+    result[key] = {
+      ...variant,
+      fontFamily: FONT_MAP[key] || FONT_FAMILY.regular,
+      fontSize: variant.fontSize ? Math.round(variant.fontSize * FONT_SCALE) : variant.fontSize,
+      lineHeight: variant.lineHeight ? Math.round(variant.lineHeight * FONT_SCALE) : variant.lineHeight,
+    };
   });
   return result;
 }

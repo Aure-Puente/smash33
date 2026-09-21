@@ -1,6 +1,7 @@
 //Importaciones:
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Easing, Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Animated, Dimensions, Easing, Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useAudioPlayer } from "expo-audio";
 import { Button, IconButton, Modal, Portal, Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -25,6 +26,109 @@ import ScreenHeader from "../../components/ScreenHeader";
 import { RADIUS, SPACING } from "../../theme";
 
 //JS:
+const VICTORY_SONGS = [
+  require("../../assets/audio/victory01.mp3"),
+  require("../../assets/audio/victory02.mp3"),
+  require("../../assets/audio/victory03.mp3"),
+  require("../../assets/audio/victory04.mp3"),
+  require("../../assets/audio/victory05.mp3"),
+  require("../../assets/audio/victory06.mp3"),
+  require("../../assets/audio/victory07.mp3"),
+  require("../../assets/audio/victory08.mp3"),
+  require("../../assets/audio/victory09.mp3"),
+  require("../../assets/audio/victory10.mp3"),
+];
+
+function hashString(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+function usePressScale() {
+  const scale = useRef(new Animated.Value(1)).current;
+  function pressIn() {
+    Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, speed: 40, bounciness: 0 }).start();
+  }
+  function pressOut() {
+    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }).start();
+  }
+  return { scale, pressIn, pressOut };
+}
+
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
+const CONFETTI_COLORS = ["#EC5F94", "#8E5FD6", "#5C7CFA", "#43A047", "#FFFFFF", "#4FC3D9"];
+
+function ConfettiPiece({ color, startX, size }) {
+  const fall = useRef(new Animated.Value(0)).current;
+  const driftX = useRef((Math.random() - 0.5) * 140).current;
+  const spin = useRef(360 + Math.random() * 360).current;
+  const duration = useRef(2200 + Math.random() * 2200).current;
+  const delay = useRef(Math.random() * 1600).current;
+
+  useEffect(() => {
+    let cancelled = false;
+    function run() {
+      fall.setValue(0);
+      Animated.timing(fall, { toValue: 1, duration, delay, easing: Easing.linear, useNativeDriver: true }).start(({ finished }) => {
+        if (finished && !cancelled) run();
+      });
+    }
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const translateY = fall.interpolate({ inputRange: [0, 1], outputRange: [-30, SCREEN_H + 40] });
+  const translateX = fall.interpolate({ inputRange: [0, 1], outputRange: [0, driftX] });
+  const rotate = fall.interpolate({ inputRange: [0, 1], outputRange: ["0deg", `${spin}deg`] });
+  const opacity = fall.interpolate({ inputRange: [0, 0.08, 0.85, 1], outputRange: [0, 1, 1, 0] });
+
+  return (
+    <Animated.View
+      style={{
+        position: "absolute",
+        left: startX,
+        top: 0,
+        width: size,
+        height: size * 1.6,
+        backgroundColor: color,
+        borderRadius: 2,
+        opacity,
+        transform: [{ translateY }, { translateX }, { rotate }],
+      }}
+    />
+  );
+}
+
+function ConfettiField() {
+  const pieces = useMemo(
+    () =>
+      Array.from({ length: 32 }).map((_, i) => ({
+        id: i,
+        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+        startX: Math.random() * SCREEN_W,
+        size: 6 + Math.random() * 5,
+      })),
+    []
+  );
+
+  return (
+    <View
+      style={{ position: "absolute", top: 0, left: 0, width: SCREEN_W, height: SCREEN_H }}
+      pointerEvents="none"
+    >
+      {pieces.map((p) => (
+        <ConfettiPiece key={p.id} color={p.color} startX={p.startX} size={p.size} />
+      ))}
+    </View>
+  );
+}
+
 function SpinningLogo({ size = 96, color }) {
   const spinAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -67,15 +171,17 @@ function CharacterAvatar({ theme, character, size, radius }) {
 
 function CharacterChoiceRow({ theme, playerName, character, onPress }) {
   const picked = !!character;
+  const { scale, pressIn, pressOut } = usePressScale();
   return (
-    <Pressable onPress={onPress}>
-      <View
+    <Pressable onPress={onPress} onPressIn={pressIn} onPressOut={pressOut}>
+      <Animated.View
         style={[
           styles.choiceRow,
           {
             backgroundColor: picked ? theme.colors.primaryContainer : theme.colors.surface,
             borderColor: picked ? theme.colors.primary : theme.colors.outline,
           },
+          { transform: [{ scale }] },
         ]}
       >
         <CharacterAvatar theme={theme} character={character} size={36} radius={RADIUS.sm} />
@@ -101,13 +207,114 @@ function CharacterChoiceRow({ theme, playerName, character, onPress }) {
           size={22}
           color={picked ? theme.colors.primary : theme.colors.onSurfaceVariant}
         />
-      </View>
+      </Animated.View>
     </Pressable>
   );
 }
 
-export default function TournamentDetailScreen({ route, navigation }) {
-  const { tournamentId } = route.params;
+function PlayerCard({ theme, p, character, isPending, canAssign, isMatchPoint, isChampion, isFinished, matchPointScale, onPress }) {
+  const { scale, pressIn, pressOut } = usePressScale();
+
+  let cardBg = theme.colors.surface;
+  let cardBorder = theme.colors.outline;
+  let cardBorderWidth = 1;
+  if (!isFinished) {
+    if (isPending) {
+      cardBg = theme.colors.surfaceVariant;
+    } else {
+      cardBg = theme.colors.primaryContainer;
+      cardBorder = theme.colors.primary;
+      cardBorderWidth = 1.5;
+    }
+  }
+  if (isChampion) {
+    cardBorder = theme.custom.gold;
+    cardBorderWidth = 2;
+  }
+
+  const nameColor = !isFinished && !isPending ? theme.colors.onPrimaryContainer : theme.colors.onSurface;
+  const subColor = !isFinished && !isPending ? theme.colors.onPrimaryContainer : theme.colors.onSurfaceVariant;
+  const capsuleBg = isMatchPoint
+    ? theme.custom.gold
+    : (!isFinished && !isPending ? theme.colors.surface : theme.colors.primaryContainer);
+  const capsuleTextColor = isMatchPoint ? "#241A05" : theme.colors.primary;
+
+  const inner = (
+    <View
+      style={[
+        styles.playerCard,
+        { backgroundColor: cardBg, borderColor: cardBorder, borderWidth: cardBorderWidth },
+        isPending && { opacity: 0.65 },
+      ]}
+    >
+      <View>
+        <CharacterAvatar theme={theme} character={character} size={60} radius={RADIUS.lg} />
+        {canAssign && (
+          <View style={[styles.editBadge, { backgroundColor: theme.colors.primary, borderColor: cardBg }]}>
+            <MaterialCommunityIcons name="pencil" size={11} color={theme.colors.onPrimary} />
+          </View>
+        )}
+      </View>
+      <View style={{ flex: 1, marginLeft: SPACING.m }}>
+        <Text variant="titleLarge" style={{ color: nameColor }}>{p.playerName}</Text>
+        <Text variant="titleSmall" style={{ color: subColor, marginTop: SPACING.xs / 1.5 }}>
+          {character?.name || (canAssign ? "Tocá para elegir personaje" : isPending ? "Esperando selección..." : "Sin personaje")}
+        </Text>
+      </View>
+      <Animated.View
+        style={[
+          styles.scoreCapsule,
+          { backgroundColor: capsuleBg },
+          isMatchPoint && { transform: [{ scale: matchPointScale }] },
+        ]}
+      >
+        {isMatchPoint && (
+          <View style={[styles.matchPointFireBadge, { borderColor: theme.colors.background }]}>
+            <MaterialCommunityIcons name="fire" size={22} color={theme.custom.gold} />
+          </View>
+        )}
+        <Text style={[styles.scoreText, { color: capsuleTextColor }]}>{p.points}</Text>
+      </Animated.View>
+    </View>
+  );
+
+  if (!canAssign) return inner;
+
+  return (
+    <Pressable onPress={onPress} onPressIn={pressIn} onPressOut={pressOut}>
+      <Animated.View style={{ transform: [{ scale }] }}>{inner}</Animated.View>
+    </Pressable>
+  );
+}
+
+function WinnerChoiceRow({ theme, p, character, onPress }) {
+  const { scale, pressIn, pressOut } = usePressScale();
+  return (
+    <Pressable onPress={onPress} onPressIn={pressIn} onPressOut={pressOut} style={{ marginBottom: SPACING.s }}>
+      <Animated.View
+        style={[
+          styles.winnerBigRow,
+          { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline },
+          { transform: [{ scale }] },
+        ]}
+      >
+        <CharacterAvatar theme={theme} character={character} size={52} radius={RADIUS.md} />
+        <View style={{ flex: 1, marginLeft: SPACING.m }}>
+          <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>
+            {p.playerName}
+          </Text>
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+            {character?.name || "Sin personaje"}
+          </Text>
+        </View>
+        <MaterialCommunityIcons name="chevron-right" size={26} color={theme.colors.onSurfaceVariant} />
+      </Animated.View>
+    </Pressable>
+  );
+}
+
+function TournamentDetailScreenInner({ route, navigation }) {
+  const { tournamentId, justCreated } = route.params;
   const theme = useTheme();
   const { user, profile } = useAuth();
   const insets = useSafeAreaInsets();
@@ -121,7 +328,7 @@ export default function TournamentDetailScreen({ route, navigation }) {
   const [pendingWinnerUid, setPendingWinnerUid] = useState(null);
   const [pickingWinner, setPickingWinner] = useState(false);
   const [winnerUid, setWinnerUid] = useState(null);
-  const [loserCharPicks, setLoserCharPicks] = useState({}); 
+  const [loserCharPicks, setLoserCharPicks] = useState({});
   const [pickerForUid, setPickerForUid] = useState(null);
   const [pickerMode, setPickerMode] = useState("assign");
   const [editingRoundId, setEditingRoundId] = useState(null);
@@ -134,6 +341,18 @@ export default function TournamentDetailScreen({ route, navigation }) {
   const celebrationHaloPulse = useRef(new Animated.Value(0)).current;
   const matchPointPulse = useRef(new Animated.Value(0)).current;
   const prevStatusRef = useRef(null);
+
+  const victorySongIndex = hashString(tournamentId) % VICTORY_SONGS.length;
+  const victoryPlayer = useAudioPlayer(VICTORY_SONGS[victorySongIndex]);
+
+  useEffect(() => {
+    if (celebration) {
+      victoryPlayer.seekTo(0);
+      victoryPlayer.play();
+    } else {
+      victoryPlayer.pause();
+    }
+  }, [celebration]);
 
   useEffect(() => {
     if (!celebration) return;
@@ -174,6 +393,14 @@ export default function TournamentDetailScreen({ route, navigation }) {
   const celebrationHaloScale = celebrationHaloPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] });
   const celebrationHaloOpacity = celebrationHaloPulse.interpolate({ inputRange: [0, 1], outputRange: [0.4, 0.65] });
   const matchPointScale = matchPointPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.06] });
+
+  const [showCreatingScreen, setShowCreatingScreen] = useState(!!justCreated);
+
+  useEffect(() => {
+    if (!justCreated) return;
+    const t = setTimeout(() => setShowCreatingScreen(false), 2000);
+    return () => clearTimeout(t);
+  }, [justCreated]);
 
   useEffect(() => {
     getAllCharacters().then(setCharacters);
@@ -364,11 +591,23 @@ export default function TournamentDetailScreen({ route, navigation }) {
   }
 
   function exitCelebration() {
+    victoryPlayer.pause();
     setCelebration(null);
     navigation.reset({
       index: 0,
       routes: [{ name: "TournamentsHome" }],
     });
+  }
+
+  if (showCreatingScreen) {
+    return (
+      <View style={[styles.fullScreenCenter, { backgroundColor: theme.colors.background }]}>
+        <SpinningLogo size={110} color={theme.colors.primary} />
+        <Text variant="titleMedium" style={{ marginTop: SPACING.l, color: theme.colors.onBackground }}>
+          Creando torneo...
+        </Text>
+      </View>
+    );
   }
 
   if (!tournament) {
@@ -438,75 +677,20 @@ export default function TournamentDetailScreen({ route, navigation }) {
             const isMatchPoint = !isFinished && p.points === POINTS_TO_WIN - 1;
             const isChampion = isFinished && p.uid === tournament.winnerUid;
 
-            let cardBg = theme.colors.surface;
-            let cardBorder = theme.colors.outline;
-            let cardBorderWidth = 1;
-            if (!isFinished) {
-              if (isPending) {
-                cardBg = theme.colors.surfaceVariant;
-              } else {
-                cardBg = theme.colors.primaryContainer;
-                cardBorder = theme.colors.primary;
-                cardBorderWidth = 1.5;
-              }
-            }
-            if (isChampion) {
-              cardBorder = theme.custom.gold;
-              cardBorderWidth = 2;
-            }
-
-            const nameColor = !isFinished && !isPending ? theme.colors.onPrimaryContainer : theme.colors.onSurface;
-            const subColor = !isFinished && !isPending ? theme.colors.onPrimaryContainer : theme.colors.onSurfaceVariant;
-            const capsuleBg = isMatchPoint
-              ? theme.custom.gold
-              : (!isFinished && !isPending ? theme.colors.surface : theme.colors.primaryContainer);
-            const capsuleTextColor = isMatchPoint ? "#241A05" : theme.colors.primary;
-
-            const cardInner = (
-              <View
-                style={[
-                  styles.playerCard,
-                  { backgroundColor: cardBg, borderColor: cardBorder, borderWidth: cardBorderWidth },
-                  isPending && { opacity: 0.65 },
-                ]}
-              >
-                <View>
-                  <CharacterAvatar theme={theme} character={character} size={60} radius={RADIUS.lg} />
-                  {canAssign && (
-                    <View style={[styles.editBadge, { backgroundColor: theme.colors.primary, borderColor: cardBg }]}>
-                      <MaterialCommunityIcons name="pencil" size={11} color={theme.colors.onPrimary} />
-                    </View>
-                  )}
-                </View>
-                <View style={{ flex: 1, marginLeft: SPACING.m }}>
-                  <Text variant="titleLarge" style={{ color: nameColor }}>{p.playerName}</Text>
-                  <Text variant="titleSmall" style={{ color: subColor, marginTop: SPACING.xs / 1.5 }}>
-                    {character?.name || (canAssign ? "Tocá para elegir personaje" : isPending ? "Esperando selección..." : "Sin personaje")}
-                  </Text>
-                </View>
-                <Animated.View
-                  style={[
-                    styles.scoreCapsule,
-                    { backgroundColor: capsuleBg },
-                    isMatchPoint && { transform: [{ scale: matchPointScale }] },
-                  ]}
-                >
-                  {isMatchPoint && (
-                    <View style={[styles.matchPointFireBadge, { borderColor: theme.colors.background }]}>
-                      <MaterialCommunityIcons name="fire" size={22} color={theme.custom.gold} />
-                    </View>
-                  )}
-                  <Text style={[styles.scoreText, { color: capsuleTextColor }]}>{p.points}</Text>
-                </Animated.View>
-              </View>
-            );
-
-            return canAssign ? (
-              <Pressable key={p.uid} onPress={() => openAssignPicker(p.uid)}>
-                {cardInner}
-              </Pressable>
-            ) : (
-              <View key={p.uid}>{cardInner}</View>
+            return (
+              <PlayerCard
+                key={p.uid}
+                theme={theme}
+                p={p}
+                character={character}
+                isPending={isPending}
+                canAssign={canAssign}
+                isMatchPoint={isMatchPoint}
+                isChampion={isChampion}
+                isFinished={isFinished}
+                matchPointScale={matchPointScale}
+                onPress={() => openAssignPicker(p.uid)}
+              />
             );
           })}
 
@@ -623,24 +807,13 @@ export default function TournamentDetailScreen({ route, navigation }) {
                   {participants.map((p) => {
                     const character = charById[p.currentCharacterId];
                     return (
-                      <Pressable
+                      <WinnerChoiceRow
                         key={p.uid}
+                        theme={theme}
+                        p={p}
+                        character={character}
                         onPress={() => (editingRoundId ? selectWinner(p.uid) : setPendingWinnerUid(p.uid))}
-                        style={{ marginBottom: SPACING.s }}
-                      >
-                        <View style={[styles.winnerBigRow, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
-                          <CharacterAvatar theme={theme} character={character} size={52} radius={RADIUS.md} />
-                          <View style={{ flex: 1, marginLeft: SPACING.m }}>
-                            <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>
-                              {p.playerName}
-                            </Text>
-                            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-                              {character?.name || "Sin personaje"}
-                            </Text>
-                          </View>
-                          <MaterialCommunityIcons name="chevron-right" size={26} color={theme.colors.onSurfaceVariant} />
-                        </View>
-                      </Pressable>
+                      />
                     );
                   })}
                 </>
@@ -736,10 +909,7 @@ export default function TournamentDetailScreen({ route, navigation }) {
       <Portal>
         <Modal visible={!!celebration} dismissable={false} contentContainerStyle={styles.fullScreenModal}>
           <View style={[styles.fullScreenModal, styles.celebrationScreen, { backgroundColor: theme.custom.gold }]}>
-            <Text style={styles.celebrationStar}>✦</Text>
-            <Text style={[styles.celebrationStar, { top: 90, right: 40, left: undefined }]}>✦</Text>
-            <Text style={[styles.celebrationStar, { bottom: 140, left: 50 }]}>✦</Text>
-            <Text style={[styles.celebrationStar, { bottom: 100, right: 30, left: undefined }]}>✦</Text>
+            <ConfettiField />
 
             <Text variant="displaySmall" style={styles.celebrationTitle}>
               ¡Felicitaciones, {celebration?.playerName}!
@@ -890,7 +1060,6 @@ const styles = StyleSheet.create({
   },
 
   celebrationScreen: { alignItems: "center", justifyContent: "center", padding: SPACING.xl },
-  celebrationStar: { position: "absolute", top: 70, left: 40, fontSize: 22, color: "#241A05", opacity: 0.25 },
   celebrationImageArea: {
     width: 320, height: 320,
     alignItems: "center", justifyContent: "center",
@@ -919,3 +1088,13 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.55)",
   },
 });
+
+export default function TournamentDetailScreen(props) {
+  const { tournamentId, justCreated } = props.route.params;
+  return (
+    <TournamentDetailScreenInner
+      key={`${tournamentId}-${justCreated ? "new" : "existing"}`}
+      {...props}
+    />
+  );
+}

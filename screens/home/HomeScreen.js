@@ -250,6 +250,38 @@ export default function HomeScreen({ navigation }) {
                 )}
               </View>
 
+              {/* --- Aviso de torneo en curso --- */}
+              {showActiveTournamentCard && (
+                <Pressable
+                  onPress={() =>
+                    navigation.navigate("Torneo", { screen: "TournamentDetail", params: { tournamentId: activeTournament.id } })
+                  }
+                >
+                  <View style={[styles.liveBanner, { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary }]}>
+                    <View style={[styles.liveIconWrap, { backgroundColor: theme.colors.primaryContainer }]}>
+                      <MaterialCommunityIcons name="lightning-bolt" size={22} color={theme.colors.primary} />
+                    </View>
+                    <View style={{ flex: 1, marginLeft: SPACING.m }}>
+                      <View style={styles.liveTag}>
+                        <Animated.View style={[styles.liveDot, { backgroundColor: theme.colors.primary, opacity: livePulseOpacity }]} />
+                        <Text variant="labelSmall" style={[styles.liveTagText, { color: theme.colors.primary }]}>
+                          EN VIVO
+                        </Text>
+                      </View>
+                      <Text variant="titleMedium" style={{ color: theme.colors.onSurface, marginTop: 2 }}>
+                        Hay un torneo en curso
+                      </Text>
+                      <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 2 }}>
+                        Si querés chequear las batallas y resultados, tocá acá
+                      </Text>
+                    </View>
+                    <View style={[styles.liveChevronWrap, { backgroundColor: theme.colors.surfaceVariant }]}>
+                      <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.onSurfaceVariant} />
+                    </View>
+                  </View>
+                </Pressable>
+              )}
+
               {/* --- Último torneo --- */}
               {lastWinner ? (
                 <Pressable onPress={() => navigation.navigate("Historial")}>
@@ -321,53 +353,22 @@ export default function HomeScreen({ navigation }) {
                 </View>
               </Pressable>
 
-              {/* --- Aviso de torneo en curso, o acceso directo a crear uno --- */}
-              {showActiveTournamentCard ? (
-                <Pressable
-                  onPress={() =>
-                    navigation.navigate("Torneo", { screen: "TournamentDetail", params: { tournamentId: activeTournament.id } })
-                  }
-                >
-                  <View style={[styles.liveBanner, { backgroundColor: theme.colors.primary, borderColor: "rgba(255,255,255,0.35)" }]}>
-                    <View style={[styles.liveIconWrap, { backgroundColor: theme.colors.onPrimary }]}>
-                      <MaterialCommunityIcons name="lightning-bolt" size={22} color={theme.colors.primary} />
+              {/* --- Acceso directo a crear un torneo (cuando no hay ninguno en curso) --- */}
+              {!activeTournament && (
+                <Pressable onPress={() => navigation.navigate("Torneo", { screen: "CreateTournament" })}>
+                  <View style={[styles.liveBanner, { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary }]}>
+                    <View style={[styles.liveIconWrap, { backgroundColor: theme.colors.primaryContainer }]}>
+                      <MaterialCommunityIcons name="plus" size={22} color={theme.colors.primary} />
                     </View>
                     <View style={{ flex: 1, marginLeft: SPACING.m }}>
-                      <View style={styles.liveTag}>
-                        <Animated.View style={[styles.liveDot, { backgroundColor: theme.colors.onPrimary, opacity: livePulseOpacity }]} />
-                        <Text variant="labelSmall" style={[styles.liveTagText, { color: theme.colors.onPrimary }]}>
-                          EN VIVO
-                        </Text>
-                      </View>
-                      <Text variant="titleMedium" style={{ color: theme.colors.onPrimary, marginTop: 2 }}>
-                        Hay un torneo en curso
-                      </Text>
-                      <Text variant="bodySmall" style={{ color: theme.colors.onPrimary, opacity: 0.9, marginTop: 2 }}>
-                        Si querés chequear las batallas y resultados, tocá acá
-                      </Text>
+                      <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>¿Armamos un torneo?</Text>
+                      <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>No hay ninguno en curso ahora mismo</Text>
                     </View>
-                    <View style={[styles.liveChevronWrap, { backgroundColor: "rgba(255,255,255,0.18)" }]}>
-                      <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.onPrimary} />
+                    <View style={[styles.liveChevronWrap, { backgroundColor: theme.colors.surfaceVariant }]}>
+                      <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.onSurfaceVariant} />
                     </View>
                   </View>
                 </Pressable>
-              ) : (
-                !activeTournament && (
-                  <Pressable onPress={() => navigation.navigate("Torneo", { screen: "CreateTournament" })}>
-                    <View style={[styles.liveBanner, { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary }]}>
-                      <View style={[styles.liveIconWrap, { backgroundColor: theme.colors.primaryContainer }]}>
-                        <MaterialCommunityIcons name="plus" size={22} color={theme.colors.primary} />
-                      </View>
-                      <View style={{ flex: 1, marginLeft: SPACING.m }}>
-                        <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>¿Armamos un torneo?</Text>
-                        <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>No hay ninguno en curso ahora mismo</Text>
-                      </View>
-                      <View style={[styles.liveChevronWrap, { backgroundColor: theme.colors.surfaceVariant }]}>
-                        <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.onSurfaceVariant} />
-                      </View>
-                    </View>
-                  </Pressable>
-                )
               )}
 
               {/* --- Próximamente: Elijah (estadísticas del primero eliminado) --- */}
