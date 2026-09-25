@@ -9,6 +9,7 @@ import { SEASONS } from "../../utils/season";
 import ScreenHeader from "../../components/ScreenHeader";
 import { Skeleton } from "../../components/Skeleton";
 import { RADIUS, SPACING } from "../../theme";
+import { scale } from "../../utils/responsive";
 
 //JS:
 function getPositionVisual(index, total, theme) {
@@ -58,15 +59,15 @@ function SeasonCard({ season, theme }) {
 
       {/* --- Torneos jugados --- */}
       <View style={[styles.tournamentsStat, { backgroundColor: theme.colors.surfaceVariant }]}>
-        <MaterialCommunityIcons name="controller-classic-outline" size={22} color={theme.colors.primary} />
-        <Text style={{ marginLeft: SPACING.s, color: theme.colors.onSurface, fontWeight: "700", fontSize: 15 }}>
+        <MaterialCommunityIcons name="controller-classic-outline" size={scale(22)} color={theme.colors.primary} />
+        <Text style={{ marginLeft: SPACING.s, color: theme.colors.onSurface, fontWeight: "700", fontSize: scale(15) }}>
           {season.totalTournaments} {season.totalTournaments === 1 ? "torneo jugado" : "torneos jugados"} en total
         </Text>
       </View>
 
       {/* --- Tabla de posiciones: jugadores --- */}
       <View style={styles.sectionHeader}>
-        <MaterialCommunityIcons name="podium-gold" size={17} color={theme.colors.primary} />
+        <MaterialCommunityIcons name="podium-gold" size={scale(17)} color={theme.colors.primary} />
         <Text style={styles.sectionTitle}>
           <Text style={{ color: theme.colors.primary }}>Tabla de posiciones</Text>
           <Text style={{ color: theme.colors.onSurface }}> — Jugadores</Text>
@@ -78,15 +79,15 @@ function SeasonCard({ season, theme }) {
           <View key={p.uid} style={[styles.posRow, { backgroundColor: theme.colors.surfaceVariant }]}>
             <View style={styles.posIconWrap}>
               {pos.icon ? (
-                <MaterialCommunityIcons name={pos.icon} size={22} color={pos.color} />
+                <MaterialCommunityIcons name={pos.icon} size={scale(22)} color={pos.color} />
               ) : (
-                <Text style={{ fontWeight: "800", color: pos.color, fontSize: 13 }}>{index + 1}°</Text>
+                <Text style={{ fontWeight: "800", color: pos.color, fontSize: scale(13) }}>{index + 1}°</Text>
               )}
             </View>
-            <Avatar.Image size={34} source={{ uri: p.photoURL }} style={{ marginRight: SPACING.s }} />
+            <Avatar.Image size={scale(34)} source={{ uri: p.photoURL }} style={{ marginRight: SPACING.s }} />
             <View style={{ flex: 1 }}>
-              <Text style={{ color: theme.colors.onSurface, fontSize: 14, fontWeight: "700" }} numberOfLines={1}>{p.playerName}</Text>
-              <Text style={{ color: theme.colors.onSurfaceVariant, fontSize: 11 }} numberOfLines={1}>{pos.label}</Text>
+              <Text style={{ color: theme.colors.onSurface, fontSize: scale(14), fontWeight: "700" }} numberOfLines={1}>{p.playerName}</Text>
+              <Text style={{ color: theme.colors.onSurfaceVariant, fontSize: scale(11) }} numberOfLines={1}>{pos.label}</Text>
             </View>
           </View>
         );
@@ -96,7 +97,7 @@ function SeasonCard({ season, theme }) {
       {season.topCharacters?.length > 0 && (
         <>
           <View style={[styles.sectionHeader, { marginTop: SPACING.l }]}>
-            <MaterialCommunityIcons name="sword-cross" size={17} color={theme.colors.primary} />
+            <MaterialCommunityIcons name="sword-cross" size={scale(17)} color={theme.colors.primary} />
             <Text style={styles.sectionTitle}>
               <Text style={{ color: theme.colors.primary }}>Tabla de posiciones</Text>
               <Text style={{ color: theme.colors.onSurface }}> — Personajes</Text>
@@ -108,21 +109,21 @@ function SeasonCard({ season, theme }) {
               <View key={c.charId} style={[styles.posRow, { backgroundColor: theme.colors.surfaceVariant }]}>
                 <View style={styles.posIconWrap}>
                   {pos.icon ? (
-                    <MaterialCommunityIcons name={pos.icon} size={22} color={pos.color} />
+                    <MaterialCommunityIcons name={pos.icon} size={scale(22)} color={pos.color} />
                   ) : (
-                    <Text style={{ fontWeight: "800", color: pos.color, fontSize: 13 }}>{index + 1}°</Text>
+                    <Text style={{ fontWeight: "800", color: pos.color, fontSize: scale(13) }}>{index + 1}°</Text>
                   )}
                 </View>
                 {c.characterIcon ? (
                   <Image source={{ uri: c.characterIcon }} style={styles.charIcon} />
                 ) : (
                   <View style={[styles.charIcon, { backgroundColor: theme.colors.outline, alignItems: "center", justifyContent: "center" }]}>
-                    <MaterialCommunityIcons name="sword-cross" size={16} color={theme.colors.onSurfaceVariant} />
+                    <MaterialCommunityIcons name="sword-cross" size={scale(16)} color={theme.colors.onSurfaceVariant} />
                   </View>
                 )}
                 <View style={{ flex: 1, marginLeft: SPACING.s }}>
-                  <Text style={{ color: theme.colors.onSurface, fontSize: 14, fontWeight: "700" }} numberOfLines={1}>{c.characterName}</Text>
-                  <Text style={{ fontSize: 11, color: theme.colors.onSurfaceVariant }} numberOfLines={1}>{pos.label} · usado por {c.topPlayerName}</Text>
+                  <Text style={{ color: theme.colors.onSurface, fontSize: scale(14), fontWeight: "700" }} numberOfLines={1}>{c.characterName}</Text>
+                  <Text style={{ fontSize: scale(11), color: theme.colors.onSurfaceVariant }} numberOfLines={1}>{pos.label} · usado por {c.topPlayerName}</Text>
                 </View>
               </View>
             );
@@ -132,37 +133,37 @@ function SeasonCard({ season, theme }) {
 
       {/* --- Estadísticas individuales --- */}
       <View style={[styles.sectionHeader, { marginTop: SPACING.l }]}>
-        <MaterialCommunityIcons name="chart-box-outline" size={17} color={theme.colors.primary} />
+        <MaterialCommunityIcons name="chart-box-outline" size={scale(17)} color={theme.colors.primary} />
         <Text style={[styles.sectionTitle, { color: theme.colors.primary }]}>Estadísticas individuales</Text>
       </View>
       {(season.players || []).map((p) => (
         <View key={p.uid} style={[styles.statRow, { backgroundColor: theme.colors.surfaceVariant }]}>
-          <Avatar.Image size={38} source={{ uri: p.photoURL }} style={{ marginRight: SPACING.s }} />
+          <Avatar.Image size={scale(38)} source={{ uri: p.photoURL }} style={{ marginRight: SPACING.s }} />
           <View style={{ flex: 1 }}>
-            <Text style={{ color: theme.colors.onSurface, fontSize: 14, fontWeight: "700" }} numberOfLines={1}>{p.playerName}</Text>
+            <Text style={{ color: theme.colors.onSurface, fontSize: scale(14), fontWeight: "700" }} numberOfLines={1}>{p.playerName}</Text>
             <View style={styles.statLineRow}>
-              <MaterialCommunityIcons name="trophy-outline" size={13} color={theme.colors.primary} />
-              <Text style={{ fontSize: 12, color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
+              <MaterialCommunityIcons name="trophy-outline" size={scale(13)} color={theme.colors.primary} />
+              <Text style={{ fontSize: scale(12), color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
                 {p.won} {p.won === 1 ? "torneo ganado" : "torneos ganados"}
               </Text>
             </View>
             <View style={styles.statLineRow}>
-              <MaterialCommunityIcons name="sword-cross" size={13} color={theme.colors.primary} />
-              <Text style={{ fontSize: 12, color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
+              <MaterialCommunityIcons name="sword-cross" size={scale(13)} color={theme.colors.primary} />
+              <Text style={{ fontSize: scale(12), color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
                 {p.roundsWon} {p.roundsWon === 1 ? "pelea ganada" : "peleas ganadas"}
               </Text>
             </View>
           </View>
           {p.bestCharacterName && (
             <View style={styles.statBestChar}>
-              <Text style={{ fontSize: 10, color: theme.colors.onSurfaceVariant, marginBottom: 3 }}>Mejor personaje</Text>
+              <Text style={{ fontSize: scale(10), color: theme.colors.onSurfaceVariant, marginBottom: 3 }}>Mejor personaje</Text>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 {p.bestCharacterIcon ? (
                   <Image source={{ uri: p.bestCharacterIcon }} style={styles.statCharIcon} />
                 ) : (
                   <View style={[styles.statCharIcon, { backgroundColor: theme.colors.outline }]} />
                 )}
-                <Text style={{ fontSize: 12, fontWeight: "700", color: theme.colors.onSurface, marginLeft: 5 }} numberOfLines={1}>
+                <Text style={{ fontSize: scale(12), fontWeight: "700", color: theme.colors.onSurface, marginLeft: 5 }} numberOfLines={1}>
                   {p.bestCharacterName}
                 </Text>
               </View>
@@ -178,16 +179,16 @@ function SeasonCard({ season, theme }) {
       <Pressable onPress={toggle}>
         <View style={styles.cardHeader}>
           <View style={[styles.seasonIconWrap, { backgroundColor: `${info.color}26` }]}>
-            <MaterialCommunityIcons name={info.icon} size={22} color={info.color} />
+            <MaterialCommunityIcons name={info.icon} size={scale(22)} color={info.color} />
           </View>
           <View style={{ flex: 1, marginLeft: SPACING.m }}>
             <Text variant="titleMedium" style={{ color: theme.colors.onSurface, fontWeight: "800" }}>{season.seasonLabel}</Text>
-            <Text style={{ fontSize: 11, color: theme.colors.onSurfaceVariant }}>
+            <Text style={{ fontSize: scale(11), color: theme.colors.onSurfaceVariant }}>
               {formatDate(season.start)} — {formatDate(season.end)}
             </Text>
           </View>
           <Animated.View style={{ transform: [{ rotate: chevronRotate }] }}>
-            <MaterialCommunityIcons name="chevron-down" size={26} color={theme.colors.primary} />
+            <MaterialCommunityIcons name="chevron-down" size={scale(26)} color={theme.colors.primary} />
           </Animated.View>
         </View>
 
@@ -195,8 +196,8 @@ function SeasonCard({ season, theme }) {
           {champion && (
             <View style={[styles.summaryBoxMain, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.colors.primary }]}>
               <Text style={[styles.summaryLabel, { color: theme.colors.primary }]}>GANADOR</Text>
-              <Avatar.Image size={48} source={{ uri: champion.photoURL }} style={{ marginTop: SPACING.xs }} />
-              <Text style={{ color: theme.colors.onSurface, fontWeight: "800", fontSize: 13, marginTop: SPACING.xs }} numberOfLines={1}>
+              <Avatar.Image size={scale(48)} source={{ uri: champion.photoURL }} style={{ marginTop: SPACING.xs }} />
+              <Text style={{ color: theme.colors.onSurface, fontWeight: "800", fontSize: scale(13), marginTop: SPACING.xs }} numberOfLines={1}>
                 {champion.playerName}
               </Text>
             </View>
@@ -209,10 +210,10 @@ function SeasonCard({ season, theme }) {
                 <Image source={{ uri: topCharacter.characterIcon }} style={[styles.summaryCharIconMain, { marginTop: SPACING.xs }]} />
               ) : (
                 <View style={[styles.summaryCharIconMain, { marginTop: SPACING.xs, backgroundColor: theme.colors.outline, alignItems: "center", justifyContent: "center" }]}>
-                  <MaterialCommunityIcons name="sword-cross" size={22} color={theme.colors.primary} />
+                  <MaterialCommunityIcons name="sword-cross" size={scale(22)} color={theme.colors.primary} />
                 </View>
               )}
-              <Text style={{ color: theme.colors.onSurface, fontWeight: "800", fontSize: 13, marginTop: SPACING.xs }} numberOfLines={1}>
+              <Text style={{ color: theme.colors.onSurface, fontWeight: "800", fontSize: scale(13), marginTop: SPACING.xs }} numberOfLines={1}>
                 {topCharacter.topPlayerName}
               </Text>
             </View>
@@ -273,12 +274,12 @@ export default function SeasonHistoryScreen({ navigation }) {
       {loading ? (
         <View>
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} height={190} radius={RADIUS.lg} style={{ marginBottom: SPACING.m }} />
+            <Skeleton key={i} height={scale(190)} radius={RADIUS.lg} style={{ marginBottom: SPACING.m }} />
           ))}
         </View>
       ) : seasons.length === 0 ? (
         <View style={styles.emptyState}>
-          <MaterialCommunityIcons name="calendar-clock-outline" size={40} color={theme.colors.onSurfaceVariant} />
+          <MaterialCommunityIcons name="calendar-clock-outline" size={scale(40)} color={theme.colors.onSurfaceVariant} />
           <Text variant="titleMedium" style={{ color: theme.colors.onBackground, marginTop: SPACING.m, textAlign: "center" }}>
             Todavía no terminó ninguna temporada
           </Text>
@@ -296,12 +297,12 @@ export default function SeasonHistoryScreen({ navigation }) {
 const styles = StyleSheet.create({
   card: { borderRadius: RADIUS.lg, borderWidth: 1, padding: SPACING.m, marginBottom: SPACING.m, overflow: "hidden" },
   cardHeader: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.m },
-  seasonIconWrap: { width: 42, height: 42, borderRadius: RADIUS.sm, alignItems: "center", justifyContent: "center" },
+  seasonIconWrap: { width: scale(42), height: scale(42), borderRadius: RADIUS.sm, alignItems: "center", justifyContent: "center" },
 
   summaryRow: { flexDirection: "row", gap: SPACING.s },
   summaryBoxMain: {
     flex: 1.25,
-    height: 108,
+    height: scale(108),
     alignItems: "center",
     justifyContent: "center",
     borderRadius: RADIUS.lg,
@@ -310,16 +311,16 @@ const styles = StyleSheet.create({
   },
   summaryBoxSmall: {
     flex: 0.7,
-    height: 108,
+    height: scale(108),
     alignItems: "center",
     justifyContent: "center",
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     paddingHorizontal: SPACING.xs,
   },
-  summaryLabel: { fontSize: 9, fontWeight: "800", letterSpacing: 0.4 },
-  summaryCharIconMain: { width: 48, height: 48, borderRadius: RADIUS.md },
-  summaryInsigniaSmall: { width: 30, height: 30 },
+  summaryLabel: { fontSize: scale(9), fontWeight: "800", letterSpacing: 0.4 },
+  summaryCharIconMain: { width: scale(48), height: scale(48), borderRadius: RADIUS.md },
+  summaryInsigniaSmall: { width: scale(30), height: scale(30) },
 
   measureHelper: { position: "absolute", top: 0, left: 0, right: 0, opacity: 0, zIndex: -1 },
 
@@ -332,14 +333,14 @@ const styles = StyleSheet.create({
   },
 
   sectionHeader: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.s },
-  sectionTitle: { fontWeight: "800", fontSize: 13, marginLeft: SPACING.xs },
+  sectionTitle: { fontWeight: "800", fontSize: scale(13), marginLeft: SPACING.xs },
 
   posRow: {
     flexDirection: "row", alignItems: "center",
     borderRadius: RADIUS.md, padding: SPACING.s, marginBottom: SPACING.s,
   },
-  posIconWrap: { width: 30, alignItems: "center", justifyContent: "center", marginRight: SPACING.xs },
-  charIcon: { width: 34, height: 34, borderRadius: RADIUS.sm },
+  posIconWrap: { width: scale(30), alignItems: "center", justifyContent: "center", marginRight: SPACING.xs },
+  charIcon: { width: scale(34), height: scale(34), borderRadius: RADIUS.sm },
 
   statRow: {
     flexDirection: "row", alignItems: "center",
@@ -347,7 +348,7 @@ const styles = StyleSheet.create({
   },
   statLineRow: { flexDirection: "row", alignItems: "center", marginTop: 3 },
   statBestChar: { alignItems: "flex-end" },
-  statCharIcon: { width: 22, height: 22, borderRadius: RADIUS.sm },
+  statCharIcon: { width: scale(22), height: scale(22), borderRadius: RADIUS.sm },
 
   emptyState: { alignItems: "center", paddingVertical: SPACING.xxxl, paddingHorizontal: SPACING.xl },
 });

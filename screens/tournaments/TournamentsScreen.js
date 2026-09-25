@@ -6,6 +6,7 @@ import { Button, Text, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { listenActiveTournament } from "../../services/firestoreService";
 import { RADIUS, SPACING } from "../../theme";
+import { scale } from "../../utils/responsive";
 import { Skeleton } from "../../components/Skeleton";
 
 //JS:
@@ -70,9 +71,9 @@ export default function TournamentsScreen({ navigation }) {
           { backgroundColor: theme.colors.background, paddingHorizontal: SPACING.xxl, paddingTop: insets.top },
         ]}
       >
-        <Skeleton width={84} height={84} radius={RADIUS.xl} style={{ marginBottom: SPACING.l }} />
-        <Skeleton width="70%" height={20} style={{ marginBottom: SPACING.s }} />
-        <Skeleton width="90%" height={14} />
+        <Skeleton width={scale(84)} height={scale(84)} radius={RADIUS.xl} style={{ marginBottom: SPACING.l }} />
+        <Skeleton width="70%" height={scale(20)} style={{ marginBottom: SPACING.s }} />
+        <Skeleton width="90%" height={scale(14)} />
       </View>
     );
   }
@@ -119,19 +120,19 @@ export default function TournamentsScreen({ navigation }) {
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   logoArea: {
-    width: 190,
-    height: 190,
+    width: scale(190),
+    height: scale(190),
     alignItems: "center",
     justifyContent: "center",
     marginBottom: SPACING.xs,
   },
   logoHalo: {
     position: "absolute",
-    width: 140,
-    height: 140,
-    borderRadius: 70,
+    width: scale(140),
+    height: scale(140),
+    borderRadius: scale(70),
     opacity: 0.6,
   },
-  logo: { width: 168, height: 168 },
+  logo: { width: scale(168), height: scale(168) },
   bigButton: { borderRadius: RADIUS.pill, width: "100%" },
 });

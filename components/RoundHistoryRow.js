@@ -6,6 +6,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
 import { listenRoundReactions, setRoundReaction } from "../services/firestoreService";
 import { RADIUS, SPACING } from "../theme";
+import { scale } from "../utils/responsive";
 
 //JS:
 export default function RoundHistoryRow({ tournamentId, round, winnerName, canEdit, onEdit, readOnlyReactions }) {
@@ -33,7 +34,7 @@ export default function RoundHistoryRow({ tournamentId, round, winnerName, canEd
   return (
     <View style={[styles.row, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
       <View style={[styles.roundBadge, { backgroundColor: theme.colors.primaryContainer }]}>
-        <Text style={{ fontFamily: "Rajdhani_700Bold", fontSize: 15, color: theme.colors.primary }}>
+        <Text style={{ fontFamily: "Rajdhani_700Bold", fontSize: scale(15), color: theme.colors.primary }}>
           {round.roundNumber}
         </Text>
       </View>
@@ -48,11 +49,11 @@ export default function RoundHistoryRow({ tournamentId, round, winnerName, canEd
         {readOnlyReactions ? (
           <>
             <View style={[styles.reactionPill, { backgroundColor: theme.colors.surfaceVariant }]}>
-              <MaterialCommunityIcons name="thumb-up-outline" size={14} color={theme.colors.onSurfaceVariant} />
+              <MaterialCommunityIcons name="thumb-up-outline" size={scale(14)} color={theme.colors.onSurfaceVariant} />
               <Text style={[styles.count, { color: theme.colors.onSurfaceVariant }]}>{reactions.likes}</Text>
             </View>
             <View style={[styles.reactionPill, { backgroundColor: theme.colors.surfaceVariant }]}>
-              <MaterialCommunityIcons name="thumb-down-outline" size={14} color={theme.colors.onSurfaceVariant} />
+              <MaterialCommunityIcons name="thumb-down-outline" size={scale(14)} color={theme.colors.onSurfaceVariant} />
               <Text style={[styles.count, { color: theme.colors.onSurfaceVariant }]}>{reactions.dislikes}</Text>
             </View>
           </>
@@ -67,7 +68,7 @@ export default function RoundHistoryRow({ tournamentId, round, winnerName, canEd
             >
               <MaterialCommunityIcons
                 name={myReaction === "like" ? "thumb-up" : "thumb-up-outline"}
-                size={14}
+                size={scale(14)}
                 color={myReaction === "like" ? theme.colors.primary : theme.colors.onSurfaceVariant}
               />
               <Text style={[styles.count, { color: myReaction === "like" ? theme.colors.primary : theme.colors.onSurfaceVariant }]}>
@@ -83,7 +84,7 @@ export default function RoundHistoryRow({ tournamentId, round, winnerName, canEd
             >
               <MaterialCommunityIcons
                 name={myReaction === "dislike" ? "thumb-down" : "thumb-down-outline"}
-                size={14}
+                size={scale(14)}
                 color={myReaction === "dislike" ? theme.colors.error : theme.colors.onSurfaceVariant}
               />
               <Text style={[styles.count, { color: myReaction === "dislike" ? theme.colors.error : theme.colors.onSurfaceVariant }]}>
@@ -97,7 +98,7 @@ export default function RoundHistoryRow({ tournamentId, round, winnerName, canEd
       {canEdit && (
         <IconButton
           icon="pencil-outline"
-          size={16}
+          size={scale(16)}
           iconColor={theme.colors.onSurfaceVariant}
           onPress={onEdit}
           style={styles.editButton}
@@ -111,7 +112,7 @@ export function EmptyRoundHistory() {
   const theme = useTheme();
   return (
     <View style={[emptyStyles.container, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.colors.outline }]}>
-      <MaterialCommunityIcons name="sword-cross" size={26} color={theme.colors.onSurfaceVariant} />
+      <MaterialCommunityIcons name="sword-cross" size={scale(26)} color={theme.colors.onSurfaceVariant} />
       <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginTop: SPACING.xs, textAlign: "center" }}>
         Todavía no se jugó ninguna ronda
       </Text>
@@ -130,7 +131,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.s,
   },
   roundBadge: {
-    width: 32, height: 32, borderRadius: RADIUS.pill,
+    width: scale(32), height: scale(32), borderRadius: RADIUS.pill,
     alignItems: "center", justifyContent: "center",
   },
   reactions: { flexDirection: "row" },
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     marginLeft: SPACING.xs,
   },
-  count: { marginLeft: 4, fontSize: 12, fontFamily: "Rajdhani_700Bold" },
+  count: { marginLeft: 4, fontSize: scale(12), fontFamily: "Rajdhani_700Bold" },
   editButton: { margin: 0, marginLeft: SPACING.xs },
 });
 

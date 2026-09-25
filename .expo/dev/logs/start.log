@@ -973,3 +973,159 @@
 {"_e":"metro:client_log","_t":1789959862898,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
 {"_e":"metro:client_log","_t":1789959983973,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
 {"_e":"metro:client_log","_t":1789959984222,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"root:init","_t":1790041449888,"format":"v0-jsonl","version":"57.0.24"}
+{"_e":"env:mode","_t":1790041449890,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1790041449894,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1790041450755,"mode":"development","web":false,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1790041451473,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1790041452035,"plugins":[]}
+{"_e":"metro:instantiate","_t":1790041465417,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1790041489767,"id":"5","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1790041489767,"id":"5","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790041489772,"id":"5","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790041489872,"id":"5","progress":0.03853223593964335,"total":270,"current":53}
+{"_e":"metro:bundling:progress","_t":1790041489973,"id":"5","progress":0.20323837678043538,"total":488,"current":220}
+{"_e":"metro:bundling:progress","_t":1790041490073,"id":"5","progress":0.28454560722285505,"total":703,"current":375}
+{"_e":"metro:bundling:progress","_t":1790041490173,"id":"5","progress":0.38469529478458053,"total":840,"current":521}
+{"_e":"metro:bundling:progress","_t":1790041490273,"id":"5","progress":0.6753425197340313,"total":982,"current":807}
+{"_e":"metro:bundling:progress","_t":1790041490379,"id":"5","progress":0.758791788339116,"total":1086,"current":946}
+{"_e":"metro:bundling:progress","_t":1790041490478,"id":"5","progress":0.8259354194486981,"total":1294,"current":1176}
+{"_e":"metro:bundling:progress","_t":1790041490578,"id":"5","progress":0.9145364535405187,"total":1465,"current":1401}
+{"_e":"metro:bundling:done","_t":1790041490690,"id":"5","total":1465,"ms":922.9926}
+{"_e":"metro:client_log","_t":1790041503942,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:bundling:started","_t":1790041515829,"id":"b","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1790041515829,"id":"b","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1790041515889,"id":"b","total":1,"ms":59.5258}
+{"_e":"metro:client_log","_t":1790041521769,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1790041588631,"level":"warn","data":["[2026-09-22T01:46:27.528Z]  @firebase/firestore:","Firestore (10.14.1): WebChannelConnection","RPC 'Listen' stream 0x2b792e96 transport errored:","{\"defaultPrevented\": false, \"g\": {\"C\": undefined, \"F\": null, \"M\": [Circular], \"g\": {\"A\": null, \"Aa\": 14, \"B\": 0, \"C\": null, \"Ca\": false, \"D\": \"gsessionid\", \"Da\": [Hc], \"F\": true, \"G\": 0, \"H\": [Object], \"I\": [T], \"J\": true, \"K\": \"uoSKa0D-iCyx3hiSkFMpFQ\", \"L\": 45000, \"M\": true, \"O\": true, \"P\": false, \"R\": 526, \"S\": [Object], \"T\": 254, \"Ta\": 5000, \"U\": 1812, \"Ua\": false, \"Va\": false, \"W\": \"https://firestore.googleapis.com/google.firestore.v1.Firestore/Listen/channel\", \"Wa\": 2, \"X\": true, \"Xa\": undefined, \"Y\": 1, \"Ya\": 37, \"ba\": true, \"ca\": undefined, \"cb\": 10000, \"g\": null, \"h\": [ic], \"i\": [Array], \"ia\": \"\", \"j\": [vb], \"ja\": undefined, \"ka\": null, \"l\": [Z], \"la\": 8, \"m\": null, \"o\": null, \"pa\": undefined, \"qa\": [T], \"s\": null, \"u\": null, \"v\": 0, \"wa\": 600000, \"ya\": \"_ikI9JTtiQz2gLAot0xH2_HCkbE3bTE5RgS-VSwDXVUdZnw3CzEZ0w\", \"za\": 250}, \"h\": {\"database\": \"projects/smash33-a4b76/databases/(default)\"}, \"i\": {\"g\": [Object], \"h\": 4, \"src\": [Circular]}, \"j\": {\"g\": [Circular]}, \"l\": \"https://firestore.googleapis.com/google.firestore.v1.Firestore/Listen/channel\", \"s\": false, \"u\": true, \"v\": true}, \"status\": 1, \"target\": {\"C\": undefined, \"F\": null, \"M\": [Circular], \"g\": {\"A\": null, \"Aa\": 14, \"B\": 0, \"C\": null, \"Ca\": false, \"D\": \"gsessionid\", \"Da\": [Hc], \"F\": true, \"G\": 0, \"H\": [Object], \"I\": [T], \"J\": true, \"K\": \"uoSKa0D-iCyx3hiSkFMpFQ\", \"L\": 45000, \"M\": true, \"O\": true, \"P\": false, \"R\": 526, \"S\": [Object], \"T\": 254, \"Ta\": 5000, \"U\": 1812, \"Ua\": false, \"Va\": false, \"W\": \"https://firestore.googleapis.com/google.firestore.v1.Firestore/Listen/channel\", \"Wa\": 2, \"X\": true, \"Xa\": undefined, \"Y\": 1, \"Ya\": 37, \"ba\": true, \"ca\": undefined, \"cb\": 10000, \"g\": null, \"h\": [ic], \"i\": [Array], \"ia\": \"\", \"j\": [vb], \"ja\": undefined, \"ka\": null, \"l\": [Z], \"la\": 8, \"m\": null, \"o\": null, \"pa\": undefined, \"qa\": [T], \"s\": null, \"u\": null, \"v\": 0, \"wa\": 600000, \"ya\": \"_ikI9JTtiQz2gLAot0xH2_HCkbE3bTE5RgS-VSwDXVUdZnw3CzEZ0w\", \"za\": 250}, \"h\": {\"database\": \"projects/smash33-a4b76/databases/(default)\"}, \"i\": {\"g\": [Object], \"h\": 4, \"src\": [Circular]}, \"j\": {\"g\": [Circular]}, \"l\": \"https://firestore.googleapis.com/google.firestore.v1.Firestore/Listen/channel\", \"s\": false, \"u\": true, \"v\": true}, \"type\": \"c\"}"]}
+{"_e":"metro:client_log","_t":1790043186195,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1790044075838,"level":"error","data":["[ReferenceError: Property 's' doesn't exist]"]}
+{"_e":"metro:client_log","_t":1790044076020,"level":"error","data":["[ReferenceError: Property 's' doesn't exist]"]}
+{"_e":"metro:server_log","_t":1790044700225,"level":"error","data":["[timeout] connection terminated with Device for app='%s' on device='%s' after not responding for %s seconds.","host.exp.exponent","TB311FU - 16 - API 36","60"]}
+{"_e":"root:init","_t":1790044723907,"format":"v0-jsonl","version":"57.0.24"}
+{"_e":"env:mode","_t":1790044723908,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1790044723912,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1790044724630,"mode":"development","web":false,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1790044725199,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1790044725581,"plugins":[]}
+{"_e":"metro:instantiate","_t":1790044738537,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1790044753121,"id":"8","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1790044753121,"id":"8","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790044753124,"id":"8","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790044753225,"id":"8","progress":0.04752098274685409,"total":289,"current":63}
+{"_e":"metro:bundling:progress","_t":1790044753325,"id":"8","progress":0.20046372481511307,"total":507,"current":227}
+{"_e":"metro:bundling:progress","_t":1790044753432,"id":"8","progress":0.29085564803805,"total":725,"current":391}
+{"_e":"metro:bundling:progress","_t":1790044753532,"id":"8","progress":0.4499545511930311,"total":890,"current":597}
+{"_e":"metro:bundling:progress","_t":1790044753632,"id":"8","progress":0.6190574351310264,"total":985,"current":775}
+{"_e":"metro:bundling:progress","_t":1790044753732,"id":"8","progress":0.7029025829081633,"total":1120,"current":939}
+{"_e":"metro:bundling:progress","_t":1790044753835,"id":"8","progress":0.8259354194486981,"total":1294,"current":1176}
+{"_e":"metro:bundling:started","_t":1790044753861,"id":"a","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1790044753861,"id":"8","progress":0.8259354194486981,"total":1294,"current":1176}
+{"_e":"metro:bundling:progress","_t":1790044753861,"id":"a","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790044753935,"id":"8","progress":0.8532426400255075,"total":1455,"current":1344}
+{"_e":"metro:bundling:progress","_t":1790044753935,"id":"a","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1790044754094,"id":"8","total":1455,"ms":973.7019}
+{"_e":"metro:bundling:progress","_t":1790044754094,"id":"a","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1790044754126,"id":"a","total":1,"ms":264.2487}
+{"_e":"metro:client_log","_t":1790044761328,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1790044767823,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"root:init","_t":1790047061360,"format":"v0-jsonl","version":"57.0.24"}
+{"_e":"env:mode","_t":1790047061361,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1790047061365,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1790047062080,"mode":"development","web":false,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1790047062647,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1790047062984,"plugins":[]}
+{"_e":"metro:instantiate","_t":1790047076001,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1790047087447,"id":"4","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1790047087448,"id":"4","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790047087451,"id":"4","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790047087551,"id":"4","progress":0.02493074792243767,"total":247,"current":39}
+{"_e":"metro:bundling:progress","_t":1790047087651,"id":"4","progress":0.15613837599715413,"total":453,"current":179}
+{"_e":"metro:bundling:progress","_t":1790047087751,"id":"4","progress":0.2581175547547745,"total":683,"current":347}
+{"_e":"metro:bundling:progress","_t":1790047087851,"id":"4","progress":0.3802777777777778,"total":840,"current":518}
+{"_e":"metro:bundling:progress","_t":1790047087951,"id":"4","progress":0.7011645997782447,"total":953,"current":798}
+{"_e":"metro:bundling:progress","_t":1790047088051,"id":"4","progress":0.7476038582460852,"total":1086,"current":939}
+{"_e":"metro:bundling:progress","_t":1790047088154,"id":"4","progress":0.7483292204964437,"total":1245,"current":1077}
+{"_e":"metro:bundling:progress","_t":1790047088257,"id":"4","progress":0.8235530702553467,"total":1427,"current":1295}
+{"_e":"metro:bundling:done","_t":1790047088415,"id":"4","total":1427,"ms":967.4371}
+{"_e":"metro:bundling:started","_t":1790047089406,"id":"6","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1790047089406,"id":"6","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1790047089461,"id":"6","total":1,"ms":54.912}
+{"_e":"metro:client_log","_t":1790047096304,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1790047102910,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"root:init","_t":1790097665988,"format":"v0-jsonl","version":"57.0.24"}
+{"_e":"env:mode","_t":1790097665990,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1790097665995,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1790097666906,"mode":"development","web":false,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1790097667602,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1790097668001,"plugins":[]}
+{"_e":"metro:instantiate","_t":1790097680967,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1790097822434,"id":"7","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1790097822435,"id":"7","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790097822438,"id":"7","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790097822538,"id":"7","progress":0.0282135009765625,"total":256,"current":43}
+{"_e":"metro:bundling:progress","_t":1790097822638,"id":"7","progress":0.16201890747992564,"total":477,"current":192}
+{"_e":"metro:bundling:progress","_t":1790097822738,"id":"7","progress":0.2551965945859852,"total":677,"current":342}
+{"_e":"metro:bundling:progress","_t":1790097822839,"id":"7","progress":0.36898697053851554,"total":833,"current":506}
+{"_e":"metro:bundling:progress","_t":1790097822938,"id":"7","progress":0.6575546515450361,"total":936,"current":759}
+{"_e":"metro:bundling:progress","_t":1790097823038,"id":"7","progress":0.7335750261522881,"total":1094,"current":937}
+{"_e":"metro:bundling:progress","_t":1790097823138,"id":"7","progress":0.7453629511688259,"total":1244,"current":1074}
+{"_e":"metro:bundling:progress","_t":1790097823238,"id":"7","progress":0.8221631334719466,"total":1426,"current":1293}
+{"_e":"metro:bundling:done","_t":1790097823390,"id":"7","total":1426,"ms":955.3131}
+{"_e":"metro:bundling:started","_t":1790097826558,"id":"a","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1790097826558,"id":"a","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1790097826617,"id":"a","total":1,"ms":59.2211}
+{"_e":"metro:client_log","_t":1790097832876,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1790097836845,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"root:init","_t":1790354651213,"format":"v0-jsonl","version":"57.0.24"}
+{"_e":"env:mode","_t":1790354651215,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1790354651219,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1790354652072,"mode":"development","web":false,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1790354652758,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1790354653546,"plugins":[]}
+{"_e":"metro:instantiate","_t":1790354666302,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1790354681808,"id":"5","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1790354681809,"id":"5","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790354681812,"id":"5","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790354681911,"id":"5","progress":0.03242759207880096,"total":261,"current":47}
+{"_e":"metro:bundling:progress","_t":1790354682011,"id":"5","progress":0.16099947700779305,"total":481,"current":193}
+{"_e":"metro:bundling:progress","_t":1790354682111,"id":"5","progress":0.24925760991237036,"total":673,"current":336}
+{"_e":"metro:bundling:progress","_t":1790354682211,"id":"5","progress":0.3695590290357642,"total":834,"current":507}
+{"_e":"metro:bundling:progress","_t":1790354682311,"id":"5","progress":0.6746208582704969,"total":946,"current":777}
+{"_e":"metro:bundling:progress","_t":1790354682411,"id":"5","progress":0.758791788339116,"total":1086,"current":946}
+{"_e":"metro:bundling:progress","_t":1790354682511,"id":"5","progress":0.7638703884533234,"total":1246,"current":1089}
+{"_e":"metro:bundling:progress","_t":1790354682611,"id":"5","progress":0.821011241307274,"total":1427,"current":1293}
+{"_e":"metro:bundling:done","_t":1790354682758,"id":"5","total":1427,"ms":949.4228}
+{"_e":"metro:bundling:started","_t":1790354690261,"id":"a","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1790354690261,"id":"a","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1790354690318,"id":"a","total":1,"ms":57.6137}
+{"_e":"metro:client_log","_t":1790354695920,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1790354698155,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:bundling:failed","_t":1790355454699,"id":null,"message":"SyntaxError: C:\\Users\\Aure\\Desktop\\Programación\\Propios\\smash-tracker\\screens\\more\\WorldRankingScreen.js: Unexpected token, expected \",\" (1096:121)\n\n  1094 |   endedDuoRow: { flexDirection: \"row\", justifyContent: \"center\", gap: SPACING.xl, marginTop: SPACING.l, width: \"100%\" },\n  1095 |   endedDuoCol: { alignItems: \"center\", flex: 1 },\n> 1096 |   endedBigLabel: { fontSize: scale(14), fontWeight: \"800\", letterSpacing: 0.6, textAlign: \"center\", marginBottom: SPACING.1, lineHeight: scale(17) },\n       |                                                                                                                          ^\n  1097 |   endedAvatarWrap: { alignItems: \"center\", justifyContent: \"center\" },\n  1098 |   endedPersonGlow: {\n  1099 |     position: \"absolute\",","importStack":null,"filename":"screens\\more\\WorldRankingScreen.js","targetModuleName":null,"originModulePath":null}
+{"_e":"metro:client_log","_t":1790356343633,"level":"error","data":["Text strings must be rendered within a <Text> component."]}
+{"_e":"metro:client_log","_t":1790356344481,"level":"error","data":["Text strings must be rendered within a <Text> component."]}
+{"_e":"metro:client_log","_t":1790356383175,"level":"error","data":["Text strings must be rendered within a <Text> component."]}
+{"_e":"metro:client_log","_t":1790356433538,"level":"error","data":["Text strings must be rendered within a <Text> component."]}
+{"_e":"metro:client_log","_t":1790356439068,"level":"error","data":["Text strings must be rendered within a <Text> component."]}
+{"_e":"root:init","_t":1790358539366,"format":"v0-jsonl","version":"57.0.24"}
+{"_e":"env:mode","_t":1790358539367,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1790358539372,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1790358540084,"mode":"development","web":false,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1790358540650,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1790358540980,"plugins":[]}
+{"_e":"metro:instantiate","_t":1790358553389,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1790358560294,"id":"5","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1790358560295,"id":"5","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790358560297,"id":"5","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790358560397,"id":"5","progress":0.023391003460207616,"total":255,"current":39}
+{"_e":"metro:bundling:progress","_t":1790358560497,"id":"5","progress":0.17084444444444444,"total":450,"current":186}
+{"_e":"metro:bundling:progress","_t":1790358560606,"id":"5","progress":0.26183270066003217,"total":684,"current":350}
+{"_e":"metro:bundling:progress","_t":1790358560706,"id":"5","progress":0.3983472184896534,"total":854,"current":539}
+{"_e":"metro:bundling:progress","_t":1790358560806,"id":"5","progress":0.684194482548392,"total":972,"current":804}
+{"_e":"metro:bundling:progress","_t":1790358560915,"id":"5","progress":0.7579238754325259,"total":1105,"current":962}
+{"_e":"metro:bundling:progress","_t":1790358561015,"id":"5","progress":0.8263166474432911,"total":1275,"current":1159}
+{"_e":"metro:bundling:progress","_t":1790358561115,"id":"5","progress":0.8674927926487179,"total":1443,"current":1344}
+{"_e":"metro:bundling:progress","_t":1790358561217,"id":"5","progress":0.9986472778010733,"total":1478,"current":1477}
+{"_e":"metro:bundling:progress","_t":1790358561932,"id":"5","progress":0.999,"total":1478,"current":1478}
+{"_e":"metro:bundling:done","_t":1790358562033,"id":"5","total":1478,"ms":1738.5911}
+{"_e":"metro:client_log","_t":1790358567894,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}

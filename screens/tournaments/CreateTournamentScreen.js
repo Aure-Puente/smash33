@@ -9,6 +9,7 @@ import { createTournament, getAllUsers, submitRound } from "../../services/fires
 import ScreenHeader from "../../components/ScreenHeader";
 import { SkeletonRow } from "../../components/Skeleton";
 import { RADIUS, SPACING } from "../../theme";
+import { scale } from "../../utils/responsive";
 
 //JS:
 export default function CreateTournamentScreen({ navigation }) {
@@ -39,7 +40,7 @@ export default function CreateTournamentScreen({ navigation }) {
     try {
       const tournamentId = await createTournament({ createdBy: user.uid, roster });
       await submitRound({ tournamentId, roundNumber: 0, winnerUid: null, characters: {} });
-      navigation.replace("TournamentDetail", { tournamentId });
+      navigation.replace("TournamentDetail", { tournamentId, justCreated: true });
     } catch (e) {
       setError(e.message || "No pudimos crear el torneo.");
     } finally {
@@ -97,7 +98,7 @@ export default function CreateTournamentScreen({ navigation }) {
                     },
                   ]}
                 >
-                  <Avatar.Image size={40} source={{ uri: item.photoURL }} />
+                  <Avatar.Image size={scale(40)} source={{ uri: item.photoURL }} />
                   <View style={{ flex: 1, marginLeft: SPACING.m }}>
                     <Text
                       variant="titleSmall"
@@ -116,7 +117,7 @@ export default function CreateTournamentScreen({ navigation }) {
                   </View>
                   <MaterialCommunityIcons
                     name={selected ? "check-circle" : "circle-outline"}
-                    size={24}
+                    size={scale(24)}
                     color={selected ? theme.colors.primary : theme.colors.onSurfaceVariant}
                   />
                 </View>
@@ -156,19 +157,19 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.m,
   },
   logoWrap: {
-    width: 52,
-    height: 52,
+    width: scale(52),
+    height: scale(52),
     alignItems: "center",
     justifyContent: "center",
   },
   logoHalo: {
     position: "absolute",
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: scale(42),
+    height: scale(42),
+    borderRadius: scale(21),
     opacity: 0.6,
   },
-  logo: { width: 46, height: 46 },
+  logo: { width: scale(46), height: scale(46) },
   userRow: {
     flexDirection: "row",
     alignItems: "center",

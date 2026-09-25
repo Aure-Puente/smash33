@@ -2,6 +2,7 @@
 import { FlatList, Image, StyleSheet, View } from "react-native";
 import { IconButton, Modal, Portal, Text, TouchableRipple, useTheme } from "react-native-paper";
 import { RADIUS, SPACING } from "../theme";
+import { scale } from "../utils/responsive";
 
 //JS:
 export default function CharacterPickerModal({
@@ -32,7 +33,7 @@ export default function CharacterPickerModal({
           <Text variant="titleMedium" style={{ color: theme.colors.onSurface, flex: 1 }}>
             {title || "Elegí un personaje"}
           </Text>
-          {onDismiss && <IconButton icon="close" size={20} onPress={onDismiss} />}
+          {onDismiss && <IconButton icon="close" size={scale(20)} onPress={onDismiss} />}
         </View>
 
         <FlatList
@@ -101,16 +102,16 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.xs,
   },
   handle: { alignItems: "center", marginBottom: SPACING.s },
-  handleBar: { width: 40, height: 4, borderRadius: RADIUS.pill },
+  handleBar: { width: scale(40), height: scale(4), borderRadius: RADIUS.pill },
   header: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.s, paddingHorizontal: SPACING.xs },
   item: { flex: 1 / 3, padding: SPACING.xs },
   itemContent: { alignItems: "center", borderRadius: RADIUS.md, paddingVertical: SPACING.s },
-  icon: { width: 56, height: 56, borderRadius: RADIUS.sm, marginBottom: SPACING.xs },
+  icon: { width: scale(56), height: scale(56), borderRadius: RADIUS.sm, marginBottom: SPACING.xs },
   crossOverlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 4, alignItems: "center", justifyContent: "center" },
-  crossText: { fontSize: 28, fontWeight: "bold" },
+  crossText: { fontSize: scale(28), fontWeight: "bold" },
   activeDot: {
     position: "absolute", top: -2, right: -2,
-    width: 14, height: 14, borderRadius: 7, borderWidth: 2,
+    width: scale(14), height: scale(14), borderRadius: scale(7), borderWidth: 2,
   },
-  name: { fontSize: 11, textAlign: "center" },
+  name: { fontSize: scale(11), textAlign: "center" },
 });

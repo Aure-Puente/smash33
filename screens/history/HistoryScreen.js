@@ -11,6 +11,7 @@ import { deleteTournament, getAllUsers, getFinishedTournaments } from "../../ser
 import { getAllCharacters } from "../../services/charactersService";
 import { Skeleton } from "../../components/Skeleton";
 import { RADIUS, SPACING } from "../../theme";
+import { scale } from "../../utils/responsive";
 
 //js:
 const ADMIN_EMAIL = "aurepuente25@gmail.com";
@@ -39,33 +40,33 @@ function HistoryCardSkeleton({ theme }) {
   return (
     <View style={[styles.card, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
       <View style={styles.headerRow2}>
-        <Skeleton width={64} height={64} radius={RADIUS.md} />
+        <Skeleton width={scale(64)} height={scale(64)} radius={RADIUS.md} />
         <View style={{ flex: 1, marginLeft: SPACING.m }}>
-          <Skeleton width="70%" height={20} style={{ marginBottom: SPACING.xs }} />
-          <Skeleton width="45%" height={12} style={{ marginBottom: SPACING.xs }} />
-          <Skeleton width="35%" height={10} />
+          <Skeleton width="70%" height={scale(20)} style={{ marginBottom: SPACING.xs }} />
+          <Skeleton width="45%" height={scale(12)} style={{ marginBottom: SPACING.xs }} />
+          <Skeleton width="35%" height={scale(10)} />
         </View>
-        <Skeleton width={92} height={26} radius={RADIUS.pill} />
+        <Skeleton width={scale(92)} height={scale(26)} radius={RADIUS.pill} />
       </View>
       <View style={[styles.divider, { backgroundColor: theme.colors.outline }]} />
       <View style={styles.standingsRow}>
-        <Skeleton width={54} height={26} radius={RADIUS.pill} />
-        <Skeleton width={54} height={26} radius={RADIUS.pill} />
-        <Skeleton width={54} height={26} radius={RADIUS.pill} />
-        <Skeleton width={54} height={26} radius={RADIUS.pill} />
+        <Skeleton width={scale(54)} height={scale(26)} radius={RADIUS.pill} />
+        <Skeleton width={scale(54)} height={scale(26)} radius={RADIUS.pill} />
+        <Skeleton width={scale(54)} height={scale(26)} radius={RADIUS.pill} />
+        <Skeleton width={scale(54)} height={scale(26)} radius={RADIUS.pill} />
       </View>
     </View>
   );
 }
 
 function HistoryCard({ item, theme, charById, isAdmin, onPress, onDeletePress }) {
-  const scale = useRef(new Animated.Value(1)).current;
+  const pressScale = useRef(new Animated.Value(1)).current;
 
   function pressIn() {
-    Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, speed: 40, bounciness: 0 }).start();
+    Animated.spring(pressScale, { toValue: 0.97, useNativeDriver: true, speed: 40, bounciness: 0 }).start();
   }
   function pressOut() {
-    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }).start();
+    Animated.spring(pressScale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }).start();
   }
 
   const winner = item.participants?.find((p) => p.uid === item.winnerUid);
@@ -75,7 +76,7 @@ function HistoryCard({ item, theme, charById, isAdmin, onPress, onDeletePress })
 
   return (
     <Pressable onPress={onPress} onPressIn={pressIn} onPressOut={pressOut}>
-      <Animated.View style={[styles.card, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline, transform: [{ scale }] }]}>
+      <Animated.View style={[styles.card, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline, transform: [{ scale: pressScale }] }]}>
         <View style={styles.headerRow2}>
           {winnerCharacter ? (
             <View style={[styles.imageFrame, { borderColor: FRAME_GOLD, backgroundColor: theme.colors.surfaceVariant }]}>
@@ -83,13 +84,13 @@ function HistoryCard({ item, theme, charById, isAdmin, onPress, onDeletePress })
             </View>
           ) : (
             <View style={[styles.imageFrame, { borderColor: theme.colors.outline, backgroundColor: theme.colors.surfaceVariant }]}>
-              <MaterialCommunityIcons name="help" size={24} color={theme.colors.onSurfaceVariant} />
+              <MaterialCommunityIcons name="help" size={scale(24)} color={theme.colors.onSurfaceVariant} />
             </View>
           )}
 
           <View style={{ flex: 1, marginLeft: SPACING.m }}>
             <View style={styles.winnerRow}>
-              <MaterialCommunityIcons name="trophy" size={16} color={theme.custom.gold} style={{ marginRight: SPACING.xs }} />
+              <MaterialCommunityIcons name="trophy" size={scale(16)} color={theme.custom.gold} style={{ marginRight: SPACING.xs }} />
               <Text variant="titleLarge" style={{ color: theme.colors.onBackground, flexShrink: 1 }} numberOfLines={1}>
                 {winner?.playerName || "—"}
               </Text>
@@ -103,15 +104,15 @@ function HistoryCard({ item, theme, charById, isAdmin, onPress, onDeletePress })
           </View>
 
           <View style={[styles.playersPill, { backgroundColor: theme.colors.primaryContainer }]}>
-            <MaterialCommunityIcons name="account-group" size={18} color={theme.colors.primary} />
-            <Text style={{ fontSize: 15, fontWeight: "700", color: theme.colors.primary, marginLeft: SPACING.xs }}>
+            <MaterialCommunityIcons name="account-group" size={scale(18)} color={theme.colors.primary} />
+            <Text style={{ fontSize: scale(15), fontWeight: "700", color: theme.colors.primary, marginLeft: SPACING.xs }}>
               {item.roster?.length}
             </Text>
           </View>
 
           {isAdmin && (
             <Pressable onPress={onDeletePress} hitSlop={8} style={[styles.deleteBadge, { backgroundColor: theme.colors.surfaceVariant }]}>
-              <MaterialCommunityIcons name="trash-can-outline" size={15} color={theme.colors.error} />
+              <MaterialCommunityIcons name="trash-can-outline" size={scale(15)} color={theme.colors.error} />
             </Pressable>
           )}
         </View>
@@ -130,8 +131,8 @@ function HistoryCard({ item, theme, charById, isAdmin, onPress, onDeletePress })
                   isWinner && { backgroundColor: WINNER_CHIP_BG },
                 ]}
               >
-                <Avatar.Image size={20} source={{ uri: p.photoURL }} />
-                <Text style={{ marginLeft: 5, fontSize: 11, fontWeight: "700", color: isWinner ? theme.custom.gold : theme.colors.onSurfaceVariant }}>
+                <Avatar.Image size={scale(20)} source={{ uri: p.photoURL }} />
+                <Text style={{ marginLeft: 5, fontSize: scale(11), fontWeight: "700", color: isWinner ? theme.custom.gold : theme.colors.onSurfaceVariant }}>
                   {p.points}
                 </Text>
               </View>
@@ -286,7 +287,7 @@ export default function HistoryScreen({ navigation }) {
             winnerFilter && { backgroundColor: theme.colors.primaryContainer, borderColor: theme.colors.primary },
           ]}
         >
-          <MaterialCommunityIcons name="trophy-outline" size={14} color={winnerFilter ? theme.colors.primary : theme.colors.onSurfaceVariant} />
+          <MaterialCommunityIcons name="trophy-outline" size={scale(14)} color={winnerFilter ? theme.colors.primary : theme.colors.onSurfaceVariant} />
           <Text
             numberOfLines={1}
             style={[styles.filterPillText, { color: winnerFilter ? theme.colors.primary : theme.colors.onSurfaceVariant }]}
@@ -303,7 +304,7 @@ export default function HistoryScreen({ navigation }) {
             dateFrom && { backgroundColor: theme.colors.primaryContainer, borderColor: theme.colors.primary },
           ]}
         >
-          <MaterialCommunityIcons name="calendar-start" size={14} color={dateFrom ? theme.colors.primary : theme.colors.onSurfaceVariant} />
+          <MaterialCommunityIcons name="calendar-start" size={scale(14)} color={dateFrom ? theme.colors.primary : theme.colors.onSurfaceVariant} />
           <Text style={[styles.filterPillText, { color: dateFrom ? theme.colors.primary : theme.colors.onSurfaceVariant }]}>
             {dateFrom ? `${dateFrom.getDate()}/${dateFrom.getMonth() + 1}` : "Desde"}
           </Text>
@@ -317,7 +318,7 @@ export default function HistoryScreen({ navigation }) {
             dateTo && { backgroundColor: theme.colors.primaryContainer, borderColor: theme.colors.primary },
           ]}
         >
-          <MaterialCommunityIcons name="calendar-end" size={14} color={dateTo ? theme.colors.primary : theme.colors.onSurfaceVariant} />
+          <MaterialCommunityIcons name="calendar-end" size={scale(14)} color={dateTo ? theme.colors.primary : theme.colors.onSurfaceVariant} />
           <Text style={[styles.filterPillText, { color: dateTo ? theme.colors.primary : theme.colors.onSurfaceVariant }]}>
             {dateTo ? `${dateTo.getDate()}/${dateTo.getMonth() + 1}` : "Hasta"}
           </Text>
@@ -325,7 +326,7 @@ export default function HistoryScreen({ navigation }) {
 
         {hasActiveFilters && (
           <Pressable onPress={clearFilters} style={styles.clearFilterBtn}>
-            <MaterialCommunityIcons name="close-circle" size={22} color={theme.colors.onSurfaceVariant} />
+            <MaterialCommunityIcons name="close-circle" size={scale(22)} color={theme.colors.onSurfaceVariant} />
           </Pressable>
         )}
       </View>
@@ -391,10 +392,10 @@ export default function HistoryScreen({ navigation }) {
                 <Pressable onPress={() => { setWinnerFilter(item.uid); setWinnerPickerOpen(false); }}>
                   <View style={[styles.winnerOption, selected && { backgroundColor: theme.colors.primaryContainer }]}>
                     {item.uid ? (
-                      <Avatar.Image size={30} source={{ uri: item.photoURL }} />
+                      <Avatar.Image size={scale(30)} source={{ uri: item.photoURL }} />
                     ) : (
                       <View style={[styles.allUsersIcon, { backgroundColor: theme.colors.surfaceVariant }]}>
-                        <MaterialCommunityIcons name="account-group" size={17} color={theme.colors.onSurfaceVariant} />
+                        <MaterialCommunityIcons name="account-group" size={scale(17)} color={theme.colors.onSurfaceVariant} />
                       </View>
                     )}
                     <Text
@@ -407,7 +408,7 @@ export default function HistoryScreen({ navigation }) {
                       {item.playerName}
                     </Text>
                     {selected && (
-                      <MaterialCommunityIcons name="check" size={18} color={theme.colors.onPrimaryContainer} style={{ marginLeft: "auto" }} />
+                      <MaterialCommunityIcons name="check" size={scale(18)} color={theme.colors.onPrimaryContainer} style={{ marginLeft: "auto" }} />
                     )}
                   </View>
                 </Pressable>
@@ -457,7 +458,7 @@ export default function HistoryScreen({ navigation }) {
           contentContainerStyle={[styles.confirmCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
         >
           <View style={[styles.confirmIconWrap, { backgroundColor: theme.colors.errorContainer }]}>
-            <MaterialCommunityIcons name="trash-can-outline" size={26} color={theme.colors.onErrorContainer} />
+            <MaterialCommunityIcons name="trash-can-outline" size={scale(26)} color={theme.colors.onErrorContainer} />
           </View>
           <Text variant="titleMedium" style={{ textAlign: "center", marginBottom: SPACING.xs, color: theme.colors.onSurface }}>
             Eliminar torneo
@@ -487,21 +488,21 @@ export default function HistoryScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   headerRow: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.l },
-  headerLogo: { width: 42, height: 42 },
+  headerLogo: { width: scale(42), height: scale(42) },
   filterRow: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: SPACING.s, marginBottom: SPACING.l },
   filterPill: {
     flexDirection: "row", alignItems: "center",
     paddingHorizontal: SPACING.m, paddingVertical: SPACING.xs + 2,
     borderRadius: RADIUS.pill, borderWidth: 1,
-    maxWidth: 150,
+    maxWidth: scale(150),
   },
-  filterPillText: { fontSize: 12, fontWeight: "700", marginLeft: SPACING.xs },
+  filterPillText: { fontSize: scale(12), fontWeight: "700", marginLeft: SPACING.xs },
   clearFilterBtn: { padding: 2 },
   card: { borderRadius: RADIUS.lg, borderWidth: 1, padding: SPACING.m },
   headerRow2: { flexDirection: "row", alignItems: "center" },
   winnerRow: { flexDirection: "row", alignItems: "center" },
   imageFrame: {
-    width: 64, height: 64, borderRadius: RADIUS.md, borderWidth: 1.5,
+    width: scale(64), height: scale(64), borderRadius: RADIUS.md, borderWidth: 1.5,
     alignItems: "center", justifyContent: "center", overflow: "hidden",
   },
   image: { width: "100%", height: "100%" },
@@ -518,9 +519,9 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.pill,
   },
   deleteBadge: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: scale(30),
+    height: scale(30),
+    borderRadius: scale(15),
     alignItems: "center",
     justifyContent: "center",
     marginLeft: SPACING.s,
@@ -533,9 +534,9 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.s,
   },
   handle: { alignItems: "center", marginBottom: SPACING.s },
-  handleBar: { width: 40, height: 4, borderRadius: RADIUS.pill },
+  handleBar: { width: scale(40), height: scale(4), borderRadius: RADIUS.pill },
   winnerOption: { flexDirection: "row", alignItems: "center", paddingHorizontal: SPACING.m, paddingVertical: SPACING.s },
-  allUsersIcon: { width: 30, height: 30, borderRadius: RADIUS.pill, alignItems: "center", justifyContent: "center" },
+  allUsersIcon: { width: scale(30), height: scale(30), borderRadius: RADIUS.pill, alignItems: "center", justifyContent: "center" },
   dateModal: {
     margin: SPACING.xxl,
     borderRadius: RADIUS.xl,
@@ -551,8 +552,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   confirmIconWrap: {
-    width: 56,
-    height: 56,
+    width: scale(56),
+    height: scale(56),
     borderRadius: RADIUS.pill,
     alignItems: "center",
     justifyContent: "center",

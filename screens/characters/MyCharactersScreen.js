@@ -12,6 +12,7 @@ import CharacterPickerModal from "../../components/CharacterPickerModal";
 import ScreenHeader from "../../components/ScreenHeader";
 import { SkeletonRow } from "../../components/Skeleton";
 import { RADIUS, SPACING } from "../../theme";
+import { scale } from "../../utils/responsive";
 
 //JS:
 const TOP_GOLD_BORDER = "rgba(242,184,75,0.6)";
@@ -103,9 +104,9 @@ export default function MyCharactersScreen({ navigation }) {
                   ]}
                 >
                   {isTop ? (
-                    <MaterialCommunityIcons name="crown" size={13} color={theme.custom.gold} />
+                    <MaterialCommunityIcons name="crown" size={scale(13)} color={theme.custom.gold} />
                   ) : (
-                    <Text style={{ fontSize: 12, fontWeight: "700", color: theme.colors.onSurfaceVariant }}>{index + 1}</Text>
+                    <Text style={{ fontSize: scale(12), fontWeight: "700", color: theme.colors.onSurfaceVariant }}>{index + 1}</Text>
                   )}
                 </View>
                 <View style={[styles.iconFrame, { backgroundColor: theme.colors.surfaceVariant }]}>
@@ -117,7 +118,7 @@ export default function MyCharactersScreen({ navigation }) {
                     {item.wins} {item.wins === 1 ? "combate ganado" : "combates ganados"}
                   </Text>
                 </View>
-                <IconButton icon="close" size={18} onPress={() => removeMyCharacter(user.uid, item.fighterNumber)} />
+                <IconButton icon="close" size={scale(18)} onPress={() => removeMyCharacter(user.uid, item.fighterNumber)} />
               </View>
             );
           }}
@@ -141,7 +142,7 @@ export default function MyCharactersScreen({ navigation }) {
 const styles = StyleSheet.create({
   addBtn: { borderRadius: RADIUS.pill, marginBottom: SPACING.l, width: "100%", alignSelf: "center" },
   addBtnContent: { paddingVertical: SPACING.xs },
-  addBtnLabel: { fontSize: 15, fontWeight: "700" },
+  addBtnLabel: { fontSize: scale(15), fontWeight: "700" },
   emptyState: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: SPACING.xxl },
   card: {
     flexDirection: "row", alignItems: "center",
@@ -149,11 +150,11 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.s, paddingHorizontal: SPACING.m,
   },
   rankBadge: {
-    width: 24, height: 24, borderRadius: RADIUS.pill,
+    width: scale(24), height: scale(24), borderRadius: RADIUS.pill,
     alignItems: "center", justifyContent: "center", marginRight: SPACING.m,
   },
   iconFrame: {
-    width: 46, height: 46, borderRadius: RADIUS.sm,
+    width: scale(46), height: scale(46), borderRadius: RADIUS.sm,
     alignItems: "center", justifyContent: "center", overflow: "hidden",
   },
   icon: { width: "100%", height: "100%" },

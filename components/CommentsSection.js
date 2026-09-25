@@ -4,6 +4,7 @@ import { StyleSheet, View } from "react-native";
 import { Avatar, IconButton, Text, TextInput, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { RADIUS, SPACING } from "../theme";
+import { scale } from "../utils/responsive";
 
 //JS:
 export default function CommentsSection({ comments, onAddComment, readOnly }) {
@@ -17,7 +18,7 @@ export default function CommentsSection({ comments, onAddComment, readOnly }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <MaterialCommunityIcons name="chat-outline" size={18} color={theme.colors.onSurfaceVariant} />
+        <MaterialCommunityIcons name="chat-outline" size={scale(18)} color={theme.colors.onSurfaceVariant} />
         <Text variant="titleSmall" style={{ marginLeft: SPACING.xs, color: theme.colors.onBackground }}>
           Comentarios{hasComments ? ` (${comments.length})` : ""}
         </Text>
@@ -26,9 +27,9 @@ export default function CommentsSection({ comments, onAddComment, readOnly }) {
       {comments.map((c) => (
         <View key={c.id} style={styles.commentRow}>
           {c.photoURL ? (
-            <Avatar.Image size={36} source={{ uri: c.photoURL }} />
+            <Avatar.Image size={scale(36)} source={{ uri: c.photoURL }} />
           ) : (
-            <Avatar.Text size={36} label={c.playerName?.[0]?.toUpperCase() || "?"} />
+            <Avatar.Text size={scale(36)} label={c.playerName?.[0]?.toUpperCase() || "?"} />
           )}
           <View style={[styles.commentBubble, { backgroundColor: theme.colors.surfaceVariant }]}>
             <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>
@@ -57,7 +58,7 @@ export default function CommentsSection({ comments, onAddComment, readOnly }) {
           />
           <IconButton
             icon="send"
-            size={18}
+            size={scale(18)}
             mode="contained"
             containerColor={text.trim() ? theme.colors.primary : theme.colors.surfaceDisabled}
             iconColor={text.trim() ? theme.colors.onPrimary : theme.colors.onSurfaceDisabled}
@@ -99,6 +100,6 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     backgroundColor: "transparent",
-    height: 40,
+    height: scale(40),
   },
 });

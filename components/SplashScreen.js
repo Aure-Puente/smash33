@@ -1,6 +1,7 @@
 //Importaciones:
 import React, { useEffect, useRef } from "react";
 import { Animated, Image, StyleSheet, Text, View } from "react-native";
+import { scale } from "../utils/responsive";
 
 //JS:
 const FALLBACK_RED = "#F0303A";
@@ -60,27 +61,27 @@ const styles = StyleSheet.create({
     elevation: 14,
     marginBottom: -22,
   },
-  logo: { width: 216, height: 216 },
+  logo: { width: scale(216), height: scale(216) },
   brandText: {
     color: "#F4F3F8",
-    fontSize: 22,
+    fontSize: scale(22),
     fontWeight: "900",
     letterSpacing: 1,
   },
   brandTextRajdhani: {
     fontFamily: "Rajdhani_700Bold",
-    fontSize: 26,
+    fontSize: scale(26),
     fontWeight: undefined,
   },
   loadingChip: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "rgba(255,255,255,0.06)",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: scale(16),
+    paddingVertical: scale(8),
     borderRadius: 999,
-    marginTop: 28,
+    marginTop: scale(28),
   },
-  loadingDot: { width: 8, height: 8, borderRadius: 999, marginRight: 8 },
-  loadingText: { color: "#9794A3", fontSize: 13, fontWeight: "600" },
+  loadingDot: { width: scale(8), height: scale(8), borderRadius: 999, marginRight: scale(8) },
+  loadingText: { color: "#9794A3", fontSize: scale(13), fontWeight: "600" },
 });

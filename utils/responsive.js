@@ -1,5 +1,5 @@
 //Responsive:
-import { useWindowDimensions } from "react-native";
+import { Dimensions, useWindowDimensions } from "react-native";
 import { TABLET_SCALE } from "../theme";
 
 export function useResponsive() {
@@ -10,6 +10,10 @@ export function useResponsive() {
   return { width, height, isTablet, columns, maxContentWidth };
 }
 
-export function scale(size, isTablet) {
-  return Math.round(size * (isTablet ? TABLET_SCALE : 1));
+const { width: STATIC_DEVICE_WIDTH } = Dimensions.get("window");
+const STATIC_IS_TABLET = STATIC_DEVICE_WIDTH >= 700;
+
+export function scale(size) {
+  return Math.round(size * (STATIC_IS_TABLET ? TABLET_SCALE : 1));
 }
+export const IS_TABLET = STATIC_IS_TABLET;

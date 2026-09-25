@@ -9,18 +9,19 @@ import { deleteUserProfile, getAllUsers, getFinishedTournaments } from "../../se
 import ScreenHeader from "../../components/ScreenHeader";
 import { Skeleton } from "../../components/Skeleton";
 import { RADIUS, SPACING } from "../../theme";
+import { IS_TABLET, scale } from "../../utils/responsive";
 
 //JS:
 const ADMIN_EMAIL = "aurepuente25@gmail.com";
 
 function MemberRow({ item, theme, isMe, isAdmin, onPress, onDeletePress }) {
-  const scale = useRef(new Animated.Value(1)).current;
+  const pressScale = useRef(new Animated.Value(1)).current;
 
   function pressIn() {
-    Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, speed: 40, bounciness: 0 }).start();
+    Animated.spring(pressScale, { toValue: 0.97, useNativeDriver: true, speed: 40, bounciness: 0 }).start();
   }
   function pressOut() {
-    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }).start();
+    Animated.spring(pressScale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }).start();
   }
 
   return (
@@ -29,39 +30,45 @@ function MemberRow({ item, theme, isMe, isAdmin, onPress, onDeletePress }) {
         style={[
           styles.row,
           { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline },
-          { transform: [{ scale }] },
+          { transform: [{ scale: pressScale }] },
         ]}
       >
         <View>
-          <Avatar.Image size={44} source={{ uri: item.photoURL }} />
+          <Avatar.Image size={IS_TABLET ? scale(52) : scale(44)} source={{ uri: item.photoURL }} />
           {isMe && (
             <View style={[styles.meBadge, { backgroundColor: theme.colors.primary, borderColor: theme.colors.surface }]}>
-              <MaterialCommunityIcons name="star" size={11} color={theme.colors.onPrimary} />
+              <MaterialCommunityIcons name="star" size={scale(11)} color={theme.colors.onPrimary} />
             </View>
           )}
         </View>
         <View style={{ flex: 1, marginLeft: SPACING.m }}>
-          <Text variant="titleSmall" style={{ color: theme.colors.onSurface }}>
+          <Text
+            variant="titleSmall"
+            style={{ color: theme.colors.onSurface, fontSize: IS_TABLET ? scale(17) : undefined }}
+          >
             {item.playerName}
           </Text>
-          <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 2 }}>
+          <Text
+            variant="labelSmall"
+            style={{ color: theme.colors.onSurfaceVariant, marginTop: 2, fontSize: IS_TABLET ? scale(13) : undefined }}
+          >
             {item.played} {item.played === 1 ? "torneo jugado" : "torneos jugados"}
           </Text>
         </View>
         {item.wins > 0 && (
           <View style={[styles.winsPill, { backgroundColor: theme.colors.primaryContainer }]}>
-            <MaterialCommunityIcons name="trophy" size={13} color={theme.custom.gold} style={{ marginRight: 4 }} />
-            <Text style={{ fontSize: 12, fontWeight: "700", color: theme.colors.primary }}>{item.wins}</Text>
+            <MaterialCommunityIcons name="trophy" size={IS_TABLET ? scale(15) : scale(13)} color={theme.custom.gold} style={{ marginRight: 4 }} />
+            <Text style={{ fontSize: IS_TABLET ? scale(14) : scale(12), fontWeight: "700", color: theme.colors.primary }}>{item.wins}</Text>
           </View>
         )}
         {isAdmin && !isMe && (
           <Pressable onPress={onDeletePress} hitSlop={8} style={[styles.deleteBadge, { backgroundColor: theme.colors.surfaceVariant }]}>
-            <MaterialCommunityIcons name="account-remove-outline" size={16} color={theme.colors.error} />
+            <MaterialCommunityIcons name="account-remove-outline" size={scale(16)} color={theme.colors.error} />
           </Pressable>
         )}
         <MaterialCommunityIcons
           name="chevron-right"
-          size={20}
+          size={IS_TABLET ? scale(23) : scale(20)}
           color={theme.colors.onSurfaceVariant}
           style={{ marginLeft: SPACING.xs }}
         />
@@ -135,10 +142,10 @@ export default function GuildMembersScreen({ navigation }) {
           <View>
             {[0, 1, 2, 3, 4, 5].map((i) => (
               <View key={i} style={[styles.row, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline, marginBottom: SPACING.s }]}>
-                <Skeleton width={44} height={44} radius={RADIUS.pill} />
+                <Skeleton width={IS_TABLET ? scale(52) : scale(44)} height={IS_TABLET ? scale(52) : scale(44)} radius={RADIUS.pill} />
                 <View style={{ flex: 1, marginLeft: SPACING.m }}>
-                  <Skeleton width="55%" height={14} style={{ marginBottom: SPACING.xs }} />
-                  <Skeleton width="35%" height={10} />
+                  <Skeleton width="55%" height={scale(14)} style={{ marginBottom: SPACING.xs }} />
+                  <Skeleton width="35%" height={scale(10)} />
                 </View>
               </View>
             ))}
@@ -174,7 +181,7 @@ export default function GuildMembersScreen({ navigation }) {
           contentContainerStyle={[styles.confirmCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.error }]}
         >
           <View style={[styles.confirmIconWrap, { backgroundColor: theme.colors.errorContainer }]}>
-            <MaterialCommunityIcons name="account-remove-outline" size={28} color={theme.colors.error} />
+            <MaterialCommunityIcons name="account-remove-outline" size={scale(28)} color={theme.colors.error} />
           </View>
           <Text variant="titleMedium" style={{ textAlign: "center", marginBottom: SPACING.xs, color: theme.colors.error, fontWeight: "800" }}>
             ¿Eliminar a {deleteTarget?.playerName}?
@@ -229,17 +236,17 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: -2,
     right: -2,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    width: scale(18),
+    height: scale(18),
+    borderRadius: scale(9),
     borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
   },
   deleteBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: scale(28),
+    height: scale(28),
+    borderRadius: scale(14),
     alignItems: "center",
     justifyContent: "center",
     marginLeft: SPACING.xs,
@@ -252,8 +259,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   confirmIconWrap: {
-    width: 56,
-    height: 56,
+    width: scale(56),
+    height: scale(56),
     borderRadius: RADIUS.pill,
     alignItems: "center",
     justifyContent: "center",

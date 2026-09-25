@@ -5,6 +5,7 @@ import { Button, Text, TextInput, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { RADIUS, SPACING } from "../../theme";
+import { scale } from "../../utils/responsive";
 
 //JS:
 export default function LoginScreen({ navigation }) {
@@ -113,15 +114,15 @@ const styles = StyleSheet.create({
     shadowRadius: 28,
     elevation: 14,
   },
-  logo: { width: 264, height: 264 },
+  logo: { width: scale(264), height: scale(264) },
   brandText: {
     fontFamily: "Rajdhani_700Bold",
-    fontSize: 30,
+    fontSize: scale(30),
     letterSpacing: 1,
-    marginTop: -SPACING.xxl - 6,
+    marginTop: -SPACING.xxl - scale(6),
   },
   form: { width: "100%" },
-  input: { marginBottom: SPACING.m, fontSize: 16 },
+  input: { marginBottom: SPACING.m, fontSize: scale(16) },
   inputOutline: { borderRadius: RADIUS.md },
   buttonGlowWrap: {
     marginTop: SPACING.s,
@@ -133,5 +134,5 @@ const styles = StyleSheet.create({
   },
   button: { borderRadius: RADIUS.pill },
   buttonContent: { paddingVertical: SPACING.m },
-  buttonLabel: { fontSize: 16, fontWeight: "700" },
+  buttonLabel: { fontSize: scale(16), fontWeight: "700" },
 });

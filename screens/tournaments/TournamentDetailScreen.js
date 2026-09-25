@@ -24,6 +24,7 @@ import CommentsSection from "../../components/CommentsSection";
 import RoundHistoryRow, { EmptyRoundHistory } from "../../components/RoundHistoryRow";
 import ScreenHeader from "../../components/ScreenHeader";
 import { RADIUS, SPACING } from "../../theme";
+import { scale } from "../../utils/responsive";
 
 //JS:
 const VICTORY_SONGS = [
@@ -49,14 +50,14 @@ function hashString(str) {
 }
 
 function usePressScale() {
-  const scale = useRef(new Animated.Value(1)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
   function pressIn() {
-    Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, speed: 40, bounciness: 0 }).start();
+    Animated.spring(scaleAnim, { toValue: 0.97, useNativeDriver: true, speed: 40, bounciness: 0 }).start();
   }
   function pressOut() {
-    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }).start();
+    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }).start();
   }
-  return { scale, pressIn, pressOut };
+  return { scale: scaleAnim, pressIn, pressOut };
 }
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
@@ -148,6 +149,27 @@ function SpinningLogo({ size = 96, color }) {
   );
 }
 
+function BouncingTrophy({ size, color }) {
+  const bounce = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(bounce, { toValue: 1, duration: 550, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+        Animated.timing(bounce, { toValue: 0, duration: 550, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [bounce]);
+  const translateY = bounce.interpolate({ inputRange: [0, 1], outputRange: [0, -scale(10)] });
+  const rotate = bounce.interpolate({ inputRange: [0, 0.5, 1], outputRange: ["-6deg", "0deg", "6deg"] });
+  return (
+    <Animated.View style={{ transform: [{ translateY }, { rotate }] }}>
+      <MaterialCommunityIcons name="trophy" size={size} color={color} />
+    </Animated.View>
+  );
+}
+
 function CharacterAvatar({ theme, character, size, radius }) {
   if (character?.images?.iconImage) {
     return (
@@ -171,7 +193,7 @@ function CharacterAvatar({ theme, character, size, radius }) {
 
 function CharacterChoiceRow({ theme, playerName, character, onPress }) {
   const picked = !!character;
-  const { scale, pressIn, pressOut } = usePressScale();
+  const { scale: pressScale, pressIn, pressOut } = usePressScale();
   return (
     <Pressable onPress={onPress} onPressIn={pressIn} onPressOut={pressOut}>
       <Animated.View
@@ -181,10 +203,10 @@ function CharacterChoiceRow({ theme, playerName, character, onPress }) {
             backgroundColor: picked ? theme.colors.primaryContainer : theme.colors.surface,
             borderColor: picked ? theme.colors.primary : theme.colors.outline,
           },
-          { transform: [{ scale }] },
+          { transform: [{ scale: pressScale }] },
         ]}
       >
-        <CharacterAvatar theme={theme} character={character} size={36} radius={RADIUS.sm} />
+        <CharacterAvatar theme={theme} character={character} size={scale(36)} radius={RADIUS.sm} />
         <View style={{ flex: 1, marginLeft: SPACING.m }}>
           <Text
             variant="titleSmall"
@@ -204,7 +226,7 @@ function CharacterChoiceRow({ theme, playerName, character, onPress }) {
         </View>
         <MaterialCommunityIcons
           name={picked ? "check-circle" : "chevron-right"}
-          size={22}
+          size={scale(22)}
           color={picked ? theme.colors.primary : theme.colors.onSurfaceVariant}
         />
       </Animated.View>
@@ -213,7 +235,7 @@ function CharacterChoiceRow({ theme, playerName, character, onPress }) {
 }
 
 function PlayerCard({ theme, p, character, isPending, canAssign, isMatchPoint, isChampion, isFinished, matchPointScale, onPress }) {
-  const { scale, pressIn, pressOut } = usePressScale();
+  const { scale: pressScale, pressIn, pressOut } = usePressScale();
 
   let cardBg = theme.colors.surface;
   let cardBorder = theme.colors.outline;
@@ -244,14 +266,13 @@ function PlayerCard({ theme, p, character, isPending, canAssign, isMatchPoint, i
       style={[
         styles.playerCard,
         { backgroundColor: cardBg, borderColor: cardBorder, borderWidth: cardBorderWidth },
-        isPending && { opacity: 0.65 },
       ]}
     >
       <View>
-        <CharacterAvatar theme={theme} character={character} size={60} radius={RADIUS.lg} />
+        <CharacterAvatar theme={theme} character={character} size={scale(60)} radius={RADIUS.lg} />
         {canAssign && (
           <View style={[styles.editBadge, { backgroundColor: theme.colors.primary, borderColor: cardBg }]}>
-            <MaterialCommunityIcons name="pencil" size={11} color={theme.colors.onPrimary} />
+            <MaterialCommunityIcons name="pencil" size={scale(11)} color={theme.colors.onPrimary} />
           </View>
         )}
       </View>
@@ -270,7 +291,7 @@ function PlayerCard({ theme, p, character, isPending, canAssign, isMatchPoint, i
       >
         {isMatchPoint && (
           <View style={[styles.matchPointFireBadge, { borderColor: theme.colors.background }]}>
-            <MaterialCommunityIcons name="fire" size={22} color={theme.custom.gold} />
+            <MaterialCommunityIcons name="fire" size={scale(22)} color={theme.custom.gold} />
           </View>
         )}
         <Text style={[styles.scoreText, { color: capsuleTextColor }]}>{p.points}</Text>
@@ -282,23 +303,23 @@ function PlayerCard({ theme, p, character, isPending, canAssign, isMatchPoint, i
 
   return (
     <Pressable onPress={onPress} onPressIn={pressIn} onPressOut={pressOut}>
-      <Animated.View style={{ transform: [{ scale }] }}>{inner}</Animated.View>
+      <Animated.View style={{ transform: [{ scale: pressScale }] }}>{inner}</Animated.View>
     </Pressable>
   );
 }
 
 function WinnerChoiceRow({ theme, p, character, onPress }) {
-  const { scale, pressIn, pressOut } = usePressScale();
+  const { scale: pressScale, pressIn, pressOut } = usePressScale();
   return (
     <Pressable onPress={onPress} onPressIn={pressIn} onPressOut={pressOut} style={{ marginBottom: SPACING.s }}>
       <Animated.View
         style={[
           styles.winnerBigRow,
-          { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline },
-          { transform: [{ scale }] },
+          { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary },
+          { transform: [{ scale: pressScale }] },
         ]}
       >
-        <CharacterAvatar theme={theme} character={character} size={52} radius={RADIUS.md} />
+        <CharacterAvatar theme={theme} character={character} size={scale(52)} radius={RADIUS.md} />
         <View style={{ flex: 1, marginLeft: SPACING.m }}>
           <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>
             {p.playerName}
@@ -307,17 +328,23 @@ function WinnerChoiceRow({ theme, p, character, onPress }) {
             {character?.name || "Sin personaje"}
           </Text>
         </View>
-        <MaterialCommunityIcons name="chevron-right" size={26} color={theme.colors.onSurfaceVariant} />
+        <MaterialCommunityIcons name="chevron-right" size={scale(26)} color={theme.colors.onSurfaceVariant} />
       </Animated.View>
     </Pressable>
   );
 }
 
 function TournamentDetailScreenInner({ route, navigation }) {
-  const { tournamentId, justCreated } = route.params;
+  const { tournamentId } = route.params;
   const theme = useTheme();
   const { user, profile } = useAuth();
   const insets = useSafeAreaInsets();
+
+  const [screenReady, setScreenReady] = useState(false);
+  useEffect(() => {
+    const unsub = navigation.addListener("transitionEnd", () => setScreenReady(true));
+    return unsub;
+  }, [navigation]);
 
   const [tournament, setTournament] = useState(null);
   const [rounds, setRounds] = useState([]);
@@ -393,14 +420,6 @@ function TournamentDetailScreenInner({ route, navigation }) {
   const celebrationHaloScale = celebrationHaloPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] });
   const celebrationHaloOpacity = celebrationHaloPulse.interpolate({ inputRange: [0, 1], outputRange: [0.4, 0.65] });
   const matchPointScale = matchPointPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.06] });
-
-  const [showCreatingScreen, setShowCreatingScreen] = useState(!!justCreated);
-
-  useEffect(() => {
-    if (!justCreated) return;
-    const t = setTimeout(() => setShowCreatingScreen(false), 2000);
-    return () => clearTimeout(t);
-  }, [justCreated]);
 
   useEffect(() => {
     getAllCharacters().then(setCharacters);
@@ -599,21 +618,10 @@ function TournamentDetailScreenInner({ route, navigation }) {
     });
   }
 
-  if (showCreatingScreen) {
-    return (
-      <View style={[styles.fullScreenCenter, { backgroundColor: theme.colors.background }]}>
-        <SpinningLogo size={110} color={theme.colors.primary} />
-        <Text variant="titleMedium" style={{ marginTop: SPACING.l, color: theme.colors.onBackground }}>
-          Creando torneo...
-        </Text>
-      </View>
-    );
-  }
-
   if (!tournament) {
     return (
       <View style={[styles.fullScreenCenter, { backgroundColor: theme.colors.background }]}>
-        <SpinningLogo size={88} color={theme.colors.primary} />
+        <SpinningLogo size={scale(88)} color={theme.colors.primary} />
       </View>
     );
   }
@@ -648,7 +656,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
         {isFinished && (
           <View style={[styles.finishedBanner, { backgroundColor: theme.custom.gold }]}>
             <View style={styles.finishedIconWrap}>
-              <MaterialCommunityIcons name="trophy" size={26} color={theme.custom.gold} />
+              <MaterialCommunityIcons name="trophy" size={scale(26)} color={theme.custom.gold} />
             </View>
             <View style={{ flex: 1, marginLeft: SPACING.m }}>
               <Text variant="bodySmall" style={{ color: "#241A05", opacity: 0.7 }}>
@@ -661,7 +669,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
             <CharacterAvatar
               theme={theme}
               character={charById[participants.find((p) => p.uid === tournament.winnerUid)?.currentCharacterId]}
-              size={52}
+              size={scale(52)}
               radius={RADIUS.lg}
             />
           </View>
@@ -759,7 +767,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
       </ScrollView>
 
       <CharacterPickerModal
-        visible={!!pickerForUid}
+        visible={screenReady && !!pickerForUid}
         onDismiss={handlePickerDismiss}
         characters={pickerCharacterList}
         disabledIds={pickerParticipant?.usedCharacterIds || []}
@@ -770,7 +778,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
       />
 
       <CharacterPickerModal
-        visible={showMyCharacters}
+        visible={screenReady && showMyCharacters}
         onDismiss={() => setShowMyCharacters(false)}
         characters={myCharacterList}
         disabledIds={myParticipant?.usedCharacterIds || []}
@@ -785,21 +793,21 @@ function TournamentDetailScreenInner({ route, navigation }) {
           <View style={[styles.fullScreenModal, { backgroundColor: theme.colors.background, padding: SPACING.l }]}>
             <View style={styles.roundModalHeader}>
               {winnerUid ? (
-                <IconButton icon="arrow-left" size={22} onPress={backToWinnerStep} />
+                <IconButton icon="arrow-left" size={scale(22)} onPress={backToWinnerStep} />
               ) : (
-                <View style={{ width: 40 }} />
+                <View style={{ width: scale(40) }} />
               )}
               <Text variant="titleMedium" style={{ flex: 1, textAlign: "center", color: theme.colors.onBackground }}>
                 {editingRoundId ? "Corregir ronda" : "Registrar ronda"}
               </Text>
-              <IconButton icon="close" size={22} onPress={closeRoundModal} />
+              <IconButton icon="close" size={scale(22)} onPress={closeRoundModal} />
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
               {!winnerUid ? (
                 <>
                   <View style={styles.roundStepIntro}>
-                    <MaterialCommunityIcons name="trophy" size={40} color={theme.custom.gold} />
+                    <BouncingTrophy size={scale(40)} color={theme.custom.gold} />
                     <Text variant="headlineSmall" style={{ marginTop: SPACING.s, textAlign: "center", color: theme.colors.onBackground }}>
                       ¿Quién ganó esta ronda?
                     </Text>
@@ -820,7 +828,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
               ) : (
                 <>
                   <View style={[styles.winnerBanner, { backgroundColor: theme.colors.primaryContainer }]}>
-                    <CharacterAvatar theme={theme} character={winnerCharacter} size={44} radius={RADIUS.sm} />
+                    <CharacterAvatar theme={theme} character={winnerCharacter} size={scale(44)} radius={RADIUS.sm} />
                     <View style={{ marginLeft: SPACING.m }}>
                       <Text variant="titleMedium" style={{ color: theme.colors.onPrimaryContainer }}>
                         Ganó {winnerParticipant?.playerName}
@@ -835,7 +843,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
 
                   {willFinishTournament ? (
                     <View style={styles.roundStepIntro}>
-                      <MaterialCommunityIcons name="trophy" size={40} color={theme.custom.gold} />
+                      <BouncingTrophy size={scale(40)} color={theme.custom.gold} />
                       <Text variant="bodyMedium" style={{ marginTop: SPACING.s, textAlign: "center", color: theme.colors.onSurfaceVariant }}>
                         Con esta victoria termina el torneo — no hace falta elegir personaje nuevo.
                       </Text>
@@ -883,7 +891,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
           contentContainerStyle={[styles.confirmCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
         >
           <View style={[styles.confirmIconWrap, { backgroundColor: theme.colors.primaryContainer }]}>
-            <MaterialCommunityIcons name="trophy-outline" size={26} color={theme.colors.primary} />
+            <MaterialCommunityIcons name="trophy-outline" size={scale(26)} color={theme.colors.primary} />
           </View>
           <Text variant="titleMedium" style={{ textAlign: "center", marginBottom: SPACING.xs, color: theme.colors.onSurface }}>
             ¿Marcar a {pendingWinnerParticipant?.playerName} como ganador?
@@ -959,7 +967,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
           contentContainerStyle={[styles.confirmCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
         >
           <View style={[styles.confirmIconWrap, { backgroundColor: theme.colors.errorContainer }]}>
-            <MaterialCommunityIcons name="trash-can-outline" size={28} color={theme.colors.onErrorContainer} />
+            <MaterialCommunityIcons name="trash-can-outline" size={scale(28)} color={theme.colors.onErrorContainer} />
           </View>
           <Text variant="titleMedium" style={{ textAlign: "center", marginBottom: SPACING.xs, color: theme.colors.onSurface }}>
             Eliminar torneo
@@ -986,7 +994,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
       <Portal>
         <Modal visible={busy} dismissable={false} contentContainerStyle={styles.fullScreenModal}>
           <View style={[styles.fullScreenModal, styles.busyOverlay]}>
-            <SpinningLogo size={72} color={theme.colors.primary} />
+            <SpinningLogo size={scale(72)} color={theme.colors.primary} />
           </View>
         </Modal>
       </Portal>
@@ -1004,8 +1012,8 @@ const styles = StyleSheet.create({
     padding: SPACING.l,
   },
   finishedIconWrap: {
-    width: 52,
-    height: 52,
+    width: scale(52),
+    height: scale(52),
     borderRadius: RADIUS.pill,
     backgroundColor: "#241A05",
     alignItems: "center",
@@ -1019,20 +1027,20 @@ const styles = StyleSheet.create({
   },
   editBadge: {
     position: "absolute", bottom: -2, right: -2,
-    width: 20, height: 20, borderRadius: 10, borderWidth: 2,
+    width: scale(20), height: scale(20), borderRadius: scale(10), borderWidth: 2,
     alignItems: "center", justifyContent: "center",
   },
   scoreCapsule: {
-    width: 64, height: 56, borderRadius: RADIUS.pill,
+    width: scale(64), height: scale(56), borderRadius: RADIUS.pill,
     alignItems: "center", justifyContent: "center",
   },
   matchPointFireBadge: {
     position: "absolute", top: -10, right: -8,
-    width: 28, height: 28, borderRadius: 14, borderWidth: 2,
+    width: scale(28), height: scale(28), borderRadius: scale(14), borderWidth: 2,
     alignItems: "center", justifyContent: "center",
     backgroundColor: "#241A05",
   },
-  scoreText: { fontFamily: "Rajdhani_700Bold", fontSize: 30 },
+  scoreText: { fontFamily: "Rajdhani_700Bold", fontSize: scale(30) },
 
   sheetCard: { borderRadius: RADIUS.lg, borderWidth: 1, padding: SPACING.m, marginTop: SPACING.s, marginBottom: SPACING.s },
   registerButton: { marginTop: SPACING.s, borderRadius: RADIUS.pill },
@@ -1051,7 +1059,7 @@ const styles = StyleSheet.create({
   roundStepIntro: { alignItems: "center", marginTop: SPACING.l, marginBottom: SPACING.xl },
   winnerBigRow: {
     flexDirection: "row", alignItems: "center",
-    borderRadius: RADIUS.xl, borderWidth: 1.5,
+    borderRadius: RADIUS.xl, borderWidth: 2,
     padding: SPACING.l,
   },
   winnerBanner: {
@@ -1061,14 +1069,14 @@ const styles = StyleSheet.create({
 
   celebrationScreen: { alignItems: "center", justifyContent: "center", padding: SPACING.xl },
   celebrationImageArea: {
-    width: 320, height: 320,
+    width: scale(320), height: scale(320),
     alignItems: "center", justifyContent: "center",
     marginBottom: SPACING.m,
   },
   celebrationHalo: {
-    position: "absolute", width: 250, height: 250, borderRadius: 125,
+    position: "absolute", width: scale(250), height: scale(250), borderRadius: scale(125),
   },
-  celebrationImage: { width: 310, height: 310 },
+  celebrationImage: { width: scale(310), height: scale(310) },
   celebrationTitle: { color: "#241A05", textAlign: "center", marginBottom: SPACING.l },
   celebrationSubtitle: { color: "#241A05", opacity: 0.75, marginTop: SPACING.xs, textAlign: "center" },
   confirmCard: {
@@ -1079,7 +1087,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   confirmIconWrap: {
-    width: 56, height: 56, borderRadius: RADIUS.pill,
+    width: scale(56), height: scale(56), borderRadius: RADIUS.pill,
     alignItems: "center", justifyContent: "center", marginBottom: SPACING.m,
   },
   confirmActions: { flexDirection: "row", width: "100%" },
@@ -1090,11 +1098,8 @@ const styles = StyleSheet.create({
 });
 
 export default function TournamentDetailScreen(props) {
-  const { tournamentId, justCreated } = props.route.params;
+  const { tournamentId } = props.route.params;
   return (
-    <TournamentDetailScreenInner
-      key={`${tournamentId}-${justCreated ? "new" : "existing"}`}
-      {...props}
-    />
+    <TournamentDetailScreenInner key={tournamentId} {...props} />
   );
 }

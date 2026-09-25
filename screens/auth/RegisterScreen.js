@@ -7,6 +7,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { RADIUS, SPACING } from "../../theme";
+import { scale } from "../../utils/responsive";
 
 //JS:
 export default function RegisterScreen({ navigation }) {
@@ -67,15 +68,15 @@ export default function RegisterScreen({ navigation }) {
         <View style={styles.avatarWrap}>
           <View style={[styles.avatarRing, { borderColor: theme.colors.primary }]}>
             {photoUri ? (
-              <Avatar.Image size={100} source={{ uri: photoUri }} />
+              <Avatar.Image size={scale(100)} source={{ uri: photoUri }} />
             ) : (
-              <Avatar.Icon size={100} icon="account" style={{ backgroundColor: theme.colors.surfaceVariant }} />
+              <Avatar.Icon size={scale(100)} icon="account" style={{ backgroundColor: theme.colors.surfaceVariant }} />
             )}
             <Pressable
               onPress={pickImage}
               style={[styles.editPhotoBtn, { backgroundColor: theme.colors.primary, borderColor: theme.colors.background }]}
             >
-              <MaterialCommunityIcons name="camera" size={16} color={theme.colors.onPrimary} />
+              <MaterialCommunityIcons name="camera" size={scale(16)} color={theme.colors.onPrimary} />
             </Pressable>
           </View>
         </View>
@@ -149,10 +150,10 @@ const styles = StyleSheet.create({
   avatarRing: { position: "relative", borderWidth: 2, borderRadius: RADIUS.pill, padding: 3 },
   editPhotoBtn: {
     position: "absolute", bottom: 0, right: 0,
-    width: 30, height: 30, borderRadius: RADIUS.pill,
+    width: scale(30), height: scale(30), borderRadius: RADIUS.pill,
     alignItems: "center", justifyContent: "center", borderWidth: 3,
   },
-  input: { marginBottom: SPACING.m, fontSize: 16 },
+  input: { marginBottom: SPACING.m, fontSize: scale(16) },
   inputOutline: { borderRadius: RADIUS.md },
   buttonGlowWrap: {
     marginTop: SPACING.s,
@@ -164,5 +165,5 @@ const styles = StyleSheet.create({
   },
   button: { borderRadius: RADIUS.pill },
   buttonContent: { paddingVertical: SPACING.m },
-  buttonLabel: { fontSize: 16, fontWeight: "700" },
+  buttonLabel: { fontSize: scale(16), fontWeight: "700" },
 });

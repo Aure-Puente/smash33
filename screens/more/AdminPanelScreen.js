@@ -19,6 +19,7 @@ import { getSeasonInfo, SEASONS } from "../../utils/season";
 import ScreenHeader from "../../components/ScreenHeader";
 import { Skeleton } from "../../components/Skeleton";
 import { RADIUS, SPACING } from "../../theme";
+import { scale } from "../../utils/responsive";
 
 //JS:
 export default function AdminPanelScreen({ navigation }) {
@@ -114,8 +115,8 @@ export default function AdminPanelScreen({ navigation }) {
           <View>
             {[0, 1, 2, 3].map((i) => (
               <View key={i} style={[styles.userRow, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
-                <Skeleton width={38} height={38} radius={RADIUS.pill} />
-                <Skeleton width="45%" height={14} style={{ marginLeft: SPACING.m }} />
+                <Skeleton width={scale(38)} height={scale(38)} radius={RADIUS.pill} />
+                <Skeleton width="45%" height={scale(14)} style={{ marginLeft: SPACING.m }} />
               </View>
             ))}
           </View>
@@ -131,7 +132,7 @@ export default function AdminPanelScreen({ navigation }) {
                     included && { borderColor: theme.colors.primary, backgroundColor: theme.colors.primaryContainer },
                   ]}
                 >
-                  <Avatar.Image size={38} source={{ uri: u.photoURL }} />
+                  <Avatar.Image size={scale(38)} source={{ uri: u.photoURL }} />
                   <Text
                     style={{
                       flex: 1,
@@ -144,7 +145,7 @@ export default function AdminPanelScreen({ navigation }) {
                   </Text>
                   <MaterialCommunityIcons
                     name={included ? "check-circle" : "circle-outline"}
-                    size={24}
+                    size={scale(24)}
                     color={included ? theme.colors.primary : theme.colors.onSurfaceVariant}
                   />
                 </View>
@@ -158,7 +159,7 @@ export default function AdminPanelScreen({ navigation }) {
         {/* --- En construcción: asignación de insignias --- */}
         <View style={[styles.constructionCard, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.colors.outline }]}>
           <View style={[styles.constructionIconWrap, { backgroundColor: theme.colors.surface }]}>
-            <MaterialCommunityIcons name="hammer-wrench" size={20} color={theme.colors.onSurfaceVariant} />
+            <MaterialCommunityIcons name="hammer-wrench" size={scale(20)} color={theme.colors.onSurfaceVariant} />
           </View>
           <View style={{ flex: 1, marginLeft: SPACING.m }}>
             <Text variant="titleSmall" style={{ color: theme.colors.onSurface }}>En construcción: asignación de insignias</Text>
@@ -194,7 +195,7 @@ export default function AdminPanelScreen({ navigation }) {
           contentContainerStyle={[styles.resetCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary }]}
         >
           <View style={[styles.resetIconWrap, { backgroundColor: theme.colors.primaryContainer }]}>
-            <MaterialCommunityIcons name="flag-checkered" size={30} color={theme.colors.primary} />
+            <MaterialCommunityIcons name="flag-checkered" size={scale(30)} color={theme.colors.primary} />
           </View>
           <Text variant="titleMedium" style={{ textAlign: "center", marginBottom: SPACING.xs, color: theme.colors.onSurface, fontWeight: "800" }}>
             ¿Finalizar la temporada?
@@ -247,8 +248,8 @@ const styles = StyleSheet.create({
     padding: SPACING.m,
   },
   constructionIconWrap: {
-    width: 38,
-    height: 38,
+    width: scale(38),
+    height: scale(38),
     borderRadius: RADIUS.sm,
     alignItems: "center",
     justifyContent: "center",
@@ -261,8 +262,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   resetIconWrap: {
-    width: 60,
-    height: 60,
+    width: scale(60),
+    height: scale(60),
     borderRadius: RADIUS.pill,
     alignItems: "center",
     justifyContent: "center",

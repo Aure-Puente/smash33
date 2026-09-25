@@ -8,6 +8,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { getSeasonInfo, SEASONS } from "../../utils/season";
 import ScreenHeader from "../../components/ScreenHeader";
 import { RADIUS, SPACING } from "../../theme";
+import { scale } from "../../utils/responsive";
 
 //JS:
 const ADMIN_EMAIL = "aurepuente25@gmail.com";
@@ -20,7 +21,7 @@ const MENU_ITEMS = [
 ];
 
 function RankingHeroCard({ theme, onPress }) {
-  const scale = useRef(new Animated.Value(1)).current;
+  const pressScale = useRef(new Animated.Value(1)).current;
   const pulse = useRef(new Animated.Value(0)).current;
   const seasonInfo = getSeasonInfo();
   const season = SEASONS[seasonInfo.key];
@@ -37,10 +38,10 @@ function RankingHeroCard({ theme, onPress }) {
   }, [pulse]);
 
   function pressIn() {
-    Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, speed: 40, bounciness: 0 }).start();
+    Animated.spring(pressScale, { toValue: 0.97, useNativeDriver: true, speed: 40, bounciness: 0 }).start();
   }
   function pressOut() {
-    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }).start();
+    Animated.spring(pressScale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }).start();
   }
 
   const dotScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.5] });
@@ -51,61 +52,56 @@ function RankingHeroCard({ theme, onPress }) {
       <Animated.View
         style={[
           styles.heroCard,
-          { backgroundColor: theme.colors.primaryContainer, borderColor: theme.colors.primary, transform: [{ scale }] },
+          { backgroundColor: theme.colors.primaryContainer, borderColor: theme.colors.primary, transform: [{ scale: pressScale }] },
         ]}
       >
         <View style={[styles.heroIconWrap, { backgroundColor: theme.colors.surface }]}>
-          <MaterialCommunityIcons name={season.icon} size={28} color={theme.colors.primary} />
+          <MaterialCommunityIcons name={season.icon} size={scale(28)} color={theme.colors.primary} />
         </View>
         <View style={{ flex: 1, marginLeft: SPACING.m }}>
           <Text variant="titleMedium" style={{ color: theme.colors.onPrimaryContainer, fontWeight: "800" }}>
             Ranking Smash 33
           </Text>
-          <Text style={{ color: theme.colors.onPrimaryContainer, opacity: 0.85, fontSize: 12, marginTop: 2 }}>
+          <Text style={{ color: theme.colors.onPrimaryContainer, opacity: 0.85, fontSize: scale(12), marginTop: 2 }}>
             Temporada de {season.label}
           </Text>
           <View style={styles.liveRow}>
             <Animated.View style={[styles.liveDot, { backgroundColor: theme.colors.primary, opacity: dotOpacity, transform: [{ scale: dotScale }] }]} />
-            <Text style={{ fontSize: 10, fontWeight: "700", color: theme.colors.primary, marginLeft: 5, letterSpacing: 0.5 }}>EN VIVO</Text>
+            <Text style={{ fontSize: scale(10), fontWeight: "700", color: theme.colors.primary, marginLeft: 5, letterSpacing: 0.5 }}>EN VIVO</Text>
           </View>
         </View>
-        <MaterialCommunityIcons name="chevron-right" size={24} color={theme.colors.onPrimaryContainer} />
+        <MaterialCommunityIcons name="chevron-right" size={scale(24)} color={theme.colors.onPrimaryContainer} />
       </Animated.View>
     </Pressable>
   );
 }
 
-function MenuRow({ item, theme, onPress, variant }) {
-  const scale = useRef(new Animated.Value(1)).current;
+function MenuRow({ item, theme, onPress }) {
+  const pressScale = useRef(new Animated.Value(1)).current;
 
   function pressIn() {
-    Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, speed: 40, bounciness: 0 }).start();
+    Animated.spring(pressScale, { toValue: 0.97, useNativeDriver: true, speed: 40, bounciness: 0 }).start();
   }
   function pressOut() {
-    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }).start();
+    Animated.spring(pressScale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }).start();
   }
-
-  const isAdminVariant = variant === "admin";
-  const accentColor = theme.colors.primary;
 
   return (
     <Pressable onPress={onPress} onPressIn={pressIn} onPressOut={pressOut}>
       <Animated.View
         style={[
           styles.row,
-          isAdminVariant
-            ? { backgroundColor: theme.colors.primaryContainer, borderColor: theme.colors.primary, borderWidth: 1.5 }
-            : { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline },
-          { transform: [{ scale }] },
+          { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline },
+          { transform: [{ scale: pressScale }] },
         ]}
       >
-        <View style={[styles.iconBadge, { backgroundColor: isAdminVariant ? theme.colors.surface : theme.colors.primaryContainer }]}>
-          <MaterialCommunityIcons name={item.icon} size={20} color={accentColor} />
+        <View style={[styles.iconBadge, { backgroundColor: theme.colors.primaryContainer }]}>
+          <MaterialCommunityIcons name={item.icon} size={scale(20)} color={theme.colors.primary} />
         </View>
-        <Text variant="titleSmall" style={{ flex: 1, marginLeft: SPACING.m, color: isAdminVariant ? theme.colors.onPrimaryContainer : theme.colors.onSurface }}>
+        <Text variant="titleSmall" style={{ flex: 1, marginLeft: SPACING.m, color: theme.colors.onSurface }}>
           {item.label}
         </Text>
-        <MaterialCommunityIcons name="chevron-right" size={22} color={isAdminVariant ? theme.colors.onPrimaryContainer : theme.colors.onSurfaceVariant} />
+        <MaterialCommunityIcons name="chevron-right" size={scale(22)} color={theme.colors.onSurfaceVariant} />
       </Animated.View>
     </Pressable>
   );
@@ -141,7 +137,6 @@ export default function MoreScreen({ navigation }) {
           <MenuRow
             item={{ key: "AdminPanel", label: "Panel de Admin", icon: "cog-outline" }}
             theme={theme}
-            variant="admin"
             onPress={() => navigation.navigate("AdminPanel")}
           />
         )}
@@ -176,7 +171,7 @@ export default function MoreScreen({ navigation }) {
           contentContainerStyle={[styles.confirmCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
         >
           <View style={[styles.confirmIconWrap, { backgroundColor: theme.colors.errorContainer }]}>
-            <MaterialCommunityIcons name="logout" size={26} color={theme.colors.onErrorContainer} />
+            <MaterialCommunityIcons name="logout" size={scale(26)} color={theme.colors.onErrorContainer} />
           </View>
           <Text variant="titleMedium" style={{ textAlign: "center", marginBottom: SPACING.xs, color: theme.colors.onSurface }}>
             ¿Estás seguro que querés salir?
@@ -217,14 +212,14 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.l,
   },
   heroIconWrap: {
-    width: 52,
-    height: 52,
+    width: scale(52),
+    height: scale(52),
     borderRadius: RADIUS.lg,
     alignItems: "center",
     justifyContent: "center",
   },
   liveRow: { flexDirection: "row", alignItems: "center", marginTop: SPACING.xs },
-  liveDot: { width: 6, height: 6, borderRadius: 3 },
+  liveDot: { width: scale(6), height: scale(6), borderRadius: scale(3) },
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -234,18 +229,18 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.s,
   },
   iconBadge: {
-    width: 38,
-    height: 38,
+    width: scale(38),
+    height: scale(38),
     borderRadius: RADIUS.sm,
     alignItems: "center",
     justifyContent: "center",
   },
   divider: { height: 1, marginVertical: SPACING.l },
   footer: { alignItems: "center", marginTop: "auto", paddingTop: SPACING.xxl, paddingBottom: SPACING.s, opacity: 0.4 },
-  footerLogo: { width: 28, height: 28, marginBottom: SPACING.xs },
+  footerLogo: { width: scale(28), height: scale(28), marginBottom: SPACING.xs },
   footerText: {
     fontFamily: "Rajdhani_700Bold",
-    fontSize: 13,
+    fontSize: scale(13),
     letterSpacing: 3,
   },
   confirmCard: {
@@ -256,8 +251,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   confirmIconWrap: {
-    width: 56,
-    height: 56,
+    width: scale(56),
+    height: scale(56),
     borderRadius: RADIUS.pill,
     alignItems: "center",
     justifyContent: "center",

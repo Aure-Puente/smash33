@@ -3,6 +3,7 @@ import { Image, StyleSheet, View } from "react-native";
 import { IconButton, Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { RADIUS, SPACING } from "../theme";
+import { scale } from "../utils/responsive";
 
 //JS:
 export default function ScreenHeader({ title, subtitle, onBack, icon, logo, style }) {
@@ -10,7 +11,7 @@ export default function ScreenHeader({ title, subtitle, onBack, icon, logo, styl
   return (
     <View style={[styles.row, style]}>
       {onBack && (
-        <IconButton icon="arrow-left" size={22} onPress={onBack} style={styles.backBtn} />
+        <IconButton icon="arrow-left" size={scale(22)} onPress={onBack} style={styles.backBtn} />
       )}
       {logo ? (
         <Image
@@ -21,7 +22,7 @@ export default function ScreenHeader({ title, subtitle, onBack, icon, logo, styl
       ) : (
         icon && (
           <View style={[styles.iconBadge, { backgroundColor: theme.colors.primaryContainer }]}>
-            <MaterialCommunityIcons name={icon} size={18} color={theme.colors.primary} />
+            <MaterialCommunityIcons name={icon} size={scale(18)} color={theme.colors.primary} />
           </View>
         )
       )}
@@ -39,8 +40,8 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.l },
   backBtn: { marginLeft: -SPACING.s, marginRight: SPACING.xs },
   iconBadge: {
-    width: 34, height: 34, borderRadius: RADIUS.sm,
+    width: scale(34), height: scale(34), borderRadius: RADIUS.sm,
     alignItems: "center", justifyContent: "center", marginRight: SPACING.s,
   },
-  logo: { width: 42, height: 42, marginRight: SPACING.s },
+  logo: { width: scale(42), height: scale(42), marginRight: SPACING.s },
 });

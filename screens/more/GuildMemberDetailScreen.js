@@ -10,6 +10,7 @@ import { getAllCharacters } from "../../services/charactersService";
 import ScreenHeader from "../../components/ScreenHeader";
 import { Skeleton } from "../../components/Skeleton";
 import { RADIUS, SPACING } from "../../theme";
+import { IS_TABLET, scale } from "../../utils/responsive";
 
 //JS:
 const NEMESIS_COLOR = "#9B5DE5";
@@ -28,8 +29,8 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
     const [bestCharacter, setBestCharacter] = useState(null);
     const [bestCharLoading, setBestCharLoading] = useState(true);
 
-    const [playerStats, setPlayerStats] = useState(null); // némesis DE ESTE jugador
-    const [myDeepStats, setMyDeepStats] = useState(null); // mis propios datos, para el cruce de némesis
+    const [playerStats, setPlayerStats] = useState(null); 
+    const [myDeepStats, setMyDeepStats] = useState(null); 
     const [headToHead, setHeadToHead] = useState(null);
     const [matchup, setMatchup] = useState(null);
     const [deepLoading, setDeepLoading] = useState(true);
@@ -123,7 +124,6 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
         percentAnim.setValue(0);
         Animated.timing(percentAnim, { toValue: winPercent, duration: 900, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
         return () => percentAnim.removeListener(id);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [deepLoading, winPercent]);
 
     const iAmTheirNemesis = playerStats?.nemesis?.opponentUid === user.uid;
@@ -150,28 +150,30 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
 
             <View style={styles.avatarSection}>
             <Pressable onPress={() => setAvatarModalOpen(true)}>
-                <Avatar.Image size={116} source={{ uri: photoURL }} />
+                <View style={[styles.avatarRing, { borderColor: theme.colors.primary }]}>
+                <Avatar.Image size={IS_TABLET ? scale(150) : scale(116)} source={{ uri: photoURL }} />
+                </View>
             </Pressable>
             <Text variant="headlineSmall" style={{ color: theme.colors.onBackground, marginTop: SPACING.m }}>{playerName}</Text>
             </View>
 
             {statsLoading ? (
             <View style={styles.statsRow}>
-                <Skeleton height={78} radius={RADIUS.lg} style={{ flex: 1 }} />
-                <Skeleton height={78} radius={RADIUS.lg} style={{ flex: 1 }} />
+                <Skeleton height={scale(78)} radius={RADIUS.lg} style={{ flex: 1 }} />
+                <Skeleton height={scale(78)} radius={RADIUS.lg} style={{ flex: 1 }} />
             </View>
             ) : (
             <View style={styles.statsRow}>
                 <View style={[styles.statPill, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
                 <View style={styles.statValueRow}>
-                    <MaterialCommunityIcons name="controller-classic-outline" size={18} color={theme.colors.primary} style={{ marginRight: SPACING.xs }} />
+                    <MaterialCommunityIcons name="controller-classic-outline" size={scale(18)} color={theme.colors.primary} style={{ marginRight: SPACING.xs }} />
                     <Text variant="headlineSmall" style={{ color: theme.colors.onBackground }}>{stats.played}</Text>
                 </View>
                 <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Torneos jugados</Text>
                 </View>
                 <View style={[styles.statPill, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
                 <View style={styles.statValueRow}>
-                    <MaterialCommunityIcons name="trophy" size={18} color={theme.custom.gold} style={{ marginRight: SPACING.xs }} />
+                    <MaterialCommunityIcons name="trophy" size={scale(18)} color={theme.custom.gold} style={{ marginRight: SPACING.xs }} />
                     <Text variant="headlineSmall" style={{ color: theme.custom.gold }}>{stats.won}</Text>
                 </View>
                 <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Torneos ganados</Text>
@@ -180,7 +182,7 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
             )}
 
             {bestCharLoading ? (
-            <Skeleton height={90} radius={RADIUS.lg} style={{ width: "100%", marginBottom: SPACING.l }} />
+            <Skeleton height={scale(90)} radius={RADIUS.lg} style={{ width: "100%", marginBottom: SPACING.l }} />
             ) : (
             bestCharacter && (
                 <ImageBackground
@@ -190,12 +192,16 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
                 >
                 <View style={styles.bestCharText}>
                     <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Mejor personaje</Text>
-                    <Text variant="titleMedium" style={{ color: theme.colors.onSurface }} numberOfLines={1}>
+                    <Text
+                    variant="titleMedium"
+                    style={{ color: theme.colors.onSurface, fontSize: IS_TABLET ? scale(22) : undefined }}
+                    numberOfLines={1}
+                    >
                     {bestCharacter.character.name}
                     </Text>
                     <View style={[styles.bestCharWinsPill, { backgroundColor: theme.colors.surfaceVariant }]}>
-                    <MaterialCommunityIcons name="trophy" size={13} color={theme.custom.gold} style={{ marginRight: 4 }} />
-                    <Text style={{ fontSize: 12, fontWeight: "700", color: theme.colors.onSurfaceVariant }}>{bestCharacter.wins}</Text>
+                    <MaterialCommunityIcons name="trophy" size={IS_TABLET ? scale(20) : scale(13)} color={theme.custom.gold} style={{ marginRight: 4 }} />
+                    <Text style={{ fontSize: IS_TABLET ? scale(16) : scale(12), fontWeight: "700", color: theme.colors.onSurfaceVariant }}>{bestCharacter.wins}</Text>
                     </View>
                 </View>
                 </ImageBackground>
@@ -204,7 +210,7 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
 
             {/* --- Cara a cara --- */}
             {deepLoading ? (
-            <Skeleton height={130} radius={RADIUS.lg} style={{ width: "100%", marginBottom: SPACING.l }} />
+            <Skeleton height={scale(130)} radius={RADIUS.lg} style={{ width: "100%", marginBottom: SPACING.l }} />
             ) : (
             <View style={[styles.h2hCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
                 <Text variant="titleSmall" style={{ color: theme.colors.onBackground, marginBottom: SPACING.s }}>Cara a cara</Text>
@@ -232,9 +238,9 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
             <View style={styles.matchupRow}>
                 {[0, 1].map((i) => (
                 <View key={i} style={[styles.matchupCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
-                    <Skeleton width={60} height={60} radius={RADIUS.lg} />
-                    <Skeleton width={70} height={11} style={{ marginTop: SPACING.s }} />
-                    <Skeleton width={50} height={14} style={{ marginTop: 4 }} />
+                    <Skeleton width={scale(60)} height={scale(60)} radius={RADIUS.lg} />
+                    <Skeleton width={scale(70)} height={scale(11)} style={{ marginTop: SPACING.s }} />
+                    <Skeleton width={scale(50)} height={scale(14)} style={{ marginTop: 4 }} />
                 </View>
                 ))}
             </View>
@@ -257,7 +263,7 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
                     <View style={[styles.matchupBadge, { backgroundColor: theyAreMyNemesis ? NEMESIS_COLOR : theme.colors.surface, borderColor: theyAreMyNemesis ? NEMESIS_BG : theme.colors.surfaceVariant }]}>
                         <MaterialCommunityIcons
                         name={theyAreMyNemesis ? "emoticon-devil-outline" : "shield-alert-outline"}
-                        size={12}
+                        size={scale(12)}
                         color={theyAreMyNemesis ? "#FFFFFF" : theme.colors.onSurfaceVariant}
                         />
                     </View>
@@ -277,7 +283,7 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
                     {theirCardChar.name}
                     </Text>
                     {theyAreMyNemesis && (
-                    <Text style={{ fontSize: 11, color: NEMESIS_COLOR, marginTop: 3, fontWeight: "700" }}>
+                    <Text style={{ fontSize: scale(11), color: NEMESIS_COLOR, marginTop: 3, fontWeight: "700" }}>
                         {theirCardCount} {theirCardCount === 1 ? "vez" : "veces"}
                     </Text>
                     )}
@@ -300,7 +306,7 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
                     <View style={[styles.matchupBadge, { backgroundColor: iAmTheirNemesis ? NEMESIS_COLOR : theme.colors.surface, borderColor: iAmTheirNemesis ? NEMESIS_BG : theme.colors.surfaceVariant }]}>
                         <MaterialCommunityIcons
                         name={iAmTheirNemesis ? "fire" : "shield-star-outline"}
-                        size={12}
+                        size={scale(12)}
                         color={iAmTheirNemesis ? "#FFFFFF" : theme.colors.onSurfaceVariant}
                         />
                     </View>
@@ -320,7 +326,7 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
                     {myCardChar.name}
                     </Text>
                     {iAmTheirNemesis && (
-                    <Text style={{ fontSize: 11, color: NEMESIS_COLOR, marginTop: 3, fontWeight: "700" }}>
+                    <Text style={{ fontSize: scale(11), color: NEMESIS_COLOR, marginTop: 3, fontWeight: "700" }}>
                         {myCardCount} {myCardCount === 1 ? "vez" : "veces"}
                     </Text>
                     )}
@@ -331,11 +337,11 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
 
             <View style={[styles.badgesTeaseCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
             <View style={[styles.rowIconBadge, { backgroundColor: theme.colors.surfaceVariant }]}>
-                <MaterialCommunityIcons name="medal-outline" size={17} color={theme.colors.primary} />
+                <MaterialCommunityIcons name="medal-outline" size={scale(17)} color={theme.colors.primary} />
             </View>
             <Text variant="bodyMedium" style={{ flex: 1, marginLeft: SPACING.m, color: theme.colors.onSurface }}>Insignias</Text>
             <View style={[styles.comingSoonPill, { backgroundColor: theme.colors.surfaceVariant }]}>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: theme.colors.onSurfaceVariant }}>Próximamente</Text>
+                <Text style={{ fontSize: scale(11), fontWeight: "700", color: theme.colors.onSurfaceVariant }}>Próximamente</Text>
             </View>
             </View>
         </ScrollView>
@@ -357,6 +363,7 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
 
     const styles = StyleSheet.create({
     avatarSection: { alignItems: "center", marginBottom: SPACING.xl },
+    avatarRing: { borderWidth: 3, borderRadius: RADIUS.pill, padding: 3 },
     statsRow: { flexDirection: "row", gap: SPACING.m, marginBottom: SPACING.l },
     statPill: {
         flex: 1, alignItems: "center", paddingVertical: SPACING.l,
@@ -364,7 +371,7 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
     },
     statValueRow: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.xs },
     bestCharBanner: {
-        height: 90,
+        height: IS_TABLET ? scale(150) : scale(90),
         borderRadius: RADIUS.lg,
         borderWidth: 1,
         marginBottom: SPACING.l,
@@ -379,8 +386,8 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
     },
     h2hCard: { borderRadius: RADIUS.lg, borderWidth: 1, padding: SPACING.l, marginBottom: SPACING.l },
     percentRow: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.s },
-    percentNumber: { fontFamily: "Rajdhani_700Bold", fontSize: 36 },
-    percentTrack: { height: 10, borderRadius: RADIUS.pill, overflow: "hidden" },
+    percentNumber: { fontFamily: "Rajdhani_700Bold", fontSize: scale(36) },
+    percentTrack: { height: scale(10), borderRadius: RADIUS.pill, overflow: "hidden" },
     percentFill: { height: "100%", borderRadius: RADIUS.pill },
     matchupRow: { flexDirection: "row", gap: SPACING.m, marginBottom: SPACING.l },
     matchupCard: {
@@ -388,17 +395,17 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
         paddingVertical: SPACING.l, paddingHorizontal: SPACING.s,
     },
     matchupIconWrap: {
-        width: 60, height: 60, borderRadius: RADIUS.lg,
+        width: scale(60), height: scale(60), borderRadius: RADIUS.lg,
         alignItems: "center", justifyContent: "center",
     },
-    matchupIcon: { width: 46, height: 46, borderRadius: RADIUS.sm },
+    matchupIcon: { width: scale(46), height: scale(46), borderRadius: RADIUS.sm },
     matchupBadge: {
         position: "absolute", bottom: -6, right: -6,
-        width: 22, height: 22, borderRadius: 11, borderWidth: 2,
+        width: scale(22), height: scale(22), borderRadius: scale(11), borderWidth: 2,
         alignItems: "center", justifyContent: "center",
     },
     avatarModal: { margin: SPACING.xxl, alignItems: "center", justifyContent: "center" },
-    avatarModalImage: { width: 280, height: 280, borderRadius: 140 },
+    avatarModalImage: { width: scale(280), height: scale(280), borderRadius: scale(140) },
     badgesTeaseCard: {
         flexDirection: "row",
         alignItems: "center",
@@ -407,7 +414,7 @@ export default function GuildMemberDetailScreen({ route, navigation }) {
         padding: SPACING.m,
     },
     rowIconBadge: {
-        width: 34, height: 34, borderRadius: RADIUS.sm,
+        width: scale(34), height: scale(34), borderRadius: RADIUS.sm,
         alignItems: "center", justifyContent: "center",
     },
     comingSoonPill: {

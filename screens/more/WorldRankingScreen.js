@@ -14,12 +14,13 @@ import { computeRankingData } from "../../utils/rankingCalc";
 import { formatCountdown, getNextSeasonKey, getSeasonInfo, getVisibleSeasonEnd, SEASONS } from "../../utils/season";
 import { Skeleton } from "../../components/Skeleton";
 import { RADIUS, SPACING } from "../../theme";
+import { scale } from "../../utils/responsive";
 
 //JS:
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 const MAX_PLAYER_SLOTS = 8;
 const MAX_CHARACTER_SLOTS = 10;
-const BAND_HEIGHT = 80;
+const BAND_HEIGHT = scale(80);
 const BAR_WIDTH = SCREEN_W - SPACING.l * 2;
 
 const RANK_COLORS = ["#F2B84B", "#FF8A65", "#EF5DA8", "#9B5DE5", "#5C7CFA", "#4FC3D9", "#66BB6A", "#8D99AE", "#B0BEC5", "#78909C"];
@@ -32,7 +33,6 @@ const SEASON_TRACKS = [
 ];
 
 const SEASON_PETAL_ASSETS = [
-  { asset: require("../../assets/spring/images/flower.png"), weight: 5 },
   { asset: require("../../assets/spring/images/flower01.png"), weight: 5 },
   { asset: require("../../assets/spring/images/flower02.png"), weight: 5 },
   { asset: require("../../assets/spring/images/flower03.png"), weight: 5 },
@@ -244,7 +244,7 @@ function OccasionalCreatures({ palette }) {
 const SEASON_MESSAGES = [
   // Genéricas
   "¡Den su mejor esfuerzo! 🌸",
-  "¡Que gane el/la mejor!",
+  "¡Que gane el mejor!",
   "Cada combate suma 🌷",
   "¡A por la insignia!",
   "¡Mucha suerte a todos!",
@@ -256,98 +256,83 @@ const SEASON_MESSAGES = [
   "¿Alguien vio a Desvan? Se fue a respirar después de perder una vida",
   "Desvan, cuidado con los ligamentos de la mano negrito",
   "Cuidado con las provocaciones de Desvan, después no se hace cargo",
-  "Desvan y su Yoshi, la combinación menos tranquila de Smash 33",
   "Practicá la paciencia, Desvan — pronto vas a ser papá 👶",
   "Desvan perdiendo el control... otra vez",
-  "El huevito de Yoshi es lo único tranquilo que tiene Desvan",
-  "Desvan: gana con estilo, pierde con gritos",
-  "Alguien cronometrá cuánto tarda Desvan en faltarte el respeto esta vez",
+  "Las sillas tiemblan cuando Desvan está por perder...",
   "Desvan ya practica para las noches sin dormir...",
-  "Con Desvan nunca sabés si ganó o perdió: siempre grita igual",
-  "Yoshi jamás se enoja. Desvan, en cambio...",
-  "La bronca de Desvan dura más que la partida",
-  "Desvan: te quedó el culo como la que te habla",
-  "Desvan se prepara para ser padre practicando el autocontrol... en la vida real, no acá",
+  "Desvan: te quedó el culo como una flor",
+  "Desvan se prepara para ser padre practicando el autocontrol...",
+  "Desvan ya cuenta los días para el casamiento 💍",
+  "Sufre Desvan mas que en la despedida de soltero",
+  "Desvan con el OK de Mica, listo para gremiar",
+  "Desvan es de River, o sea que ya perdió antes de arrancar el torneo",
+  "River pierde más finales que Desvan combates",
+  "Con Desvan de River, la pregunta no es si pierde, es cuántas veces",
 
   // Tato
   "Tato ajustándose los lentes antes de humillarte",
   "El joystick rosa de Tato acumulando flor de victorias",
   "La Mari ya sabe que hoy Tato llega tarde por el torneo",
-  "Con esos lentes, Tato ve tus combos venir de lejos",
-  "Tato: el mejor jugador y el más elegante con su joystick rosa",
+  "Con esos lentes, Tato ve tus combos venir de lejos, claro que si",
   "Si Tato gana, la Mari ya sabe que festeja toda la noche",
-  "Nadie le discute el primer puesto a Tato... todavía",
-  "El secreto de Tato: buena vista, mejor joystick",
-  "Tato juega, la Mari aguanta",
   "Oye Tato, me quieres verdad?",
-  "Tato no necesita gritar, solo ganar",
-  "El Tato se acomoda los lentes y Desvan se pone una curita en la cola",
-  "Tato: consistencia, estilo y un toque de rosa",
+  "El Tato se acomoda los lentes y a Desvan no le gusta",
   "La Mari ya conoce de memoria la cara de campeón de Tato",
-  "Con Tato al mando (rosa), la corona tiembla",
   "El Tato, como roba con su ROB",
   "Totoine, ya te arreglaron el quincho?",
+  "Sin la foto a la Mari, el torneo ni cuenta",
+  "Tato jura que hoy no compra más cartas de Magic...",
+  "Nadie toca la carta de Cloud de Tato, ni en broma",
 
   // Aure ("el Lance")
   "El Lance nunca vio un tutorial en su vida, y se nota",
   "Aure inventando la pólvora de nuevo con una táctica que ya existía",
-  "Cuidado con el 'Abajo y Jamás' del Lance, ahí no hay vuelta atrás",
+  "Cuidado con el 'Abajo y Jamás' del Lance",
   "El Lance ya suma otra mandíbula a la colección",
   "Aure prefiere descubrirlo todo solo, tutoriales para qué",
   "El Aureliano, si que es fuerte",
   "El Lance no lee guías, rompe ortos",
   "Otra mandíbula para la vitrina del Lance",
-  "Aure descubriendo el agua tibia, otra vez",
   "El Lance no necesita internet, tiene instinto (solo un poco)",
   "Cuando el Lance dice 'Saluda al Sol', ya podés ir despidiéndote",
-  "Aure coleccionando mandíbulas como quien junta figuritas",
-  "El Lance sigue tratando de inventar algo que ya existe hace 10 años",
   "Oye Lance, porque tan abajo en el ranking?",
   "El Lance, si que es la piedra del papel de Tato",
   "Aure: cero tutoriales, cien mandíbulas coleccionadas",
-  "Con el Lance nunca sabés",
+  "Con el Lance nunca sabés, ja",
 
   // Shu
   "Sin la Switch de Shu, no hay torneo — no lo olviden",
   "Shu llega con la consola y con hambre de empanadas de María Alsina",
-  "La sonrisa de Shu tiene un huequito, pero el combo no falla",
-  "Shu: casado en la vida, soltero para los combos",
-  "Empanadas de María Alsina antes, Smash después — el ritual de Shu",
-  "Gracias a Shu tenemos consola. Gracias a María Alsina, empanadas",
-  "Shu sonríe con esa paleta bebé cada vez que gana",
   "Flor de pija se come el Shu",
-  "Sin Shu no hay consola. Sin empanadas, Shu no está contento",
   "Ganondorf es débil, te suena Shu?",
-  "Shu llega, prende la Switch, y ya estamos listos",
-  "María Alsina no sabe el poder que tiene sobre el rendimiento de Shu",
   "Shu: el proveedor oficial de consola del Gremio",
-  "Cuando Shu sonríe con el huequito, algo bueno está por pasar",
-  "Todos amamos la Switch de Shu casi tanto como él las empanadas",
-  "Shu, guardián de la consola y de las mejores empanadas del Gremio",
+  "Ja , el Lance si que le gana en todo al Shu",
+  "Shu extraña al Pepi más de lo que extraña ganarle a Aure",
+  "Sin el visto bueno de la Belencita, no hay Gremio",
+  "Oye Shu!, ya sabemos que no invitás a tu hermano por miedo a perder",
 
   // Rivalidad Tato vs Kevin
   "Tato y Kevin, la rivalidad que nadie pidió pero todos disfrutan",
-  "Cuando juegan Tato y Kevin, hasta la Mari deja de mirar el celular",
-  "Kevin ya está pensando en cómo trollear a Tato en la próxima ronda",
-  "Tato con el joystick rosa, Kevin con ganas de arruinarle la tarde",
+  "Kevin ya está focuseando  a Tato",
+  "Tato con el joystick rosa, Kevin con ganas de arruinarle la night",
   "Si perdés contra Kevin, prepará el pecho... viene la chocolatada",
   "Kevin: agita, prepara, ¡chocolatada al pecho! 🍫",
-  "Tato gana, Kevin jura revancha (y trae más chocolatada)",
-  "La final soñada de todos: Tato vs Kevin, con la Mari de público",
-  "Cuidado con Kevin, siempre tiene una chocolatada guardada para el que pierde",
-  "Kevin no perdona: gana o te tira la chocolatada igual",
+  "Tato gana, Kevin jura revancha con la trompada de fuego",
+  "Cuidado con Kevin, siempre saca el 9, pregunten al Lance",
 
   // Rivalidad Desvan vs Aure (el Lance)
   "Desvan y Aure, la rivalidad que termina siempre en gritos... de un solo lado",
-  "Aure inventando la pólvora, Desvan gritándole que ya la inventó",
-  "Cuando juegan Desvan y Aure, el Abajo y Jamás se cruza con la bronca",
-  "Desvan pierde la paciencia, Aure ni se entera y sigue jugando",
+  "Aure inventando la pólvora, Desvan gritándole que ya se inventó",
   "El Lance con su técnica, Desvan con sus gritos: duelo clásico del Gremio",
+  "Aure queriendo ser amigos, el Descan queriendo matarlo solo por eso",
+  "La wifit del Lance, si que queda siempre bien parada",
+  "La primera clase, es gratis",
+  "La segunda clase te la cobran",
+  "No se queden sin ir a Londres, ya sale el último tren",
+  "Se acuerdan de Carmandú, pueden ir en tren a verlo",
 
   // Desvan y las esquinas
-  "Desvan otra vez metido en la esquina, tirando flechas como si no hubiera mañana",
-  "A Desvan lo encontrás siempre en la esquina, con el arco listo",
-  "Desvan: si hay una esquina, ahí está, tirando flechas",
+  "Desvan el flechero maal parado de la esquina",
 
   // Tato y el Aserejé
   "Tato ganó y ya está bailando el Au seu ti Pego de festejo 💃",
@@ -374,8 +359,8 @@ function LoadingFlower({ palette }) {
   const rotate = spin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
 
   return (
-    <View style={[styles.loadingWrap, { height: BAND_HEIGHT * 4 + 110 }]}>
-      <Animated.Image source={asset} style={{ width: 84, height: 84, transform: [{ rotate }] }} resizeMode="contain" />
+    <View style={[styles.loadingWrap, { height: BAND_HEIGHT * 4 + scale(110) }]}>
+      <Animated.Image source={asset} style={{ width: scale(84), height: scale(84), transform: [{ rotate }] }} resizeMode="contain" />
       <Text style={[styles.loadingLabel, { color: palette.pink }]}>Floreciendo el ranking...</Text>
     </View>
   );
@@ -383,6 +368,9 @@ function LoadingFlower({ palette }) {
 
 function EmptyRankingState({ mode, palette }) {
   const floatAnim = useRef(new Animated.Value(0)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
+  const spinLeftAnim = useRef(new Animated.Value(0)).current;
+  const spinRightAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const loop = Animated.loop(
@@ -395,22 +383,62 @@ function EmptyRankingState({ mode, palette }) {
     return () => loop.stop();
   }, [floatAnim]);
 
-  const translateY = floatAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -10] });
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, { toValue: 1, duration: 1500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(glowAnim, { toValue: 0, duration: 1500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [glowAnim]);
+
+  useEffect(() => {
+    const loop = Animated.loop(Animated.timing(spinLeftAnim, { toValue: 1, duration: 5000, easing: Easing.linear, useNativeDriver: true }));
+    loop.start();
+    return () => loop.stop();
+  }, [spinLeftAnim]);
+
+  useEffect(() => {
+    const loop = Animated.loop(Animated.timing(spinRightAnim, { toValue: 1, duration: 6200, easing: Easing.linear, useNativeDriver: true }));
+    loop.start();
+    return () => loop.stop();
+  }, [spinRightAnim]);
+
+  const translateY = floatAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -scale(10)] });
   const rotate = floatAnim.interpolate({ inputRange: [0, 1], outputRange: ["-3deg", "3deg"] });
+  const glowScale = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1.3] });
+  const glowOpacity = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.6] });
+  const spinLeftDeg = spinLeftAnim.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
+  const spinRightDeg = spinRightAnim.interpolate({ inputRange: [0, 1], outputRange: ["360deg", "0deg"] });
 
   return (
-    <View style={[styles.emptyCard, { backgroundColor: palette.surface, borderColor: palette.pink }]}>
+      <LinearGradient colors={[palette.gradient[1], palette.gradient[0]]} style={[styles.emptyCard, { borderColor: palette.pink, borderWidth: 1.5 }]}>      
       <View style={styles.emptyFlowerRow}>
-        <Image source={require("../../assets/spring/images/flower02.png")} style={styles.emptySideFlower} resizeMode="contain" />
         <Animated.Image
-          source={require("../../assets/spring/images/flower.png")}
-          style={[styles.emptyMainFlower, { transform: [{ translateY }, { rotate }] }]}
+          source={require("../../assets/spring/images/flower02.png")}
+          style={[styles.emptySideFlower, { transform: [{ rotate: spinLeftDeg }] }]}
           resizeMode="contain"
         />
-        <Image source={require("../../assets/spring/images/flower03.png")} style={styles.emptySideFlower} resizeMode="contain" />
+        <View style={styles.emptyMainFlowerWrap}>
+          <Animated.View
+            style={[styles.emptyMainGlow, { backgroundColor: RADIANT_GOLD, opacity: glowOpacity, transform: [{ scale: glowScale }] }]}
+          />
+          <Animated.Image
+            source={require("../../assets/spring/images/flower.png")}
+            style={[styles.emptyMainFlower, { transform: [{ translateY }, { rotate }] }]}
+            resizeMode="contain"
+          />
+        </View>
+        <Animated.Image
+          source={require("../../assets/spring/images/flower03.png")}
+          style={[styles.emptySideFlower, { transform: [{ rotate: spinRightDeg }] }]}
+          resizeMode="contain"
+        />
       </View>
 
-      <Text style={[styles.emptyTitle, { color: palette.textDark }]}>
+      <Text style={[styles.emptyTitle, { color: palette.green }]}>
         {mode === "players" ? "¡Bienvenidos a la Temporada de Primavera!" : "Todavía no hay personajes destacados"}
       </Text>
       <Text style={[styles.emptySubtitle, { color: palette.textMuted }]}>
@@ -418,7 +446,7 @@ function EmptyRankingState({ mode, palette }) {
           ? "Jueguen algunos torneos para arrancar el Ranking Smash 33 🌸"
           : "Todavía no se usó ningún personaje en los torneos de los jugadores incluidos."}
       </Text>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -431,7 +459,7 @@ function RankBar({ items, season, palette }) {
   useEffect(() => {
     const id = setInterval(() => {
       setMessage(SEASON_MESSAGES[Math.floor(Math.random() * SEASON_MESSAGES.length)]);
-    }, 15000);
+    }, 5000);
     return () => clearInterval(id);
   }, []);
 
@@ -515,7 +543,7 @@ function RankBar({ items, season, palette }) {
             <Text style={[styles.badgeLeftLine, { color: palette.textDark }]}>Premio de la temporada:</Text>
             <View style={styles.badgeLeftArrowRow}>
               <Text style={[styles.badgeLeftLine, { color: palette.pink }]}>Insignia Flor</Text>
-              <MaterialCommunityIcons name="arrow-right-thick" size={18} color={palette.pink} style={{ marginLeft: 4 }} />
+              <MaterialCommunityIcons name="arrow-right-thick" size={scale(18)} color={palette.pink} style={{ marginLeft: 4 }} />
             </View>
           </View>
 
@@ -532,19 +560,19 @@ function RankBar({ items, season, palette }) {
               resizeMode="contain"
             />
             <Animated.View style={[styles.sparkleA, { opacity: sparkleOpacityA }]}>
-              <MaterialCommunityIcons name="star-four-points" size={13} color={RADIANT_GOLD} />
+              <MaterialCommunityIcons name="star-four-points" size={scale(13)} color={RADIANT_GOLD} />
             </Animated.View>
             <Animated.View style={[styles.sparkleB, { opacity: sparkleOpacityB }]}>
-              <MaterialCommunityIcons name="star-four-points" size={10} color={RADIANT_GOLD} />
+              <MaterialCommunityIcons name="star-four-points" size={scale(10)} color={RADIANT_GOLD} />
             </Animated.View>
             <Animated.View style={[styles.sparkleC, { opacity: sparkleOpacityC, transform: [{ scale: sparkleScaleC }] }]}>
-              <MaterialCommunityIcons name="star-four-points" size={11} color={RADIANT_GOLD} />
+              <MaterialCommunityIcons name="star-four-points" size={scale(11)} color={RADIANT_GOLD} />
             </Animated.View>
             <Animated.View style={[styles.sparkleD, { opacity: sparkleOpacityD, transform: [{ scale: sparkleScaleD }] }]}>
-              <MaterialCommunityIcons name="star-four-points" size={8} color={RADIANT_GOLD} />
+              <MaterialCommunityIcons name="star-four-points" size={scale(8)} color={RADIANT_GOLD} />
             </Animated.View>
             <Animated.View style={[styles.sparkleE, { opacity: sparkleOpacityC }]}>
-              <MaterialCommunityIcons name="star-four-points" size={9} color={RADIANT_GOLD} />
+              <MaterialCommunityIcons name="star-four-points" size={scale(9)} color={RADIANT_GOLD} />
             </Animated.View>
           </View>
 
@@ -552,7 +580,7 @@ function RankBar({ items, season, palette }) {
             <View style={[styles.speechDot1, { backgroundColor: palette.surface, borderColor: palette.pink }]} />
             <View style={[styles.speechDot2, { backgroundColor: palette.surface, borderColor: palette.pink }]} />
             <View style={[styles.speechBubble, { backgroundColor: palette.surface, borderColor: palette.pink }]}>
-              <Text style={{ fontSize: 13, fontWeight: "700", color: palette.textDark, textAlign: "center", lineHeight: 16 }} numberOfLines={6}>
+              <Text style={{ fontSize: scale(13), fontWeight: "700", color: palette.textDark, textAlign: "center", lineHeight: scale(16) }} numberOfLines={6}>
                 {message}
               </Text>
             </View>
@@ -581,9 +609,9 @@ function RankBar({ items, season, palette }) {
         </View>
 
         {items.map((item, i) => {
-          const targetY = i * BAND_HEIGHT + BAND_HEIGHT / 2 - 28;
+          const targetY = i * BAND_HEIGHT + BAND_HEIGHT / 2 - scale(28);
           const anim = climbAnims[i];
-          const translateY = anim.interpolate({ inputRange: [0, 1], outputRange: [H - 28, targetY] });
+          const translateY = anim.interpolate({ inputRange: [0, 1], outputRange: [H - scale(28), targetY] });
 
           return (
             <Animated.View
@@ -601,7 +629,7 @@ function RankBar({ items, season, palette }) {
               }}
             >
               <View style={styles.rankNumberBadge}>
-                <Text style={{ fontSize: 14, fontWeight: "800", color: "#FFFFFF" }}>{i + 1}</Text>
+                <Text style={{ fontSize: scale(14), fontWeight: "800", color: "#FFFFFF" }}>{i + 1}</Text>
               </View>
               <View style={[styles.rankAvatarRing, { borderColor: "rgba(255,255,255,0.9)" }]}>
                 {item.imageUri && <Image source={{ uri: item.imageUri }} style={styles.rankAvatarImg} />}
@@ -644,7 +672,6 @@ export default function WorldRankingScreen({ navigation }) {
   const isFocused = useIsFocused();
   const [mode, setMode] = useState("players");
   const [now, setNow] = useState(new Date());
-
   const [currentTrack, setCurrentTrack] = useState(() => SEASON_TRACKS[Math.floor(Math.random() * SEASON_TRACKS.length)]);
   const [showNowPlaying, setShowNowPlaying] = useState(false);
   const notifAnim = useRef(new Animated.Value(0)).current;
@@ -661,8 +688,37 @@ export default function WorldRankingScreen({ navigation }) {
     loop.start();
     return () => loop.stop();
   }, [insigniaFloatAnim]);
-  const insigniaTranslate = insigniaFloatAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -16] });
+  const insigniaTranslate = insigniaFloatAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -scale(16)] });
   const insigniaRotate = insigniaFloatAnim.interpolate({ inputRange: [0, 1], outputRange: ["-5deg", "5deg"] });
+
+  const flagWaveAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(flagWaveAnim, { toValue: 1, duration: 500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(flagWaveAnim, { toValue: 0, duration: 500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [flagWaveAnim]);
+  const flagWaveRotate = flagWaveAnim.interpolate({ inputRange: [0, 1], outputRange: ["-8deg", "8deg"] });
+
+  const endedGlowAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(endedGlowAnim, { toValue: 1, duration: 1500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(endedGlowAnim, { toValue: 0, duration: 1500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [endedGlowAnim]);
+  const endedPersonGlowScale = endedGlowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.95, 1.12] });
+  const endedPersonGlowOpacity = endedGlowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.35, 0.6] });
+  const endedInsigniaGlowScale = endedGlowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.95, 1.15] });
+  const endedInsigniaGlowOpacity = endedGlowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.35, 0.6] });
 
   const [loading, setLoading] = useState(true);
   const [allUsers, setAllUsers] = useState([]);
@@ -796,7 +852,7 @@ export default function WorldRankingScreen({ navigation }) {
       >
         <View style={styles.header}>
           <Pressable onPress={() => navigation.navigate("MoreHome")} style={styles.backBtn}>
-            <MaterialCommunityIcons name="arrow-left" size={22} color={palette.textDark} />
+            <MaterialCommunityIcons name="arrow-left" size={scale(22)} color={palette.textDark} />
           </Pressable>
           <Image source={require("../../assets/logo.webp")} style={[styles.logo, { tintColor: palette.pink }]} resizeMode="contain" />
           <View style={{ marginLeft: SPACING.m }}>
@@ -805,13 +861,13 @@ export default function WorldRankingScreen({ navigation }) {
               <Text style={{ color: palette.green }}>Smash</Text>{" "}
               <Text style={{ color: palette.gold }}>33</Text>
             </Text>
-            <Text style={{ color: palette.textMuted, fontSize: 12 }}>Basado en torneos y combates de todos</Text>
+            <Text style={{ color: palette.textMuted, fontSize: scale(12) }}>Basado en torneos y combates de todos</Text>
           </View>
         </View>
 
         <View style={[styles.seasonBanner, { backgroundColor: palette.surface, borderColor: palette.outline }]}>
           <View style={[styles.seasonIconWrap, { backgroundColor: `${palette.pink}22` }]}>
-            <MaterialCommunityIcons name={season.icon} size={26} color={palette.pink} />
+            <MaterialCommunityIcons name={season.icon} size={scale(26)} color={palette.pink} />
           </View>
           <View style={{ flex: 1, marginLeft: SPACING.m }}>
             <Text style={[styles.seasonTitle, { color: palette.textDark }]}>Temporada de {season.label}</Text>
@@ -822,14 +878,16 @@ export default function WorldRankingScreen({ navigation }) {
         </View>
 
         {seasonEnded ? (
-          <View style={[styles.endedCard, { backgroundColor: palette.surface, borderColor: palette.gold }]}>
-            <MaterialCommunityIcons name="flag-checkered" size={38} color={palette.gold} />
-            <Text style={[styles.endedTitle, { color: palette.textDark }]}>
+          <LinearGradient colors={[palette.gradient[1], palette.gradient[0]]} style={[styles.endedCard, { borderColor: palette.gold, borderWidth: 2 }]}>
+            <Animated.View style={{ transform: [{ rotate: flagWaveRotate }] }}>
+              <MaterialCommunityIcons name="flag-checkered" size={scale(38)} color={palette.gold} />
+            </Animated.View>
+            <Text style={[styles.endedTitle, { color: palette.gold }]}>
               La Temporada de {season.label} ha terminado
             </Text>
 
             {revealLoading ? (
-              <Skeleton width={140} height={140} radius={70} style={{ marginTop: SPACING.l, backgroundColor: palette.surfaceSoft }} />
+              <Skeleton width={scale(140)} height={scale(140)} radius={scale(70)} style={{ marginTop: SPACING.l, backgroundColor: palette.surfaceSoft }} />
             ) : revealPlayers.length === 0 ? (
               <Text style={{ color: palette.textMuted, marginTop: SPACING.m, textAlign: "center" }}>
                 No hubo suficientes jugadores incluidos para coronar a nadie esta vez.
@@ -839,40 +897,64 @@ export default function WorldRankingScreen({ navigation }) {
                 <View style={styles.endedDuoRow}>
                   <View style={styles.endedDuoCol}>
                     <Text style={[styles.endedBigLabel, { color: palette.pink }]}>JUGADOR{"\n"}GANADOR</Text>
-                    <Avatar.Image size={100} source={{ uri: revealPlayers[0].photoURL }} />
-                    <Text style={[styles.endedChampionName, { color: palette.textDark }]} numberOfLines={1}>
+                    <View style={styles.endedAvatarWrap}>
+                      <Animated.View
+                        style={[
+                          styles.endedPersonGlow,
+                          { backgroundColor: palette.pink, opacity: endedPersonGlowOpacity, transform: [{ scale: endedPersonGlowScale }] },
+                        ]}
+                      />
+                      <Avatar.Image size={scale(100)} source={{ uri: revealPlayers[0].photoURL }} />
+                    </View>
+                    <Text style={[styles.endedChampionName, { color: palette.pink }]} numberOfLines={1}>
                       {revealPlayers[0].playerName}
                     </Text>
                   </View>
 
                   <View style={styles.endedDuoCol}>
                     <Text style={[styles.endedBigLabel, { color: palette.pink }]}>PERSONAJE{"\n"}GANADOR</Text>
-                    {revealPlayers[0].bestCharacterFullImage ? (
-                      <Image
-                        source={{ uri: revealPlayers[0].bestCharacterFullImage }}
-                        style={styles.endedCharBigImage}
-                        resizeMode="contain"
+                    <View style={styles.endedAvatarWrap}>
+                      <Animated.View
+                        style={[
+                          styles.endedPersonGlow,
+                          { backgroundColor: palette.pink, opacity: endedPersonGlowOpacity, transform: [{ scale: endedPersonGlowScale }] },
+                        ]}
                       />
-                    ) : (
-                      <View style={[styles.endedCharBigImage, styles.endedCharFallback, { backgroundColor: palette.surfaceSoft }]}>
-                        <MaterialCommunityIcons name="sword-cross" size={40} color={palette.textMuted} />
-                      </View>
-                    )}
-                    <Text style={[styles.endedChampionName, { color: palette.textDark }]} numberOfLines={1}>
+                      {revealPlayers[0].bestCharacterFullImage ? (
+                        <Image
+                          source={{ uri: revealPlayers[0].bestCharacterFullImage }}
+                          style={styles.endedCharBigImage}
+                          resizeMode="contain"
+                        />
+                      ) : (
+                        <View style={[styles.endedCharBigImage, styles.endedCharFallback, { backgroundColor: palette.surfaceSoft }]}>
+                          <MaterialCommunityIcons name="sword-cross" size={scale(40)} color={palette.textMuted} />
+                        </View>
+                      )}
+                    </View>
+                    <Text style={[styles.endedChampionName, { color: palette.pink }]} numberOfLines={1}>
                       {revealPlayers[0].bestCharacterName || "Sin datos"}
                     </Text>
                   </View>
                 </View>
 
                 <View style={styles.endedInsigniaSection}>
-                  <Animated.Image
-                    source={season.mascotAsset}
-                    style={[
-                      styles.endedBigInsignia,
-                      { transform: [{ translateY: insigniaTranslate }, { rotate: insigniaRotate }] },
-                    ]}
-                    resizeMode="contain"
-                  />
+                  <View style={styles.endedInsigniaWrap}>
+                    <Animated.View
+                      style={[
+                        styles.endedInsigniaGlow,
+                        { backgroundColor: RADIANT_GOLD, opacity: endedInsigniaGlowOpacity, transform: [{ scale: endedInsigniaGlowScale }] },
+                      ]}
+                    />
+                    <Animated.Image
+                      source={season.mascotAsset}
+                      style={[
+                        styles.endedBigInsignia,
+                        { transform: [{ translateY: insigniaTranslate }, { rotate: insigniaRotate }] },
+                      ]}
+                      resizeMode="contain"
+                    />
+                  </View>
                   <Text style={[styles.endedWonText, { color: palette.pink }]}>¡GANARON LA INSIGNIA FLOR!</Text>
                 </View>
 
@@ -884,13 +966,13 @@ export default function WorldRankingScreen({ navigation }) {
                         <View key={m.uid} style={[styles.endedRestRow, { backgroundColor: palette.surfaceSoft }]}>
                           <View style={styles.endedRestPosWrap}>
                             {pos.icon ? (
-                              <MaterialCommunityIcons name={pos.icon} size={20} color={pos.color} />
+                              <MaterialCommunityIcons name={pos.icon} size={scale(20)} color={pos.color} />
                             ) : (
-                              <Text style={{ fontWeight: "800", color: pos.color, fontSize: 13 }}>{idx + 2}°</Text>
+                              <Text style={{ fontWeight: "800", color: pos.color, fontSize: scale(13) }}>{idx + 2}°</Text>
                             )}
                           </View>
-                          <Avatar.Image size={32} source={{ uri: m.photoURL }} style={{ marginRight: SPACING.s }} />
-                          <Text style={{ color: palette.textDark, fontSize: 14, fontWeight: "700", flex: 1 }} numberOfLines={1}>{m.playerName}</Text>
+                          <Avatar.Image size={scale(32)} source={{ uri: m.photoURL }} style={{ marginRight: SPACING.s }} />
+                          <Text style={{ color: palette.textDark, fontSize: scale(14), fontWeight: "700", flex: 1 }} numberOfLines={1}>{m.playerName}</Text>
                         </View>
                       );
                     })}
@@ -902,7 +984,7 @@ export default function WorldRankingScreen({ navigation }) {
             <Text style={[styles.endedFootnote, { color: palette.pink }]}>
               ¡Prepárense para la Temporada de {nextSeason.label}! {NEXT_SEASON_EMOJI[nextSeason.key] || ""}
             </Text>
-          </View>
+          </LinearGradient>
         ) : (
           <>
             <View style={styles.toggleRow}>
@@ -941,7 +1023,7 @@ export default function WorldRankingScreen({ navigation }) {
         )}
 
         <Pressable onPress={() => navigation.navigate("SeasonHistory")} style={styles.historyBtn}>
-          <MaterialCommunityIcons name="calendar-clock-outline" size={18} color={palette.purple} />
+          <MaterialCommunityIcons name="calendar-clock-outline" size={scale(18)} color={palette.purple} />
           <Text style={{ color: palette.purple, fontWeight: "700", marginLeft: SPACING.xs }}>Ver temporadas pasadas</Text>
         </Pressable>
       </ScrollView>
@@ -962,10 +1044,10 @@ export default function WorldRankingScreen({ navigation }) {
           >
             <Image source={require("../../assets/logo.webp")} style={[styles.nowPlayingLogo, { tintColor: palette.pink }]} resizeMode="contain" />
             <View style={{ flex: 1, marginLeft: SPACING.s }}>
-              <Text style={{ color: palette.textDark, fontWeight: "800", fontSize: 13 }} numberOfLines={1}>{currentTrack.title}</Text>
-              <Text style={{ color: palette.textMuted, fontSize: 11 }} numberOfLines={1}>{currentTrack.game}</Text>
+              <Text style={{ color: palette.textDark, fontWeight: "800", fontSize: scale(13) }} numberOfLines={1}>{currentTrack.title}</Text>
+              <Text style={{ color: palette.textMuted, fontSize: scale(11) }} numberOfLines={1}>{currentTrack.game}</Text>
             </View>
-            <MaterialCommunityIcons name="music-note" size={16} color={palette.green} />
+            <MaterialCommunityIcons name="music-note" size={scale(16)} color={palette.green} />
           </Animated.View>
         </Portal>
       )}
@@ -989,7 +1071,7 @@ const styles = StyleSheet.create({
     zIndex: 30,
     elevation: 30,
   },
-  nowPlayingLogo: { width: 28, height: 28 },
+  nowPlayingLogo: { width: scale(28), height: scale(28) },
   endedCard: {
     alignItems: "center",
     borderRadius: RADIUS.xl,
@@ -997,36 +1079,50 @@ const styles = StyleSheet.create({
     padding: SPACING.xl,
     marginTop: SPACING.l,
   },
-  endedTitle: { fontFamily: "Fredoka_700Bold", fontSize: 19, textAlign: "center", marginTop: SPACING.s },
+  endedTitle: { fontFamily: "Fredoka_700Bold", fontSize: scale(19), textAlign: "center", marginTop: SPACING.s },
   endedDuoRow: { flexDirection: "row", justifyContent: "center", gap: SPACING.xl, marginTop: SPACING.l, width: "100%" },
   endedDuoCol: { alignItems: "center", flex: 1 },
-  endedBigLabel: { fontSize: 14, fontWeight: "800", letterSpacing: 0.6, textAlign: "center", marginBottom: SPACING.s, lineHeight: 17 },
-  endedCharBigImage: { width: 100, height: 100 },
+  endedBigLabel: { fontSize: scale(14), fontWeight: "800", letterSpacing: 0.6, textAlign: "center", marginBottom: SPACING.l, lineHeight: scale(17) },
+  endedAvatarWrap: { alignItems: "center", justifyContent: "center" },
+  endedPersonGlow: {
+    position: "absolute",
+    width: scale(114),
+    height: scale(114),
+    borderRadius: scale(57)
+  },
+  endedCharBigImage: { width: scale(100), height: scale(100) },
   endedCharFallback: { alignItems: "center", justifyContent: "center", borderRadius: RADIUS.lg },
-  endedBigInsignia: { width: 130, height: 130 },
+  endedInsigniaWrap: { alignItems: "center", justifyContent: "center" },
+  endedInsigniaGlow: {
+    position: "absolute",
+    width: scale(150),
+    height: scale(150),
+    borderRadius: scale(75),
+  },
+  endedBigInsignia: { width: scale(130), height: scale(130) },
   endedInsigniaSection: { alignItems: "center", marginTop: SPACING.xl },
-  endedWonText: { fontFamily: "Fredoka_700Bold", fontSize: 19, marginTop: SPACING.s, textAlign: "center" },
-  endedChampionName: { fontFamily: "Fredoka_700Bold", fontSize: 16, marginTop: SPACING.s, textAlign: "center" },
+  endedWonText: { fontFamily: "Fredoka_700Bold", fontSize: scale(19), marginTop: SPACING.l, textAlign: "center" },
+  endedChampionName: { fontFamily: "Fredoka_700Bold", fontSize: scale(16), marginTop: SPACING.l, textAlign: "center" },
   endedRestList: { width: "100%", marginTop: SPACING.xl },
   endedRestRow: {
     flexDirection: "row", alignItems: "center",
     borderRadius: RADIUS.md, padding: SPACING.s, marginBottom: SPACING.s,
   },
-  endedRestPosWrap: { width: 28, alignItems: "center", justifyContent: "center", marginRight: SPACING.xs },
+  endedRestPosWrap: { width: scale(28), alignItems: "center", justifyContent: "center", marginRight: SPACING.xs },
   endedFootnote: { fontWeight: "700", marginTop: SPACING.l, textAlign: "center" },
   header: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.l },
   backBtn: { marginRight: SPACING.xs, padding: 4 },
-  logo: { width: 40, height: 40 },
-  title: { fontFamily: "Fredoka_700Bold", fontSize: 22 },
+  logo: { width: scale(40), height: scale(40) },
+  title: { fontFamily: "Fredoka_700Bold", fontSize: scale(22) },
 
   seasonBanner: {
     flexDirection: "row", alignItems: "center",
     borderRadius: RADIUS.xl, borderWidth: 1.5,
     padding: SPACING.l, marginBottom: SPACING.l,
   },
-  seasonIconWrap: { width: 48, height: 48, borderRadius: RADIUS.lg, alignItems: "center", justifyContent: "center" },
-  seasonTitle: { fontFamily: "Fredoka_700Bold", fontSize: 20 },
-  seasonCountdown: { fontFamily: "Fredoka_700Bold", fontSize: 16, marginTop: 3 },
+  seasonIconWrap: { width: scale(48), height: scale(48), borderRadius: RADIUS.lg, alignItems: "center", justifyContent: "center" },
+  seasonTitle: { fontFamily: "Fredoka_700Bold", fontSize: scale(20) },
+  seasonCountdown: { fontFamily: "Fredoka_700Bold", fontSize: scale(16), marginTop: 3 },
 
   toggleRow: { flexDirection: "row", gap: SPACING.s, marginBottom: SPACING.s },
   toggleBtn: {
@@ -1035,8 +1131,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  toggleTextActive: { color: "#FFFFFF", fontFamily: "Fredoka_600SemiBold", fontSize: 14 },
-  toggleTextInactive: { fontFamily: "Fredoka_600SemiBold", fontSize: 14 },
+  toggleTextActive: { color: "#FFFFFF", fontFamily: "Fredoka_600SemiBold", fontSize: scale(14) },
+  toggleTextInactive: { fontFamily: "Fredoka_600SemiBold", fontSize: scale(14) },
 
   badgeRow: {
     flexDirection: "row",
@@ -1044,27 +1140,27 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   badgeLeftText: { flex: 1, paddingLeft: SPACING.m, paddingRight: SPACING.s },
-  badgeLeftLine: { fontFamily: "Fredoka_700Bold", fontSize: 15, lineHeight: 19 },
+  badgeLeftLine: { fontFamily: "Fredoka_700Bold", fontSize: scale(15), lineHeight: scale(19) },
   badgeLeftArrowRow: { flexDirection: "row", alignItems: "center" },
-  badgeMascotWrap: { width: 62, height: 62, alignItems: "center", justifyContent: "center" },
+  badgeMascotWrap: { width: scale(62), height: scale(62), alignItems: "center", justifyContent: "center" },
   badgeGlow: {
     position: "absolute",
-    width: 86,
-    height: 86,
-    borderRadius: 43,
+    width: scale(86),
+    height: scale(86),
+    borderRadius: scale(43),
   },
-  badgeMascot: { width: 62, height: 62 },
+  badgeMascot: { width: scale(62), height: scale(62) },
   sparkleA: { position: "absolute", top: -6, right: -4 },
   sparkleB: { position: "absolute", bottom: 0, left: -8 },
   sparkleC: { position: "absolute", top: 6, left: -10 },
   sparkleD: { position: "absolute", bottom: -6, right: 2 },
   sparkleE: { position: "absolute", top: -8, left: 14 },
   speechBubbleRow: { flex: 1, flexDirection: "row", alignItems: "center", paddingLeft: SPACING.xs },
-  speechDot1: { width: 6, height: 6, borderRadius: 3, borderWidth: 1.5, marginRight: 3 },
-  speechDot2: { width: 10, height: 10, borderRadius: 5, borderWidth: 1.5, marginRight: 5 },
+  speechDot1: { width: scale(6), height: scale(6), borderRadius: scale(3), borderWidth: 1.5, marginRight: 3 },
+  speechDot2: { width: scale(10), height: scale(10), borderRadius: scale(5), borderWidth: 1.5, marginRight: 5 },
   speechBubble: {
     flex: 1,
-    height: 96,
+    height: scale(96),
     justifyContent: "center",
     borderRadius: RADIUS.md,
     borderWidth: 1.5,
@@ -1078,16 +1174,16 @@ const styles = StyleSheet.create({
   },
   rankBand: { width: "100%" },
   rankNumberBadge: {
-    width: 30, height: 30, borderRadius: 15,
+    width: scale(30), height: scale(30), borderRadius: scale(15),
     backgroundColor: "rgba(0,0,0,0.28)",
     alignItems: "center", justifyContent: "center",
     marginRight: SPACING.s,
   },
   rankAvatarRing: {
-    width: 56, height: 56, borderRadius: 28, borderWidth: 2.5,
+    width: scale(56), height: scale(56), borderRadius: scale(28), borderWidth: 2.5,
     alignItems: "center", justifyContent: "center", overflow: "hidden",
   },
-  rankAvatarImg: { width: 51, height: 51, borderRadius: 26 },
+  rankAvatarImg: { width: scale(51), height: scale(51), borderRadius: scale(26) },
   rankNameChip: {
     flex: 1,
     marginLeft: SPACING.m,
@@ -1096,8 +1192,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.m,
     paddingVertical: SPACING.xs,
   },
-  rankNameText: { color: "#FFFFFF", fontFamily: "Fredoka_600SemiBold", fontSize: 15 },
-  rankSubLabelText: { color: "rgba(255,255,255,0.85)", fontSize: 11, marginTop: 1 },
+  rankNameText: { color: "#FFFFFF", fontFamily: "Fredoka_600SemiBold", fontSize: scale(15) },
+  rankSubLabelText: { color: "rgba(255,255,255,0.85)", fontSize: scale(11), marginTop: 1 },
   emptyCard: {
     alignItems: "center",
     borderRadius: RADIUS.xl,
@@ -1107,11 +1203,22 @@ const styles = StyleSheet.create({
     marginTop: SPACING.l,
   },
   emptyFlowerRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: SPACING.l },
-  emptyMainFlower: { width: 84, height: 84, marginHorizontal: SPACING.s },
-  emptySideFlower: { width: 44, height: 44, opacity: 0.75 },
-  emptyTitle: { fontFamily: "Fredoka_700Bold", fontSize: 19, textAlign: "center" },
-  emptySubtitle: { fontSize: 14, textAlign: "center", marginTop: SPACING.s, lineHeight: 19 },
+  emptyMainFlowerWrap: {
+    width: scale(84), height: scale(84),
+    alignItems: "center", justifyContent: "center",
+    marginHorizontal: scale(26),
+  },
+  emptyMainGlow: {
+    position: "absolute",
+    width: scale(100),
+    height: scale(100),
+    borderRadius: scale(50),
+  },
+  emptyMainFlower: { width: scale(84), height: scale(84) },
+  emptySideFlower: { width: scale(44), height: scale(44), opacity: 0.85 },
+  emptyTitle: { fontFamily: "Fredoka_700Bold", fontSize: scale(19), textAlign: "center" },
+  emptySubtitle: { fontSize: scale(14), textAlign: "center", marginTop: SPACING.s, lineHeight: scale(19) },
   loadingWrap: { alignItems: "center", justifyContent: "center", marginTop: SPACING.l },
-  loadingLabel: { marginTop: SPACING.m, fontFamily: "Fredoka_700Bold", fontSize: 16, letterSpacing: 0.3 },
+  loadingLabel: { marginTop: SPACING.m, fontFamily: "Fredoka_700Bold", fontSize: scale(16), letterSpacing: 0.3 },
   historyBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: SPACING.xxl, padding: SPACING.s },
 });

@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { getAllCharacters } from "../../services/charactersService";
 import { getAllUsers, getFinishedTournaments as getAllFinished, getLastFinishedTournament, getMyCharacterWinCounts, getRounds, listenActiveTournament, listenMyCharacters, listenRankingSettings } from "../../services/firestoreService";
-import { useResponsive } from "../../utils/responsive";
+import { useResponsive, scale } from "../../utils/responsive";
 import { computeRankingData } from "../../utils/rankingCalc";
 import { getSeasonInfo, SEASONS } from "../../utils/season";
 import { RADIUS, SPACING } from "../../theme";
@@ -159,7 +159,7 @@ export default function HomeScreen({ navigation }) {
             contentContainerStyle={[styles.charsModal, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
           >
             <View style={[styles.charsModalIcon, { backgroundColor: theme.colors.primaryContainer }]}>
-              <Text style={{ fontSize: 28 }}>🎮</Text>
+              <Text style={{ fontSize: scale(28) }}>🎮</Text>
             </View>
             <Text variant="titleMedium" style={{ marginBottom: SPACING.xs, textAlign: "center", color: theme.colors.onSurface }}>
               Todavía no cargaste personajes
@@ -191,7 +191,7 @@ export default function HomeScreen({ navigation }) {
               {/* --- Saludo + personaje destacado --- */}
               <View style={[styles.heroCard, { backgroundColor: theme.colors.primaryContainer }]}>
                 <View style={styles.heroHeader}>
-                  <Avatar.Image size={56} source={{ uri: profile?.photoURL }} />
+                  <Avatar.Image size={scale(56)} source={{ uri: profile?.photoURL }} />
                   <View style={{ marginLeft: SPACING.m }}>
                     <Text variant="headlineSmall" style={{ color: theme.colors.onPrimaryContainer }}>
                       Hola, {profile?.playerName || "jugador"} 👋
@@ -229,12 +229,12 @@ export default function HomeScreen({ navigation }) {
               {/* --- Mini stats personales + posición en el ranking --- */}
               <View style={styles.miniStatsRow}>
                 <View style={[styles.miniStatPill, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
-                  <MaterialCommunityIcons name="controller-classic-outline" size={16} color={theme.colors.primary} />
+                  <MaterialCommunityIcons name="controller-classic-outline" size={scale(16)} color={theme.colors.primary} />
                   <Text variant="titleMedium" style={{ color: theme.colors.onBackground, marginTop: 2 }}>{myStats.played}</Text>
                   <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Jugados</Text>
                 </View>
                 <View style={[styles.miniStatPill, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
-                  <MaterialCommunityIcons name="trophy" size={16} color={theme.custom.gold} />
+                  <MaterialCommunityIcons name="trophy" size={scale(16)} color={theme.custom.gold} />
                   <Text variant="titleMedium" style={{ color: theme.custom.gold, marginTop: 2 }}>{myStats.won}</Text>
                   <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Ganados</Text>
                 </View>
@@ -243,7 +243,7 @@ export default function HomeScreen({ navigation }) {
                     style={[styles.miniStatPill, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
                     onPress={() => navigation.navigate("Mas", { screen: "WorldRanking" })}
                   >
-                    <MaterialCommunityIcons name="podium-gold" size={16} color={theme.colors.primary} />
+                    <MaterialCommunityIcons name="podium-gold" size={scale(16)} color={theme.colors.primary} />
                     <Text variant="titleMedium" style={{ color: theme.colors.onBackground, marginTop: 2 }}>{myTierInfo.position}°</Text>
                     <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Ranking33</Text>
                   </Pressable>
@@ -259,7 +259,7 @@ export default function HomeScreen({ navigation }) {
                 >
                   <View style={[styles.liveBanner, { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary }]}>
                     <View style={[styles.liveIconWrap, { backgroundColor: theme.colors.primaryContainer }]}>
-                      <MaterialCommunityIcons name="lightning-bolt" size={22} color={theme.colors.primary} />
+                      <MaterialCommunityIcons name="lightning-bolt" size={scale(22)} color={theme.colors.primary} />
                     </View>
                     <View style={{ flex: 1, marginLeft: SPACING.m }}>
                       <View style={styles.liveTag}>
@@ -276,7 +276,7 @@ export default function HomeScreen({ navigation }) {
                       </Text>
                     </View>
                     <View style={[styles.liveChevronWrap, { backgroundColor: theme.colors.surfaceVariant }]}>
-                      <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.onSurfaceVariant} />
+                      <MaterialCommunityIcons name="chevron-right" size={scale(22)} color={theme.colors.onSurfaceVariant} />
                     </View>
                   </View>
                 </Pressable>
@@ -296,7 +296,7 @@ export default function HomeScreen({ navigation }) {
                       <View style={{ flex: 1, marginLeft: SPACING.l }}>
                         <View style={styles.winnerBadgeRow}>
                           <View style={[styles.winnerTrophyBadge, { backgroundColor: theme.custom.gold }]}>
-                            <MaterialCommunityIcons name="trophy" size={13} color="#241A05" />
+                            <MaterialCommunityIcons name="trophy" size={scale(13)} color="#241A05" />
                           </View>
                           <Text variant="labelSmall" style={{ color: theme.custom.gold, fontWeight: "700", marginLeft: 6 }}>
                             CAMPEÓN DEL ÚLTIMO TORNEO
@@ -309,13 +309,13 @@ export default function HomeScreen({ navigation }) {
                           </Text>
                         )}
                       </View>
-                      <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.onSurfaceVariant} />
+                      <MaterialCommunityIcons name="chevron-right" size={scale(22)} color={theme.colors.onSurfaceVariant} />
                     </View>
                   </View>
                 </Pressable>
               ) : (
                 <View style={[styles.premiumCard, styles.emptyStateCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
-                  <Text style={{ fontSize: 26 }}>🥋</Text>
+                  <Text style={{ fontSize: scale(26) }}>🥋</Text>
                   <Text variant="titleMedium" style={{ color: theme.colors.onBackground, marginTop: SPACING.xs }}>
                     Todavía no hay campeón
                   </Text>
@@ -338,7 +338,7 @@ export default function HomeScreen({ navigation }) {
                     <Text variant="titleMedium" style={{ color: theme.colors.onPrimaryContainer, fontWeight: "800", marginTop: 2 }}>
                       Temporada de {season.label}
                     </Text>
-                    <Text style={{ color: theme.colors.onPrimaryContainer, opacity: 0.85, fontSize: 12, marginTop: 2 }}>
+                    <Text style={{ color: theme.colors.onPrimaryContainer, opacity: 0.85, fontSize: scale(12), marginTop: 2 }}>
                       Andá a ver el Ranking Smash 33
                     </Text>
                   </View>
@@ -349,7 +349,7 @@ export default function HomeScreen({ navigation }) {
                       resizeMode="contain"
                     />
                   )}
-                  <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.onPrimaryContainer} />
+                  <MaterialCommunityIcons name="chevron-right" size={scale(22)} color={theme.colors.onPrimaryContainer} />
                 </View>
               </Pressable>
 
@@ -358,14 +358,14 @@ export default function HomeScreen({ navigation }) {
                 <Pressable onPress={() => navigation.navigate("Torneo", { screen: "CreateTournament" })}>
                   <View style={[styles.liveBanner, { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary }]}>
                     <View style={[styles.liveIconWrap, { backgroundColor: theme.colors.primaryContainer }]}>
-                      <MaterialCommunityIcons name="plus" size={22} color={theme.colors.primary} />
+                      <MaterialCommunityIcons name="plus" size={scale(22)} color={theme.colors.primary} />
                     </View>
                     <View style={{ flex: 1, marginLeft: SPACING.m }}>
                       <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>¿Armamos un torneo?</Text>
                       <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>No hay ninguno en curso ahora mismo</Text>
                     </View>
                     <View style={[styles.liveChevronWrap, { backgroundColor: theme.colors.surfaceVariant }]}>
-                      <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.onSurfaceVariant} />
+                      <MaterialCommunityIcons name="chevron-right" size={scale(22)} color={theme.colors.onSurfaceVariant} />
                     </View>
                   </View>
                 </Pressable>
@@ -376,7 +376,7 @@ export default function HomeScreen({ navigation }) {
                 <View style={styles.elijahImageWrap}>
                   <Image source={require("../../assets/elijah.png")} style={styles.elijahImage} resizeMode="cover" />
                   <View style={[styles.elijahBadge, { backgroundColor: theme.colors.primary, borderColor: theme.colors.surface }]}>
-                    <MaterialCommunityIcons name="exit-run" size={13} color={theme.colors.onPrimary} />
+                    <MaterialCommunityIcons name="exit-run" size={scale(13)} color={theme.colors.onPrimary} />
                   </View>
                 </View>
                 <View style={{ flex: 1, marginLeft: SPACING.m }}>
@@ -413,7 +413,7 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flexGrow: 1, padding: SPACING.xl },
   loadingFullScreen: { flex: 1, alignItems: "center", justifyContent: "center" },
-  loadingLogo: { width: 96, height: 96 },
+  loadingLogo: { width: scale(96), height: scale(96) },
 
   heroCard: {
     borderRadius: RADIUS.xl,
@@ -425,19 +425,19 @@ const styles = StyleSheet.create({
   heroCharacterArea: { alignItems: "center", paddingTop: SPACING.s, paddingBottom: SPACING.xs },
   heroHalo: {
     position: "absolute",
-    top: 18,
-    width: 140,
-    height: 140,
-    borderRadius: 70,
+    top: scale(18),
+    width: scale(140),
+    height: scale(140),
+    borderRadius: scale(70),
     opacity: 0.35,
   },
   heroCharacterImageWrap: {
-    width: 150,
-    height: 150,
+    width: scale(150),
+    height: scale(150),
     alignItems: "center",
     justifyContent: "center",
   },
-  heroCharacterImage: { width: 150, height: 150 },
+  heroCharacterImage: { width: scale(150), height: scale(150) },
 
   miniStatsRow: { flexDirection: "row", gap: SPACING.s, marginBottom: SPACING.l },
   miniStatPill: {
@@ -455,18 +455,18 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.l,
   },
   liveIconWrap: {
-    width: 44,
-    height: 44,
+    width: scale(44),
+    height: scale(44),
     borderRadius: RADIUS.pill,
     alignItems: "center",
     justifyContent: "center",
   },
   liveTag: { flexDirection: "row", alignItems: "center" },
-  liveDot: { width: 6, height: 6, borderRadius: 3, marginRight: 5 },
+  liveDot: { width: scale(6), height: scale(6), borderRadius: scale(3), marginRight: 5 },
   liveTagText: { letterSpacing: 1, fontWeight: "700" },
   liveChevronWrap: {
-    width: 32,
-    height: 32,
+    width: scale(32),
+    height: scale(32),
     borderRadius: RADIUS.pill,
     alignItems: "center",
     justifyContent: "center",
@@ -479,12 +479,12 @@ const styles = StyleSheet.create({
     padding: SPACING.l,
   },
   winnerRow: { flexDirection: "row", alignItems: "center" },
-  winnerImageArea: { width: 90, height: 90, alignItems: "center", justifyContent: "center" },
-  winnerHalo: { position: "absolute", width: 82, height: 82, borderRadius: 41, opacity: 0.18 },
-  winnerImage: { width: 90, height: 90 },
+  winnerImageArea: { width: scale(90), height: scale(90), alignItems: "center", justifyContent: "center" },
+  winnerHalo: { position: "absolute", width: scale(82), height: scale(82), borderRadius: scale(41), opacity: 0.18 },
+  winnerImage: { width: scale(90), height: scale(90) },
   winnerBadgeRow: { flexDirection: "row", alignItems: "center" },
   winnerTrophyBadge: {
-    width: 22, height: 22, borderRadius: 11,
+    width: scale(22), height: scale(22), borderRadius: scale(11),
     alignItems: "center", justifyContent: "center",
   },
 
@@ -498,15 +498,15 @@ const styles = StyleSheet.create({
   emptyStateCard: { alignItems: "center" },
 
   elijahCard: { flexDirection: "row", alignItems: "center" },
-  elijahImageWrap: { width: 92, height: 92 },
-  elijahImage: { width: 92, height: 92, borderRadius: 46 },
+  elijahImageWrap: { width: scale(92), height: scale(92) },
+  elijahImage: { width: scale(92), height: scale(92), borderRadius: scale(46) },
   elijahBadge: {
     position: "absolute",
     bottom: -2,
     right: -2,
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    width: scale(26),
+    height: scale(26),
+    borderRadius: scale(13),
     borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
@@ -520,10 +520,10 @@ const styles = StyleSheet.create({
     padding: SPACING.l,
     marginBottom: SPACING.l,
   },
-  rankingMascot: { width: 40, height: 40, marginHorizontal: SPACING.s },
+  rankingMascot: { width: scale(40), height: scale(40), marginHorizontal: SPACING.s },
 
   inviteCard: {
-    height: 140,
+    height: scale(140),
     borderRadius: RADIUS.xl,
     marginBottom: SPACING.l,
     overflow: "hidden",
@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
 
   charsModal: { margin: SPACING.xxl, borderRadius: RADIUS.xl, borderWidth: 1, padding: SPACING.xl, alignItems: "center" },
   charsModalIcon: {
-    width: 64, height: 64, borderRadius: RADIUS.pill,
+    width: scale(64), height: scale(64), borderRadius: RADIUS.pill,
     alignItems: "center", justifyContent: "center", marginBottom: SPACING.m,
   },
 });
