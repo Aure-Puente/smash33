@@ -251,18 +251,13 @@ const SEASON_MESSAGES = [
   "¡No se guarden nada! 💪",
 
   // Desvan
-  "Desvan ya está calentando los insultos para el próximo combate 😤",
-  "Yoshi entra a la cancha... y Desvan también, a los gritos",
-  "¿Alguien vio a Desvan? Se fue a respirar después de perder una vida",
   "Desvan, cuidado con los ligamentos de la mano negrito",
-  "Cuidado con las provocaciones de Desvan, después no se hace cargo",
   "Practicá la paciencia, Desvan — pronto vas a ser papá 👶",
   "Desvan perdiendo el control... otra vez",
   "Las sillas tiemblan cuando Desvan está por perder...",
   "Desvan ya practica para las noches sin dormir...",
   "Desvan: te quedó el culo como una flor",
   "Desvan se prepara para ser padre practicando el autocontrol...",
-  "Desvan ya cuenta los días para el casamiento 💍",
   "Sufre Desvan mas que en la despedida de soltero",
   "Desvan con el OK de Mica, listo para gremiar",
   "Desvan es de River, o sea que ya perdió antes de arrancar el torneo",
@@ -286,7 +281,6 @@ const SEASON_MESSAGES = [
 
   // Aure ("el Lance")
   "El Lance nunca vio un tutorial en su vida, y se nota",
-  "Aure inventando la pólvora de nuevo con una táctica que ya existía",
   "Cuidado con el 'Abajo y Jamás' del Lance",
   "El Lance ya suma otra mandíbula a la colección",
   "Aure prefiere descubrirlo todo solo, tutoriales para qué",
@@ -454,14 +448,29 @@ function RankBar({ items, season, palette }) {
   const total = items.length;
   const H = BAND_HEIGHT * Math.max(total, 1);
 
-  const [message, setMessage] = useState(() => SEASON_MESSAGES[Math.floor(Math.random() * SEASON_MESSAGES.length)]);
+  const messageBagRef = useRef([]);
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      setMessage(SEASON_MESSAGES[Math.floor(Math.random() * SEASON_MESSAGES.length)]);
-    }, 5000);
-    return () => clearInterval(id);
-  }, []);
+    function nextMessage() {
+      if (messageBagRef.current.length === 0) {
+        const bag = SEASON_MESSAGES.map((_, i) => i);
+        for (let i = bag.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [bag[i], bag[j]] = [bag[j], bag[i]];
+        }
+        messageBagRef.current = bag;
+      }
+      const index = messageBagRef.current.pop();
+      return SEASON_MESSAGES[index];
+    }
+
+    const [message, setMessage] = useState(() => nextMessage());
+
+    useEffect(() => {
+      const id = setInterval(() => {
+        setMessage(nextMessage());
+      }, 5000);
+      return () => clearInterval(id);
+    }, []);
 
   const floatAnim = useRef(new Animated.Value(0)).current;
   const glowAnim = useRef(new Animated.Value(0)).current;

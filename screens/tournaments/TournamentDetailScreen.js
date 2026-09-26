@@ -340,12 +340,6 @@ function TournamentDetailScreenInner({ route, navigation }) {
   const { user, profile } = useAuth();
   const insets = useSafeAreaInsets();
 
-  const [screenReady, setScreenReady] = useState(false);
-  useEffect(() => {
-    const unsub = navigation.addListener("transitionEnd", () => setScreenReady(true));
-    return unsub;
-  }, [navigation]);
-
   const [tournament, setTournament] = useState(null);
   const [rounds, setRounds] = useState([]);
   const [comments, setComments] = useState([]);
@@ -767,7 +761,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
       </ScrollView>
 
       <CharacterPickerModal
-        visible={screenReady && !!pickerForUid}
+        visible={!!pickerForUid}
         onDismiss={handlePickerDismiss}
         characters={pickerCharacterList}
         disabledIds={pickerParticipant?.usedCharacterIds || []}
@@ -778,7 +772,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
       />
 
       <CharacterPickerModal
-        visible={screenReady && showMyCharacters}
+        visible={showMyCharacters}
         onDismiss={() => setShowMyCharacters(false)}
         characters={myCharacterList}
         disabledIds={myParticipant?.usedCharacterIds || []}
