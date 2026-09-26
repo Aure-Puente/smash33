@@ -59,7 +59,10 @@ export default function CreateTournamentScreen({ navigation }) {
     try {
       const tournamentId = await createTournament({ createdBy: user.uid, roster });
       await submitRound({ tournamentId, roundNumber: 0, winnerUid: null, characters: {} });
-      navigation.replace("TournamentsHome");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "TournamentDetail", params: { tournamentId } }],
+      });
     } catch (e) {
       setError(e.message || "No pudimos crear el torneo.");
       setSubmitting(false);

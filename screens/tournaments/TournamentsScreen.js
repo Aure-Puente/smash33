@@ -109,6 +109,7 @@ export default function TournamentsScreen({ navigation }) {
         mode="contained"
         style={styles.bigButton}
         contentStyle={{ paddingVertical: SPACING.s }}
+        labelStyle={styles.bigButtonLabel}
         onPress={() => navigation.navigate("CreateTournament")}
       >
         ¡Smash!
@@ -135,4 +136,5 @@ const styles = StyleSheet.create({
   },
   logo: { width: scale(168), height: scale(168) },
   bigButton: { borderRadius: RADIUS.pill, width: "100%" },
+  bigButtonLabel: { fontSize: scale(17), fontWeight: "800", letterSpacing: 0.5 },
 });

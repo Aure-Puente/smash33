@@ -11,7 +11,7 @@ import { deleteTournament, getAllUsers, getFinishedTournaments } from "../../ser
 import { getAllCharacters } from "../../services/charactersService";
 import { Skeleton } from "../../components/Skeleton";
 import { RADIUS, SPACING } from "../../theme";
-import { scale } from "../../utils/responsive";
+import { IS_TABLET, scale } from "../../utils/responsive";
 
 //js:
 const ADMIN_EMAIL = "aurepuente25@gmail.com";
@@ -141,6 +141,39 @@ function HistoryCard({ item, theme, charById, isAdmin, onPress, onDeletePress })
         </View>
       </Animated.View>
     </Pressable>
+  );
+}
+
+function EmptyHistoryState({ theme, hasActiveFilters, onClearFilters }) {
+  return (
+    <View style={[styles.emptyState, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+      <View style={[styles.emptyIconWrap, { backgroundColor: theme.colors.surfaceVariant }]}>
+        <MaterialCommunityIcons
+          name={hasActiveFilters ? "filter-remove-outline" : "trophy-outline"}
+          size={IS_TABLET ? scale(38) : scale(28)}
+          color={theme.colors.onSurfaceVariant}
+        />
+      </View>
+      <Text
+        variant="titleMedium"
+        style={{ color: theme.colors.onBackground, marginTop: SPACING.m, textAlign: "center", fontSize: IS_TABLET ? scale(20) : undefined }}
+      >
+        {hasActiveFilters ? "Ningún torneo coincide" : "Todavía no se jugó ningún torneo"}
+      </Text>
+      <Text
+        variant="bodyMedium"
+        style={{ color: theme.colors.onSurfaceVariant, marginTop: SPACING.xs, textAlign: "center", fontSize: IS_TABLET ? scale(15) : undefined }}
+      >
+        {hasActiveFilters
+          ? "Probá ajustar o quitar los filtros de arriba."
+          : "Cuando termine el primero, va a aparecer acá con todos los detalles."}
+      </Text>
+      {hasActiveFilters && (
+        <Button mode="outlined" style={styles.emptyClearBtn} onPress={onClearFilters}>
+          Quitar filtros
+        </Button>
+      )}
+    </View>
   );
 }
 
@@ -352,10 +385,9 @@ export default function HistoryScreen({ navigation }) {
           refreshing={loading}
           onRefresh={load}
           ItemSeparatorComponent={() => <View style={{ height: SPACING.m }} />}
+          contentContainerStyle={filteredHistory.length === 0 ? { flexGrow: 1 } : undefined}
           ListEmptyComponent={
-            <Text style={{ color: theme.colors.onSurfaceVariant }}>
-              {hasActiveFilters ? "Ningún torneo coincide con estos filtros." : "Todavía no se jugó ningún torneo."}
-            </Text>
+            <EmptyHistoryState theme={theme} hasActiveFilters={hasActiveFilters} onClearFilters={clearFilters} />
           }
           renderItem={({ item }) => (
             <HistoryCard
@@ -526,6 +558,23 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginLeft: SPACING.s,
   },
+  emptyState: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    paddingVertical: SPACING.xxl,
+    paddingHorizontal: SPACING.xl,
+  },
+  emptyIconWrap: {
+    width: IS_TABLET ? scale(96) : scale(72),
+    height: IS_TABLET ? scale(96) : scale(72),
+    borderRadius: RADIUS.pill,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyClearBtn: { borderRadius: RADIUS.pill, marginTop: SPACING.l },
   winnerModal: {
     marginHorizontal: SPACING.l,
     borderRadius: RADIUS.xl,

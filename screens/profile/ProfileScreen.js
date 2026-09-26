@@ -12,6 +12,7 @@ import { getFinishedTournaments, getMyCharacterWinCounts, updateUserProfile, upl
 import { getAllCharacters } from "../../services/charactersService";
 import { ACCENT_LIST, RADIUS, SPACING } from "../../theme";
 import { Skeleton } from "../../components/Skeleton";
+import { IS_TABLET, scale } from "../../utils/responsive";
 
 //JS:
 export default function ProfileScreen({ navigation }) {
@@ -149,7 +150,7 @@ export default function ProfileScreen({ navigation }) {
         contentContainerStyle={[styles.content, { paddingTop: insets.top + SPACING.xl }]}
       >
         <View style={styles.headerRow}>
-          <IconButton icon="arrow-left" size={22} style={styles.backBtn} onPress={() => navigation.goBack()} />
+          <IconButton icon="arrow-left" size={scale(22)} style={styles.backBtn} onPress={() => navigation.goBack()} />
           <Image
             source={require("../../assets/logo.webp")}
             style={[styles.headerLogo, { tintColor: theme.colors.primary }]}
@@ -163,12 +164,12 @@ export default function ProfileScreen({ navigation }) {
 
         <View style={styles.avatarSection}>
           <View style={[styles.avatarRing, { borderColor: theme.colors.primary }]}>
-            <Avatar.Image size={100} source={{ uri: profile?.photoURL }} />
+            <Avatar.Image size={IS_TABLET ? scale(150) : scale(100)} source={{ uri: profile?.photoURL }} />
             <Pressable
               onPress={pickAndUploadPhoto}
               style={[styles.editPhotoBtn, { backgroundColor: theme.colors.primary, borderColor: theme.colors.background }]}
             >
-              <MaterialCommunityIcons name="camera" size={16} color={theme.colors.onPrimary} />
+              <MaterialCommunityIcons name="camera" size={scale(16)} color={theme.colors.onPrimary} />
             </Pressable>
           </View>
 
@@ -179,8 +180,13 @@ export default function ProfileScreen({ navigation }) {
             </View>
           ) : (
             <Pressable onPress={() => setEditing(true)} style={styles.nameRow}>
-              <Text variant="headlineSmall" style={{ color: theme.colors.onBackground }}>{profile?.playerName}</Text>
-              <MaterialCommunityIcons name="pencil-outline" size={16} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} />
+              <Text
+                variant="headlineSmall"
+                style={{ color: theme.colors.onBackground, fontSize: IS_TABLET ? scale(26) : undefined }}
+              >
+                {profile?.playerName}
+              </Text>
+              <MaterialCommunityIcons name="pencil-outline" size={scale(16)} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} />
             </Pressable>
           )}
           <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>{profile?.email}</Text>
@@ -188,21 +194,21 @@ export default function ProfileScreen({ navigation }) {
 
         {statsLoading ? (
           <View style={styles.statsRow}>
-            <Skeleton height={78} radius={RADIUS.lg} style={{ flex: 1 }} />
-            <Skeleton height={78} radius={RADIUS.lg} style={{ flex: 1 }} />
+            <Skeleton height={scale(78)} radius={RADIUS.lg} style={{ flex: 1 }} />
+            <Skeleton height={scale(78)} radius={RADIUS.lg} style={{ flex: 1 }} />
           </View>
         ) : (
           <View style={styles.statsRow}>
             <View style={[styles.statPill, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
               <View style={styles.statValueRow}>
-                <MaterialCommunityIcons name="controller-classic-outline" size={18} color={theme.colors.primary} style={{ marginRight: SPACING.xs }} />
+                <MaterialCommunityIcons name="controller-classic-outline" size={scale(18)} color={theme.colors.primary} style={{ marginRight: SPACING.xs }} />
                 <Text variant="headlineSmall" style={{ color: theme.colors.onBackground }}>{stats.played}</Text>
               </View>
               <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Torneos jugados</Text>
             </View>
             <View style={[styles.statPill, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
               <View style={styles.statValueRow}>
-                <MaterialCommunityIcons name="trophy" size={18} color={theme.custom.gold} style={{ marginRight: SPACING.xs }} />
+                <MaterialCommunityIcons name="trophy" size={scale(18)} color={theme.custom.gold} style={{ marginRight: SPACING.xs }} />
                 <Text variant="headlineSmall" style={{ color: theme.custom.gold }}>{stats.won}</Text>
               </View>
               <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Torneos ganados</Text>
@@ -211,7 +217,7 @@ export default function ProfileScreen({ navigation }) {
         )}
 
         {bestCharLoading ? (
-          <Skeleton height={90} radius={RADIUS.lg} style={{ width: "100%", marginBottom: SPACING.s }} />
+          <Skeleton height={IS_TABLET ? scale(150) : scale(90)} radius={RADIUS.lg} style={{ width: "100%", marginBottom: SPACING.s }} />
         ) : (
           bestCharacter && (
             <Animated.View style={{ opacity: bestCharFade, marginBottom: SPACING.s }}>
@@ -222,12 +228,16 @@ export default function ProfileScreen({ navigation }) {
               >
                 <View style={styles.bestCharBannerText}>
                   <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Tu mejor personaje</Text>
-                  <Text variant="titleMedium" style={{ color: theme.colors.onSurface }} numberOfLines={1}>
+                  <Text
+                    variant="titleMedium"
+                    style={{ color: theme.colors.onSurface, fontSize: IS_TABLET ? scale(22) : undefined }}
+                    numberOfLines={1}
+                  >
                     {bestCharacter.character.name}
                   </Text>
                   <View style={[styles.bestCharWinsPill, { backgroundColor: theme.colors.surfaceVariant }]}>
-                    <MaterialCommunityIcons name="trophy" size={13} color={theme.custom.gold} style={{ marginRight: 4 }} />
-                    <Text style={{ fontSize: 12, fontWeight: "700", color: theme.colors.onSurfaceVariant }}>
+                    <MaterialCommunityIcons name="trophy" size={IS_TABLET ? scale(20) : scale(13)} color={theme.custom.gold} style={{ marginRight: 4 }} />
+                    <Text style={{ fontSize: IS_TABLET ? scale(16) : scale(12), fontWeight: "700", color: theme.colors.onSurfaceVariant }}>
                       {bestCharacter.wins}
                     </Text>
                   </View>
@@ -239,18 +249,18 @@ export default function ProfileScreen({ navigation }) {
 
         <View style={[styles.badgesTeaseCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
           <View style={[styles.rowIconBadge, { backgroundColor: theme.colors.surfaceVariant }]}>
-            <MaterialCommunityIcons name="medal-outline" size={17} color={theme.colors.primary} />
+            <MaterialCommunityIcons name="medal-outline" size={scale(17)} color={theme.colors.primary} />
           </View>
           <Text variant="bodyMedium" style={{ flex: 1, marginLeft: SPACING.m, color: theme.colors.onSurface }}>Mis insignias</Text>
           <View style={[styles.comingSoonPill, { backgroundColor: theme.colors.surfaceVariant }]}>
-            <Text style={{ fontSize: 11, fontWeight: "700", color: theme.colors.onSurfaceVariant }}>Próximamente</Text>
+            <Text style={{ fontSize: scale(11), fontWeight: "700", color: theme.colors.onSurfaceVariant }}>Próximamente</Text>
           </View>
         </View>
 
         <View style={[styles.settingsCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
           <Pressable onPress={toggleColorOpen} style={styles.settingsRow}>
             <View style={[styles.rowIconBadge, { backgroundColor: theme.colors.surfaceVariant }]}>
-              <MaterialCommunityIcons name="palette-outline" size={17} color={theme.colors.primary} />
+              <MaterialCommunityIcons name="palette-outline" size={scale(17)} color={theme.colors.primary} />
             </View>
             <Text variant="bodyMedium" style={{ flex: 1, marginLeft: SPACING.m, color: theme.colors.onSurface }}>Color principal</Text>
             <View style={[styles.selectedDot, { backgroundColor: selectedAccent.primary }]} />
@@ -258,7 +268,7 @@ export default function ProfileScreen({ navigation }) {
               {selectedAccent.label}
             </Text>
             <Animated.View style={{ transform: [{ rotate: rotateDeg }] }}>
-              <MaterialCommunityIcons name="chevron-down" size={20} color={theme.colors.onSurfaceVariant} />
+              <MaterialCommunityIcons name="chevron-down" size={scale(20)} color={theme.colors.onSurfaceVariant} />
             </Animated.View>
           </Pressable>
 
@@ -281,7 +291,7 @@ export default function ProfileScreen({ navigation }) {
                         selected && { borderColor: theme.colors.onBackground, borderWidth: 3 },
                       ]}
                     >
-                      {selected && <MaterialCommunityIcons name="check-bold" size={18} color={a.onPrimary} />}
+                      {selected && <MaterialCommunityIcons name="check-bold" size={scale(18)} color={a.onPrimary} />}
                     </View>
                     <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: SPACING.xs, textAlign: "center" }}>
                       {a.label}
@@ -301,12 +311,12 @@ const styles = StyleSheet.create({
   content: { padding: SPACING.xl, paddingBottom: SPACING.xxxl },
   headerRow: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.xl },
   backBtn: { marginLeft: -SPACING.s, marginRight: -SPACING.xs },
-  headerLogo: { width: 42, height: 42 },
+  headerLogo: { width: scale(42), height: scale(42) },
   avatarSection: { alignItems: "center", marginBottom: SPACING.xl },
   avatarRing: { position: "relative", marginBottom: SPACING.m, borderWidth: 2, borderRadius: RADIUS.pill, padding: 3 },
   editPhotoBtn: {
     position: "absolute", bottom: 0, right: 0,
-    width: 32, height: 32, borderRadius: RADIUS.pill,
+    width: scale(32), height: scale(32), borderRadius: RADIUS.pill,
     alignItems: "center", justifyContent: "center", borderWidth: 3,
   },
   nameRow: { flexDirection: "row", alignItems: "center" },
@@ -319,7 +329,7 @@ const styles = StyleSheet.create({
   },
   statValueRow: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.xs },
   bestCharBanner: {
-    height: 90,
+    height: IS_TABLET ? scale(150) : scale(90),
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     marginBottom: SPACING.s,
@@ -358,14 +368,14 @@ const styles = StyleSheet.create({
   settingsCard: { borderRadius: RADIUS.lg, borderWidth: 1, marginBottom: SPACING.l, overflow: "hidden" },
   settingsRow: { flexDirection: "row", alignItems: "center", padding: SPACING.m },
   rowIconBadge: {
-    width: 34, height: 34, borderRadius: RADIUS.sm,
+    width: scale(34), height: scale(34), borderRadius: RADIUS.sm,
     alignItems: "center", justifyContent: "center",
   },
-  selectedDot: { width: 14, height: 14, borderRadius: RADIUS.pill },
+  selectedDot: { width: scale(14), height: scale(14), borderRadius: RADIUS.pill },
   swatchGrid: {
     flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between",
     paddingHorizontal: SPACING.m, paddingBottom: SPACING.m, paddingTop: SPACING.xs,
   },
   swatchWrap: { alignItems: "center", width: "31%", marginTop: SPACING.m },
-  swatch: { width: 46, height: 46, borderRadius: RADIUS.pill, alignItems: "center", justifyContent: "center" },
+  swatch: { width: scale(46), height: scale(46), borderRadius: RADIUS.pill, alignItems: "center", justifyContent: "center" },
 });
