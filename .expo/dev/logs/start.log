@@ -1129,3 +1129,66 @@
 {"_e":"metro:bundling:progress","_t":1790358561932,"id":"5","progress":0.999,"total":1478,"current":1478}
 {"_e":"metro:bundling:done","_t":1790358562033,"id":"5","total":1478,"ms":1738.5911}
 {"_e":"metro:client_log","_t":1790358567894,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"root:init","_t":1790394387251,"format":"v0-jsonl","version":"57.0.24"}
+{"_e":"env:mode","_t":1790394387252,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1790394387256,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1790394388036,"mode":"development","web":false,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1790394388664,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1790394389086,"plugins":[]}
+{"_e":"metro:instantiate","_t":1790394401954,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1790394424530,"id":"5","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1790394424530,"id":"5","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790394424535,"id":"5","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790394424634,"id":"5","progress":0.02232791650151936,"total":261,"current":39}
+{"_e":"metro:bundling:progress","_t":1790394424734,"id":"5","progress":0.138337607452344,"total":449,"current":167}
+{"_e":"metro:bundling:progress","_t":1790394424834,"id":"5","progress":0.31464070724945653,"total":517,"current":290}
+{"_e":"metro:bundling:progress","_t":1790394424934,"id":"5","progress":0.3528181355644751,"total":798,"current":474}
+{"_e":"metro:bundling:progress","_t":1790394425034,"id":"5","progress":0.5348156947351247,"total":923,"current":675}
+{"_e":"metro:bundling:progress","_t":1790394425156,"id":"5","progress":0.7649721541546002,"total":1005,"current":879}
+{"_e":"metro:bundling:progress","_t":1790394425256,"id":"5","progress":0.8003939858329682,"total":1177,"current":1053}
+{"_e":"metro:bundling:progress","_t":1790394425356,"id":"5","progress":0.8114240617381637,"total":1391,"current":1253}
+{"_e":"metro:bundling:progress","_t":1790394425456,"id":"5","progress":0.9958890074345035,"total":1458,"current":1455}
+{"_e":"metro:bundling:progress","_t":1790394426299,"id":"5","progress":0.9972583974514575,"total":1458,"current":1456}
+{"_e":"metro:bundling:progress","_t":1790394426467,"id":"5","progress":0.998628728306623,"total":1458,"current":1457}
+{"_e":"metro:bundling:done","_t":1790394426614,"id":"5","total":1458,"ms":2084.525}
+{"_e":"metro:client_log","_t":1790394433232,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"root:init","_t":1790395445443,"format":"v0-jsonl","version":"57.0.27"}
+{"_e":"env:mode","_t":1790395445445,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1790395445448,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1790395446149,"mode":"development","web":false,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1790395446725,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1790395447075,"plugins":[]}
+{"_e":"metro:instantiate","_t":1790395458842,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1790395472860,"id":"6","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1790395472861,"id":"6","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790395472865,"id":"6","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790395472965,"id":"6","progress":0.007737482853223595,"total":216,"current":19}
+{"_e":"metro:bundling:progress","_t":1790395473065,"id":"6","progress":0.18501782698442484,"total":365,"current":157}
+{"_e":"metro:bundling:progress","_t":1790395473165,"id":"6","progress":0.2090341307787187,"total":479,"current":219}
+{"_e":"metro:bundling:progress","_t":1790395473269,"id":"6","progress":0.2577514792899408,"total":715,"current":363}
+{"_e":"metro:bundling:progress","_t":1790395473369,"id":"6","progress":0.4127808216317068,"total":758,"current":487}
+{"_e":"metro:bundling:progress","_t":1790395473470,"id":"6","progress":0.5971884649103552,"total":867,"current":670}
+{"_e":"metro:bundling:progress","_t":1790395473570,"id":"6","progress":0.661272793140925,"total":910,"current":740}
+{"_e":"metro:bundling:progress","_t":1790395473671,"id":"6","progress":0.7728911839920356,"total":1026,"current":902}
+{"_e":"metro:bundling:progress","_t":1790395473770,"id":"6","progress":0.8499546014158202,"total":1140,"current":1051}
+{"_e":"metro:bundling:progress","_t":1790395473870,"id":"6","progress":0.8922210826460837,"total":1281,"current":1210}
+{"_e":"metro:bundling:progress","_t":1790395473981,"id":"6","progress":0.9953970141646669,"total":1302,"current":1299}
+{"_e":"metro:bundling:progress","_t":1790395474017,"id":"6","progress":0.9969301629774351,"total":1302,"current":1300}
+{"_e":"metro:bundling:progress","_t":1790395474125,"id":"6","progress":0.9969301629774351,"total":1322,"current":1305}
+{"_e":"metro:bundling:progress","_t":1790395474228,"id":"6","progress":0.9969301629774351,"total":1358,"current":1312}
+{"_e":"metro:bundling:progress","_t":1790395474332,"id":"6","progress":0.9969301629774351,"total":1374,"current":1318}
+{"_e":"metro:bundling:progress","_t":1790395474441,"id":"6","progress":0.9969301629774351,"total":1390,"current":1331}
+{"_e":"metro:bundling:progress","_t":1790395474540,"id":"6","progress":0.9969301629774351,"total":1397,"current":1339}
+{"_e":"metro:bundling:progress","_t":1790395474640,"id":"6","progress":0.9969301629774351,"total":1405,"current":1358}
+{"_e":"metro:bundling:progress","_t":1790395474740,"id":"6","progress":0.9969301629774351,"total":1423,"current":1384}
+{"_e":"metro:bundling:progress","_t":1790395474843,"id":"6","progress":0.9969301629774351,"total":1431,"current":1403}
+{"_e":"metro:bundling:progress","_t":1790395474944,"id":"6","progress":0.9969301629774351,"total":1522,"current":1477}
+{"_e":"metro:bundling:progress","_t":1790395475044,"id":"6","progress":0.9969301629774351,"total":1528,"current":1502}
+{"_e":"metro:bundling:progress","_t":1790395475154,"id":"6","progress":0.9969301629774351,"total":1533,"current":1528}
+{"_e":"metro:bundling:progress","_t":1790395475409,"id":"6","progress":0.9969301629774351,"total":1533,"current":1529}
+{"_e":"metro:bundling:done","_t":1790395475566,"id":"6","total":1533,"ms":2705.8452}
+{"_e":"metro:client_log","_t":1790395482929,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1790395484031,"level":"error","data":["[TypeError: Cannot read property 'regular' of undefined]"]}
+{"_e":"metro:client_log","_t":1790395511024,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1790395512916,"level":"error","data":["[TypeError: Cannot read property 'regular' of undefined]"]}
+{"_e":"metro:client_log","_t":1790395692008,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}

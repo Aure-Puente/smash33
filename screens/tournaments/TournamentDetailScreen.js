@@ -592,9 +592,15 @@ function TournamentDetailScreenInner({ route, navigation }) {
         await submitRound({ tournamentId, roundNumber: nextRoundNumber, winnerUid: winUid, characters: characterMap });
         await persistState([...rounds, { roundNumber: nextRoundNumber, winnerUid: winUid, characters: characterMap }]);
       }
-      closeRoundModal();
-    } finally {
+      requestAnimationFrame(() => {
+        closeRoundModal();
+        requestAnimationFrame(() => {
+          setBusy(false);
+        });
+      });
+    } catch (e) {
       setBusy(false);
+      throw e;
     }
   }
 

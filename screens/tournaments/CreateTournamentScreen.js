@@ -1,6 +1,6 @@
 //Importaciones:
-import React, { useEffect, useState } from "react";
-import { FlatList, Image, Pressable, StyleSheet, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Animated, Easing, FlatList, Image, Pressable, StyleSheet, View } from "react-native";
 import { Avatar, Button, Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -12,6 +12,25 @@ import { RADIUS, SPACING } from "../../theme";
 import { scale } from "../../utils/responsive";
 
 //JS:
+function SpinningLogo({ size = 96, color }) {
+  const spinAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.timing(spinAnim, { toValue: 1, duration: 1100, easing: Easing.linear, useNativeDriver: true })
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [spinAnim]);
+  const spinDeg = spinAnim.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
+  return (
+    <Animated.Image
+      source={require("../../assets/logo.webp")}
+      style={{ width: size, height: size, tintColor: color, transform: [{ rotate: spinDeg }] }}
+      resizeMode="contain"
+    />
+  );
+}
+
 export default function CreateTournamentScreen({ navigation }) {
   const theme = useTheme();
   const { user } = useAuth();
@@ -40,12 +59,19 @@ export default function CreateTournamentScreen({ navigation }) {
     try {
       const tournamentId = await createTournament({ createdBy: user.uid, roster });
       await submitRound({ tournamentId, roundNumber: 0, winnerUid: null, characters: {} });
-      navigation.replace("TournamentDetail", { tournamentId, justCreated: true });
+      navigation.replace("TournamentsHome");
     } catch (e) {
       setError(e.message || "No pudimos crear el torneo.");
-    } finally {
       setSubmitting(false);
     }
+  }
+
+  if (submitting) {
+    return (
+      <View style={[styles.creatingScreen, { backgroundColor: theme.colors.background }]}>
+        <SpinningLogo size={scale(96)} color={theme.colors.primary} />
+      </View>
+    );
   }
 
   return (
@@ -151,6 +177,7 @@ export default function CreateTournamentScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  creatingScreen: { flex: 1, alignItems: "center", justifyContent: "center", padding: SPACING.xl },
   introRow: {
     flexDirection: "row",
     alignItems: "center",

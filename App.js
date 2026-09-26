@@ -1,6 +1,6 @@
 // App.js
 import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native";
 import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -15,23 +15,25 @@ import SplashScreen from "./components/SplashScreen";
 
 function AppInner() {
   const { theme, effectiveScheme } = useThemeMode();
+  const baseNavTheme = effectiveScheme === "dark" ? DarkTheme : DefaultTheme;
+  const navigationTheme = {
+    ...baseNavTheme,
+    dark: effectiveScheme === "dark",
+    colors: {
+      ...baseNavTheme.colors,
+      background: theme.colors.background,
+      card: theme.colors.surface,
+      text: theme.colors.onSurface,
+      border: theme.colors.outline,
+      primary: theme.colors.primary,
+      notification: theme.colors.error,
+    },
+  };
 
   return (
     <PaperProvider theme={theme}>
       <AuthProvider>
-        <NavigationContainer
-          theme={{
-            dark: effectiveScheme === "dark",
-            colors: {
-              background: theme.colors.background,
-              card: theme.colors.surface,
-              text: theme.colors.onSurface,
-              border: theme.colors.outline,
-              primary: theme.colors.primary,
-              notification: theme.colors.error,
-            },
-          }}
-        >
+        <NavigationContainer theme={navigationTheme}>
           <StatusBar style={effectiveScheme === "dark" ? "light" : "dark"} />
           <RootNavigator />
         </NavigationContainer>
