@@ -245,7 +245,7 @@ export default function HomeScreen({ navigation }) {
                   >
                     <MaterialCommunityIcons name="podium-gold" size={scale(16)} color={theme.colors.primary} />
                     <Text variant="titleMedium" style={{ color: theme.colors.onBackground, marginTop: 2 }}>{myTierInfo.position}°</Text>
-                    <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Ranking33</Text>
+                    <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Ranking 33</Text>
                   </Pressable>
                 )}
               </View>
@@ -386,22 +386,6 @@ export default function HomeScreen({ navigation }) {
                   </Text>
                 </View>
               </View>
-
-              {/* --- Próximamente: invitaciones del Gremio --- */}
-              <ImageBackground
-                source={require("../../assets/invitacion.jpg")}
-                style={styles.inviteCard}
-                imageStyle={styles.inviteCardImage}
-              >
-                <View style={styles.inviteVeil}>
-                  <Text variant="titleMedium" style={styles.inviteTitle}>
-                    Próximamente: invitaciones del Gremio
-                  </Text>
-                  <Text variant="bodySmall" style={styles.inviteSubtitle}>
-                    Vas a poder coordinar la próxima reunión desde acá.
-                  </Text>
-                </View>
-              </ImageBackground>
             </Animated.View>
           )}
         </View>
@@ -521,24 +505,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.l,
   },
   rankingMascot: { width: scale(40), height: scale(40), marginHorizontal: SPACING.s },
-
-  inviteCard: {
-    height: scale(140),
-    borderRadius: RADIUS.xl,
-    marginBottom: SPACING.l,
-    overflow: "hidden",
-    justifyContent: "flex-end",
-  },
-  inviteCardImage: {
-    resizeMode: "cover",
-  },
-  inviteVeil: {
-    backgroundColor: "rgba(24, 14, 4, 0.62)",
-    paddingHorizontal: SPACING.l,
-    paddingVertical: SPACING.m,
-  },
-  inviteTitle: { color: "#FFF7E6", fontWeight: "600" },
-  inviteSubtitle: { color: "#FFF7E6", opacity: 0.85, marginTop: SPACING.xs / 2 },
 
   charsModal: { margin: SPACING.xxl, borderRadius: RADIUS.xl, borderWidth: 1, padding: SPACING.xl, alignItems: "center" },
   charsModalIcon: {

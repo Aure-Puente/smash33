@@ -21,6 +21,7 @@ const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 const MAX_PLAYER_SLOTS = 8;
 const MAX_CHARACTER_SLOTS = 10;
 const BAND_HEIGHT = scale(80);
+const STACKED_ROW_HEIGHT = BAND_HEIGHT + scale(18);
 const BAR_WIDTH = SCREEN_W - SPACING.l * 2;
 
 const RANK_COLORS = ["#F2B84B", "#FF8A65", "#EF5DA8", "#9B5DE5", "#5C7CFA", "#4FC3D9", "#66BB6A", "#8D99AE", "#B0BEC5", "#78909C"];
@@ -444,9 +445,14 @@ function EmptyRankingState({ mode, palette }) {
   );
 }
 
-function RankBar({ items, season, palette }) {
-  const total = items.length;
-  const H = BAND_HEIGHT * Math.max(total, 1);
+function RankBar({ items, season, palette, mode }) {
+const tierHeights = items.map((t) => {
+  const { rows } = getTierLayout(t.members.length);
+  const isStacked = mode === "characters" && t.members.length > 1;
+  return rows * (isStacked ? STACKED_ROW_HEIGHT : BAND_HEIGHT);
+});
+const tierOffsets = tierHeights.map((_, i) => tierHeights.slice(0, i).reduce((s, h) => s + h, 0));
+const H = Math.max(tierHeights.reduce((s, h) => s + h, 0), BAND_HEIGHT);
 
   const messageBagRef = useRef([]);
 
@@ -599,37 +605,40 @@ function RankBar({ items, season, palette }) {
 
       <View style={{ width: BAR_WIDTH, height: H, marginTop: SPACING.m }}>
         <View style={[styles.rankBarShell, { borderColor: palette.pink }]}>
-          {Array.from({ length: Math.max(total, 1) }).map((_, i) => (
+          {items.map((tier, i) => (
             <LinearGradient
-              key={i}
+              key={tier.key}
               colors={[lighten(RANK_COLORS[i % RANK_COLORS.length], 0.25), RANK_COLORS[i % RANK_COLORS.length]]}
               style={[
                 styles.rankBand,
                 {
-                  height: BAND_HEIGHT,
+                  height: tierHeights[i],
                   borderTopLeftRadius: i === 0 ? RADIUS.xl : 0,
                   borderTopRightRadius: i === 0 ? RADIUS.xl : 0,
-                  borderBottomLeftRadius: i === Math.max(total, 1) - 1 ? RADIUS.xl : 0,
-                  borderBottomRightRadius: i === Math.max(total, 1) - 1 ? RADIUS.xl : 0,
+                  borderBottomLeftRadius: i === items.length - 1 ? RADIUS.xl : 0,
+                  borderBottomRightRadius: i === items.length - 1 ? RADIUS.xl : 0,
                 },
               ]}
             />
           ))}
         </View>
 
-        {items.map((item, i) => {
-          const targetY = i * BAND_HEIGHT + BAND_HEIGHT / 2 - scale(28);
+        {items.map((tier, i) => {
           const anim = climbAnims[i];
-          const translateY = anim.interpolate({ inputRange: [0, 1], outputRange: [H - scale(28), targetY] });
+          const translateY = anim.interpolate({ inputRange: [0, 1], outputRange: [H - tierHeights[i], tierOffsets[i]] });
+          const isTie = tier.members.length > 1;
+          const { perRow, showNames } = getTierLayout(tier.members.length);
+          const stacked = mode === "characters" && isTie;
 
           return (
             <Animated.View
-              key={item.key}
+              key={tier.key}
               style={{
                 position: "absolute",
                 top: 0,
                 left: 0,
                 right: 0,
+                height: tierHeights[i],
                 paddingHorizontal: SPACING.l,
                 flexDirection: "row",
                 alignItems: "center",
@@ -638,15 +647,42 @@ function RankBar({ items, season, palette }) {
               }}
             >
               <View style={styles.rankNumberBadge}>
-                <Text style={{ fontSize: scale(14), fontWeight: "800", color: "#FFFFFF" }}>{i + 1}</Text>
+                <Text style={{ fontSize: scale(14), fontWeight: "800", color: "#FFFFFF" }}>{tier.position}</Text>
               </View>
-              <View style={[styles.rankAvatarRing, { borderColor: "rgba(255,255,255,0.9)" }]}>
-                {item.imageUri && <Image source={{ uri: item.imageUri }} style={styles.rankAvatarImg} />}
-              </View>
-              <View style={styles.rankNameChip}>
-                <Text style={styles.rankNameText} numberOfLines={1}>{item.label}</Text>
-                {item.sublabel && <Text style={styles.rankSubLabelText} numberOfLines={1}>{item.sublabel}</Text>}
-              </View>
+
+                    <View style={[styles.tierMembers, (!showNames || stacked) && { justifyContent: "center" }]}>
+                    {tier.members.map((m) =>
+                      stacked ? (
+                        <View key={m.key} style={[styles.tierMember, styles.stackedMember, { width: `${100 / perRow}%`, height: STACKED_ROW_HEIGHT }]}>
+                          <View style={[styles.rankAvatarRing, { borderColor: "rgba(255,255,255,0.9)" }]}>
+                            {m.imageUri && <Image source={{ uri: m.imageUri }} style={styles.rankAvatarImg} />}
+                          </View>
+                          {m.playerName && (
+                            <Text style={styles.stackedPlayerName} numberOfLines={1}>{m.playerName}</Text>
+                          )}
+                        </View>
+                      ) : (
+                        <View
+                          key={m.key}
+                          style={[
+                            styles.tierMember,
+                            { width: `${100 / perRow}%` },
+                            !showNames && { justifyContent: "center" },
+                          ]}
+                        >
+                          <View style={[styles.rankAvatarRing, { borderColor: "rgba(255,255,255,0.9)" }]}>
+                            {m.imageUri && <Image source={{ uri: m.imageUri }} style={styles.rankAvatarImg} />}
+                          </View>
+                          {showNames && (
+                            <View style={[styles.rankNameChip, isTie && { marginLeft: SPACING.s, marginRight: SPACING.xs }]}>
+                              <Text style={styles.rankNameText} numberOfLines={1}>{m.label}</Text>
+                              {m.sublabel && <Text style={styles.rankSubLabelText} numberOfLines={1}>{m.sublabel}</Text>}
+                            </View>
+                          )}
+                        </View>
+                      )
+                    )}
+                  </View>
             </Animated.View>
           );
         })}
@@ -665,6 +701,26 @@ function getEndedPositionVisual(index, total, palette) {
   if (isLast && total > 3) return { icon: "emoticon-poop", color: palette.textMuted };
   if (position === 4) return { icon: "medal", color: "#8B5A2B" };
   return { icon: null, color: palette.pink };
+}
+
+function groupIntoTiers(players) {
+  const tiers = [];
+  players.forEach((p, idx) => {
+    const rounded = Math.round(p.score * 100) / 100;
+    const last = tiers[tiers.length - 1];
+    if (last && last.score === rounded) {
+      last.members.push(p);
+    } else {
+      tiers.push({ score: rounded, position: idx + 1, members: [p] });
+    }
+  });
+  return tiers;
+}
+
+function getTierLayout(count) {
+  const rows = count <= 3 ? 1 : Math.ceil(count / 3);
+  const perRow = Math.ceil(count / rows);
+  return { rows, perRow, showNames: perRow <= 2 };
 }
 
 function lighten(hex, amount) {
@@ -838,19 +894,30 @@ export default function WorldRankingScreen({ navigation }) {
   const revealPlayers = historySnapshot ? historySnapshot.players : qualified;
   const revealLoading = historyLoading || (!historySnapshot && loading);
 
-  const activeList =
-    mode === "players"
-      ? qualified.slice(0, MAX_PLAYER_SLOTS)
-      : topCharacters.slice(0, MAX_CHARACTER_SLOTS).map((c) => ({ ...c, character: { name: c.characterName, images: { iconImage: c.characterIcon } } }));
+const activeList =
+  mode === "players"
+    ? qualified.slice(0, MAX_PLAYER_SLOTS)
+    : topCharacters.map((c) => ({ ...c, character: { name: c.characterName, images: { iconImage: c.characterIcon } } }));
 
-  const barItems =
-    mode === "players"
-      ? activeList.map((m) => ({ key: m.uid, imageUri: m.photoURL, label: m.playerName }))
-      : activeList.map((c) => ({
-          key: c.charId,
-          imageUri: c.character.images?.iconImage,
-          label: c.character.name,
-          sublabel: c.topPlayerName ? `Usado por ${c.topPlayerName}` : null,
+const barTiers =
+  mode === "players"
+    ? groupIntoTiers(activeList).map((t) => ({
+        key: t.members.map((m) => m.uid).join("-"),
+        position: t.position,
+        members: t.members.map((m) => ({ key: m.uid, imageUri: m.photoURL, label: m.playerName })),
+      }))
+    : groupIntoTiers(activeList)
+        .filter((t) => t.position <= MAX_CHARACTER_SLOTS)
+        .map((t) => ({
+          key: t.members.map((c) => c.charId).join("-"),
+          position: t.position,
+          members: t.members.map((c) => ({
+            key: c.charId,
+            imageUri: c.character.images?.iconImage,
+            label: c.character.name,
+            sublabel: c.topPlayerName ? `Usado por ${c.topPlayerName}` : null,
+            playerName: c.topPlayerName || null, 
+          })),
         }));
 
   return (
@@ -1026,7 +1093,7 @@ export default function WorldRankingScreen({ navigation }) {
             ) : activeList.length === 0 ? (
               <EmptyRankingState mode={mode} palette={palette} />
             ) : (
-              <RankBar items={barItems} season={season} palette={palette} />
+              <RankBar items={barTiers} season={season} palette={palette} mode={mode} />
             )}
           </>
         )}
@@ -1211,11 +1278,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xl,
     marginTop: SPACING.l,
   },
+  tierMembers: { flex: 1, flexDirection: "row", flexWrap: "wrap" },
+  tierMember: { height: BAND_HEIGHT, flexDirection: "row", alignItems: "center" },
   emptyFlowerRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: SPACING.l },
   emptyMainFlowerWrap: {
     width: scale(84), height: scale(84),
     alignItems: "center", justifyContent: "center",
     marginHorizontal: scale(26),
+  },
+  stackedMember: { flexDirection: "column", alignItems: "center", justifyContent: "center" },
+  stackedPlayerName: {
+    color: "rgba(255,255,255,0.95)", fontSize: scale(11), marginTop: 4,
+    backgroundColor: "rgba(0,0,0,0.28)", borderRadius: RADIUS.md,
+    paddingHorizontal: 6, overflow: "hidden", maxWidth: "100%",
   },
   emptyMainGlow: {
     position: "absolute",

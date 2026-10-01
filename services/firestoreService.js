@@ -263,64 +263,6 @@ export async function getSeasonHistory() {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
-// ---------- INVITACIONES ----------
-
-export function listenActiveInvitation(callback) {
-  const q = query(collection(db, "invitations"), where("status", "==", "open"), limit(1));
-  return onSnapshot(q, (snap) => {
-    if (snap.empty) {
-      callback(null);
-      return;
-    }
-    const d = snap.docs[0];
-    callback({ id: d.id, ...d.data() });
-  });
-}
-
-export async function createInvitation({ createdBy, slots }) {
-  const activeQ = query(collection(db, "invitations"), where("status", "==", "open"), limit(1));
-  const activeSnap = await getDocs(activeQ);
-  if (!activeSnap.empty) {
-    throw new Error("Ya hay una invitación abierta. Cerrala antes de crear otra.");
-  }
-
-  const docRef = await addDoc(collection(db, "invitations"), {
-    createdBy,
-    createdAt: serverTimestamp(),
-    status: "open",
-    slots,
-  });
-  return docRef.id;
-}
-
-export function listenInvitation(invitationId, callback) {
-  return onSnapshot(doc(db, "invitations", invitationId), (snap) => {
-    callback(snap.exists() ? { id: snap.id, ...snap.data() } : null);
-  });
-}
-
-export function listenInvitationVotes(invitationId, callback) {
-  return onSnapshot(collection(db, "invitations", invitationId, "votes"), (snap) => {
-    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-  });
-}
-
-export async function setMyInvitationVote({ invitationId, uid, playerName, photoURL, slotIds }) {
-  await setDoc(doc(db, "invitations", invitationId, "votes", uid), {
-    uid,
-    playerName,
-    photoURL: photoURL || null,
-    slotIds,
-    updatedAt: serverTimestamp(),
-  });
-}
-
-export async function deleteInvitation(invitationId) {
-  const votesSnap = await getDocs(collection(db, "invitations", invitationId, "votes"));
-  await Promise.all(votesSnap.docs.map((v) => deleteDoc(v.ref)));
-  await deleteDoc(doc(db, "invitations", invitationId));
-}
-
 export async function getLastFinishedTournament() {
   const tournaments = await getFinishedTournaments();
   return tournaments[0] || null;

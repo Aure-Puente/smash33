@@ -1,5 +1,4 @@
 //RankingCalc:
-
 export function computeRankingData({ users, finished, allRounds, allCharacters, includedUids }) {
     const userByUid = (uid) => users.find((u) => u.uid === uid);
     const charById = (id) => allCharacters.find((c) => c.fighterNumber === id);
@@ -77,13 +76,12 @@ export function computeRankingData({ users, finished, allRounds, allCharacters, 
             characterIcon: charById(charId)?.images?.iconImage || null,
             uses: stat.uses,
             wins: stat.wins,
-            score: (stat.wins / stat.uses) * 100,
+            score: stat.wins,
             topPlayerUid: topPlayerUid || null,
             topPlayerName: topPlayerUid ? userByUid(topPlayerUid)?.playerName || null : null,
         };
         })
-        .filter((c) => c.characterName)
+        .filter((c) => c.characterName && c.wins > 0)
         .sort((a, b) => b.score - a.score);
-
     return { qualified, topCharacters };
 }
