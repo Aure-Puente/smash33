@@ -8,7 +8,7 @@ import {
 } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import { createUserProfile, getUserProfile, updateUserProfile, uploadProfilePhoto } from "../services/firestoreService";
-import { registerForPushNotificationsAsync } from "../services/pushNotifications";
+import { registerForPushNotificationsAsync, scheduleSeasonReminders } from "../services/pushNotifications";
 
 //JS:
 const AuthContext = createContext(null);
@@ -25,7 +25,8 @@ export function AuthProvider({ children }) {
         const p = await getUserProfile(firebaseUser.uid);
         setProfile(p);
         registerForPushNotificationsAsync().then((token) => {
-          if (token && token !== p?.expoPushToken) {
+          scheduleSeasonReminders().catch((e) => console.log("Error agendando avisos de temporada:", e.message));
+          if (p && token && token !== p.expoPushToken) {
             updateUserProfile(firebaseUser.uid, { expoPushToken: token }).catch(() => {});
           }
         });
@@ -45,6 +46,10 @@ export function AuthProvider({ children }) {
     }
     await createUserProfile({ uid: cred.user.uid, email, playerName, photoURL });
     setProfile({ uid: cred.user.uid, email, playerName, photoURL });
+
+    registerForPushNotificationsAsync().then((token) => {
+      if (token) updateUserProfile(cred.user.uid, { expoPushToken: token }).catch(() => {});
+    });
   }
 
   async function login({ email, password }) {

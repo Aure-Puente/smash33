@@ -25,6 +25,7 @@ import RoundHistoryRow, { EmptyRoundHistory } from "../../components/RoundHistor
 import ScreenHeader from "../../components/ScreenHeader";
 import { RADIUS, SPACING } from "../../theme";
 import { scale } from "../../utils/responsive";
+import { notifyNewComment } from "../../services/pushNotifications";
 
 //JS:
 const VICTORY_SONGS = [
@@ -760,9 +761,12 @@ function TournamentDetailScreenInner({ route, navigation }) {
         <CommentsSection
           comments={comments}
           readOnly={isParticipant}
-          onAddComment={(text) =>
-            addComment({ tournamentId, uid: user.uid, playerName: profile.playerName, photoURL: profile.photoURL, text })
-          }
+          onAddComment={async (text) => {
+            await addComment({ tournamentId, uid: user.uid, playerName: profile.playerName, photoURL: profile.photoURL, text });
+            notifyNewComment({ tournamentId, authorUid: user.uid, authorName: profile.playerName, text }).catch((e) =>
+              console.log("Error notificando comentario:", e.message)
+            );
+          }}
         />
       </ScrollView>
 
