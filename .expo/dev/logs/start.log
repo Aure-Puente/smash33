@@ -1299,3 +1299,120 @@
 {"_e":"metro:bundling:failed","_t":1790824444449,"id":null,"message":"Unable to resolve \"../screens/invitation/CreateInvitationScreen\" from \"navigation\\HomeStack.js\"\n  2 | import { createNativeStackNavigator } from \"@react-navigation/native-stack\";\n  3 | import HomeScreen from \"../screens/home/HomeScreen\";\n> 4 | import CreateInvitationScreen from \"../screens/invitation/CreateInvitationScreen\";\n    |                                     ^\n  5 | import InvitationDetailScreen from \"../screens/invitation/InvitationDetailScreen\";\n  6 |\n  7 | const Stack = createNativeStackNavigator();","importStack":"\u001b[1mImport stack:\u001b[22m\n\n\u001b[90m \u001b[39mnavigation\\HomeStack.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../screens/invitation/CreateInvitationScreen\"\u001b[39m\n\n\u001b[90m \u001b[39mnavigation\\MainTabs.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./HomeStack\"\u001b[39m\n\n\u001b[90m \u001b[39mnavigation\\RootNavigator.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./MainTabs\"\u001b[39m\n\n\u001b[90m \u001b[39mApp.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./navigation/RootNavigator\"\u001b[39m\n\u001b[90m\u001b[39m\n\u001b[90m\u001b[90m \u001b[39m\u001b[90mnode_modules\\expo\\AppEntry.js\u001b[39m\n\u001b[90m\u001b[90m |\u001b[39m\u001b[90m \u001b[36mimport\u001b[39m\u001b[90m \u001b[32m\"../../App\"\u001b[39m\u001b[90m\u001b[39m\n\u001b[90m\u001b[39m\n\u001b[90m\u001b[90m \u001b[39m\u001b[90m\u001b[39m\n\u001b[90m\u001b[90m |\u001b[39m\u001b[90m \u001b[36mimport\u001b[39m\u001b[90m \u001b[32m\"./node_modules/\u001b[1mexpo\u001b[22m/AppEntry\"\u001b[39m\u001b[90m\u001b[39m\n","filename":null,"targetModuleName":"../screens/invitation/CreateInvitationScreen","originModulePath":"navigation\\HomeStack.js"}
 {"_e":"metro:bundling:failed","_t":1790824459997,"id":null,"message":"Unable to resolve \"../../assets/invitacion.jpg\" from \"screens\\home\\HomeScreen.js\"\n  390 |               {/* --- Próximamente: invitaciones del Gremio --- */}\n  391 |               <ImageBackground\n> 392 |                 source={require(\"../../assets/invitacion.jpg\")}\n      |                                  ^\n  393 |                 style={styles.inviteCard}\n  394 |                 imageStyle={styles.inviteCardImage}\n  395 |               >","importStack":"\u001b[1mImport stack:\u001b[22m\n\n\u001b[90m \u001b[39mscreens\\home\\HomeScreen.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../../assets/invitacion.jpg\"\u001b[39m\n\n\u001b[90m \u001b[39mnavigation\\HomeStack.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../screens/home/HomeScreen\"\u001b[39m\n\n\u001b[90m \u001b[39mnavigation\\MainTabs.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./HomeStack\"\u001b[39m\n\n\u001b[90m \u001b[39mnavigation\\RootNavigator.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./MainTabs\"\u001b[39m\n\n\u001b[90m \u001b[39mApp.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./navigation/RootNavigator\"\u001b[39m\n\u001b[90m\u001b[39m\n\u001b[90m\u001b[90m \u001b[39m\u001b[90mnode_modules\\expo\\AppEntry.js\u001b[39m\n\u001b[90m\u001b[90m |\u001b[39m\u001b[90m \u001b[36mimport\u001b[39m\u001b[90m \u001b[32m\"../../App\"\u001b[39m\u001b[90m\u001b[39m\n\u001b[90m\u001b[39m\n\u001b[90m\u001b[90m \u001b[39m\u001b[90m\u001b[39m\n\u001b[90m\u001b[90m |\u001b[39m\u001b[90m \u001b[36mimport\u001b[39m\u001b[90m \u001b[32m\"./node_modules/\u001b[1mexpo\u001b[22m/AppEntry\"\u001b[39m\u001b[90m\u001b[39m\n","filename":null,"targetModuleName":"../../assets/invitacion.jpg","originModulePath":"screens\\home\\HomeScreen.js"}
 {"_e":"metro:client_log","_t":1790824616064,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"root:init","_t":1790875330596,"format":"v0-jsonl","version":"57.0.27"}
+{"_e":"env:mode","_t":1790875330597,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1790875330602,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1790875331456,"mode":"development","web":false,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1790875332146,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1790875332608,"plugins":[]}
+{"_e":"metro:instantiate","_t":1790875345581,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1790875364956,"id":"6","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1790875364957,"id":"6","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790875364960,"id":"6","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790875365060,"id":"6","progress":0.020247152744145357,"total":253,"current":36}
+{"_e":"metro:bundling:progress","_t":1790875365160,"id":"6","progress":0.1522458293300725,"total":428,"current":167}
+{"_e":"metro:bundling:progress","_t":1790875365260,"id":"6","progress":0.25,"total":680,"current":340}
+{"_e":"metro:bundling:progress","_t":1790875365360,"id":"6","progress":0.40582799838972683,"total":799,"current":509}
+{"_e":"metro:bundling:progress","_t":1790875365460,"id":"6","progress":0.6468574161638119,"total":889,"current":715}
+{"_e":"metro:bundling:progress","_t":1790875365560,"id":"6","progress":0.7489871978813389,"total":1033,"current":894}
+{"_e":"metro:bundling:progress","_t":1790875365660,"id":"6","progress":0.811027220332521,"total":1227,"current":1105}
+{"_e":"metro:bundling:progress","_t":1790875365761,"id":"6","progress":0.811027220332521,"total":1390,"current":1242}
+{"_e":"metro:bundling:progress","_t":1790875365861,"id":"6","progress":0.9683542660159549,"total":1442,"current":1419}
+{"_e":"metro:bundling:progress","_t":1790875365961,"id":"6","progress":0.9958861887962828,"total":1457,"current":1454}
+{"_e":"metro:bundling:progress","_t":1790875366131,"id":"6","progress":0.9972565170673938,"total":1457,"current":1455}
+{"_e":"metro:bundling:progress","_t":1790875366233,"id":"6","progress":0.9973736058612968,"total":1522,"current":1520}
+{"_e":"metro:bundling:progress","_t":1790875366554,"id":"6","progress":0.9986863712419339,"total":1522,"current":1521}
+{"_e":"metro:bundling:progress","_t":1790875366715,"id":"6","progress":0.999,"total":1522,"current":1522}
+{"_e":"metro:bundling:done","_t":1790875366813,"id":"6","total":1522,"ms":1856.1953}
+{"_e":"metro:client_log","_t":1790875372530,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:bundling:failed","_t":1790875653011,"id":null,"message":"Unable to resolve \"../contexts/AuthContext\" from \"screens\\history\\HistoryScreen.js\"\n  4 | import { IconButton, Text, useTheme } from \"react-native-paper\";\n  5 | import { MaterialCommunityIcons } from \"@expo/vector-icons\";\n> 6 | import { useAuth } from \"../contexts/AuthContext\";\n    |                          ^\n  7 | import { listenRoundReactions, setRoundReaction } from \"../services/firestoreService\";\n  8 | import { RADIUS, SPACING } from \"../theme\";\n  9 | import { scale } from \"../utils/responsive\";","importStack":"\u001b[1mImport stack:\u001b[22m\n\n\u001b[90m \u001b[39mscreens\\history\\HistoryScreen.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../contexts/AuthContext\"\u001b[39m\n\n\u001b[90m \u001b[39mnavigation\\HistoryStack.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../screens/history/HistoryScreen\"\u001b[39m\n\n\u001b[90m \u001b[39mnavigation\\MainTabs.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./HistoryStack\"\u001b[39m\n\n\u001b[90m \u001b[39mnavigation\\RootNavigator.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./MainTabs\"\u001b[39m\n\n\u001b[90m \u001b[39mApp.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./navigation/RootNavigator\"\u001b[39m\n\u001b[90m\u001b[39m\n\u001b[90m\u001b[90m \u001b[39m\u001b[90mnode_modules\\expo\\AppEntry.js\u001b[39m\n\u001b[90m\u001b[90m |\u001b[39m\u001b[90m \u001b[36mimport\u001b[39m\u001b[90m \u001b[32m\"../../App\"\u001b[39m\u001b[90m\u001b[39m\n\u001b[90m\u001b[39m\n\u001b[90m\u001b[90m \u001b[39m\u001b[90m\u001b[39m\n\u001b[90m\u001b[90m |\u001b[39m\u001b[90m \u001b[36mimport\u001b[39m\u001b[90m \u001b[32m\"./node_modules/\u001b[1mexpo\u001b[22m/AppEntry\"\u001b[39m\u001b[90m\u001b[39m\n","filename":null,"targetModuleName":"../contexts/AuthContext","originModulePath":"screens\\history\\HistoryScreen.js"}
+{"_e":"metro:bundling:started","_t":1790875882198,"id":"j","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1790875882198,"id":"j","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790875882199,"id":"j","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790875882432,"id":"j","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1790875882499,"id":"j","total":1,"ms":300.7879}
+{"_e":"metro:client_log","_t":1790875888436,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"root:init","_t":1790998228134,"format":"v0-jsonl","version":"57.0.27"}
+{"_e":"env:mode","_t":1790998228136,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1790998228141,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1790998229338,"mode":"development","web":false,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1790998230246,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1790998231892,"plugins":[]}
+{"_e":"metro:instantiate","_t":1790998245547,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1790998305727,"id":"5","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1790998305727,"id":"5","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790998305730,"id":"5","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1790998306659,"id":"5","progress":0.010000000000000002,"total":1,"current":1}
+{"_e":"metro:bundling:progress","_t":1790998306762,"id":"5","progress":0.1695501730103806,"total":17,"current":7}
+{"_e":"metro:bundling:progress","_t":1790998306862,"id":"5","progress":0.1695501730103806,"total":33,"current":12}
+{"_e":"metro:bundling:progress","_t":1790998306975,"id":"5","progress":0.20661157024793386,"total":33,"current":15}
+{"_e":"metro:bundling:progress","_t":1790998307084,"id":"5","progress":0.3477975016436555,"total":39,"current":23}
+{"_e":"metro:bundling:progress","_t":1790998307191,"id":"5","progress":0.3477975016436555,"total":61,"current":26}
+{"_e":"metro:bundling:progress","_t":1790998307339,"id":"5","progress":0.3477975016436555,"total":61,"current":27}
+{"_e":"metro:bundling:progress","_t":1790998307438,"id":"5","progress":0.3477975016436555,"total":87,"current":38}
+{"_e":"metro:bundling:progress","_t":1790998307541,"id":"5","progress":0.3477975016436555,"total":127,"current":49}
+{"_e":"metro:bundling:progress","_t":1790998307642,"id":"5","progress":0.3477975016436555,"total":135,"current":54}
+{"_e":"metro:bundling:progress","_t":1790998307757,"id":"5","progress":0.3477975016436555,"total":142,"current":60}
+{"_e":"metro:bundling:progress","_t":1790998307869,"id":"5","progress":0.3477975016436555,"total":144,"current":64}
+{"_e":"metro:bundling:progress","_t":1790998307969,"id":"5","progress":0.3477975016436555,"total":151,"current":72}
+{"_e":"metro:bundling:progress","_t":1790998308073,"id":"5","progress":0.3477975016436555,"total":157,"current":77}
+{"_e":"metro:bundling:progress","_t":1790998308173,"id":"5","progress":0.3477975016436555,"total":185,"current":89}
+{"_e":"metro:bundling:progress","_t":1790998308275,"id":"5","progress":0.3477975016436555,"total":291,"current":104}
+{"_e":"metro:bundling:progress","_t":1790998308376,"id":"5","progress":0.3477975016436555,"total":310,"current":127}
+{"_e":"metro:bundling:progress","_t":1790998308477,"id":"5","progress":0.3477975016436555,"total":347,"current":152}
+{"_e":"metro:bundling:progress","_t":1790998308577,"id":"5","progress":0.3477975016436555,"total":415,"current":176}
+{"_e":"metro:bundling:progress","_t":1790998308678,"id":"5","progress":0.3477975016436555,"total":493,"current":196}
+{"_e":"metro:bundling:progress","_t":1790998308778,"id":"5","progress":0.3477975016436555,"total":517,"current":209}
+{"_e":"metro:bundling:progress","_t":1790998308879,"id":"5","progress":0.3477975016436555,"total":527,"current":227}
+{"_e":"metro:bundling:progress","_t":1790998308978,"id":"5","progress":0.3477975016436555,"total":569,"current":269}
+{"_e":"metro:bundling:progress","_t":1790998309079,"id":"5","progress":0.3477975016436555,"total":582,"current":301}
+{"_e":"metro:bundling:progress","_t":1790998309180,"id":"5","progress":0.3477975016436555,"total":603,"current":344}
+{"_e":"metro:bundling:progress","_t":1790998309282,"id":"5","progress":0.3477975016436555,"total":663,"current":389}
+{"_e":"metro:bundling:progress","_t":1790998309384,"id":"5","progress":0.3879510204081633,"total":700,"current":436}
+{"_e":"metro:bundling:progress","_t":1790998309487,"id":"5","progress":0.3879510204081633,"total":740,"current":454}
+{"_e":"metro:bundling:progress","_t":1790998309587,"id":"5","progress":0.38903223917117863,"total":784,"current":489}
+{"_e":"metro:bundling:progress","_t":1790998309687,"id":"5","progress":0.4169380154957605,"total":827,"current":534}
+{"_e":"metro:bundling:progress","_t":1790998309787,"id":"5","progress":0.42821041007453975,"total":868,"current":568}
+{"_e":"metro:bundling:progress","_t":1790998309887,"id":"5","progress":0.48700571578188767,"total":887,"current":619}
+{"_e":"metro:bundling:progress","_t":1790998309987,"id":"5","progress":0.5079858056434052,"total":919,"current":655}
+{"_e":"metro:bundling:progress","_t":1790998310087,"id":"5","progress":0.5079858056434052,"total":967,"current":685}
+{"_e":"metro:bundling:progress","_t":1790998310187,"id":"5","progress":0.516740362372871,"total":971,"current":698}
+{"_e":"metro:bundling:progress","_t":1790998310345,"id":"5","progress":0.5536705857748099,"total":973,"current":724}
+{"_e":"metro:bundling:progress","_t":1790998310445,"id":"5","progress":0.5954125153334494,"total":994,"current":767}
+{"_e":"metro:bundling:progress","_t":1790998310546,"id":"5","progress":0.5954125153334494,"total":1060,"current":803}
+{"_e":"metro:bundling:progress","_t":1790998310647,"id":"5","progress":0.6219539895065003,"total":1074,"current":847}
+{"_e":"metro:bundling:progress","_t":1790998310746,"id":"5","progress":0.6740484977377453,"total":1095,"current":899}
+{"_e":"metro:bundling:progress","_t":1790998310854,"id":"5","progress":0.7240462809917356,"total":1100,"current":936}
+{"_e":"metro:bundling:progress","_t":1790998310954,"id":"5","progress":0.7335960908122022,"total":1115,"current":955}
+{"_e":"metro:bundling:progress","_t":1790998311057,"id":"5","progress":0.7335960908122022,"total":1144,"current":966}
+{"_e":"metro:bundling:progress","_t":1790998311161,"id":"5","progress":0.7335960908122022,"total":1165,"current":995}
+{"_e":"metro:bundling:progress","_t":1790998311272,"id":"5","progress":0.7462711402233064,"total":1168,"current":1009}
+{"_e":"metro:bundling:progress","_t":1790998311372,"id":"5","progress":0.7764632972111832,"total":1195,"current":1053}
+{"_e":"metro:bundling:progress","_t":1790998311472,"id":"5","progress":0.7922471142681511,"total":1210,"current":1077}
+{"_e":"metro:bundling:progress","_t":1790998311573,"id":"5","progress":0.7922471142681511,"total":1261,"current":1106}
+{"_e":"metro:bundling:progress","_t":1790998311673,"id":"5","progress":0.7922471142681511,"total":1308,"current":1138}
+{"_e":"metro:bundling:progress","_t":1790998311775,"id":"5","progress":0.7922471142681511,"total":1322,"current":1162}
+{"_e":"metro:bundling:progress","_t":1790998311878,"id":"5","progress":0.8014769476793214,"total":1327,"current":1188}
+{"_e":"metro:bundling:progress","_t":1790998311981,"id":"5","progress":0.8086471818644355,"total":1330,"current":1196}
+{"_e":"metro:bundling:progress","_t":1790998312082,"id":"5","progress":0.8427841977962913,"total":1342,"current":1232}
+{"_e":"metro:bundling:progress","_t":1790998312183,"id":"5","progress":0.8720163966942148,"total":1375,"current":1284}
+{"_e":"metro:bundling:progress","_t":1790998312283,"id":"5","progress":0.9089811281972225,"total":1395,"current":1330}
+{"_e":"metro:bundling:progress","_t":1790998312384,"id":"5","progress":0.9328397563354061,"total":1405,"current":1357}
+{"_e":"metro:bundling:progress","_t":1790998312490,"id":"5","progress":0.9328397563354061,"total":1446,"current":1393}
+{"_e":"metro:bundling:progress","_t":1790998312591,"id":"5","progress":0.9328397563354061,"total":1507,"current":1424}
+{"_e":"metro:bundling:progress","_t":1790998312691,"id":"5","progress":0.9328397563354061,"total":1516,"current":1464}
+{"_e":"metro:bundling:progress","_t":1790998312793,"id":"5","progress":0.9830787304028366,"total":1530,"current":1517}
+{"_e":"metro:bundling:progress","_t":1790998312898,"id":"5","progress":0.996082276047674,"total":1530,"current":1527}
+{"_e":"metro:bundling:progress","_t":1790998313004,"id":"5","progress":0.9986957940741817,"total":1533,"current":1532}
+{"_e":"metro:bundling:progress","_t":1790998313422,"id":"5","progress":0.999,"total":1533,"current":1533}
+{"_e":"metro:bundling:progress","_t":1790998313525,"id":"5","progress":0.999,"total":1535,"current":1534}
+{"_e":"metro:bundling:progress","_t":1790998313647,"id":"5","progress":0.999,"total":1535,"current":1535}
+{"_e":"metro:bundling:done","_t":1790998313942,"id":"5","total":1535,"ms":8215.3335}
+{"_e":"metro:client_log","_t":1790998320438,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1790999367660,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1790999446641,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1791000838390,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1791000842355,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1791000853854,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1791000862331,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}
+{"_e":"metro:client_log","_t":1791000871696,"level":"log","data":["Notificaciones push no disponibles en Expo Go — hace falta una build de desarrollo."]}

@@ -8,13 +8,15 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { useThemeMode } from "../../contexts/ThemeContext";
-import { getFinishedTournaments, getMyCharacterWinCounts, updateUserProfile, uploadProfilePhoto } from "../../services/firestoreService";
+import { getFinishedTournaments, getMyCharacterWinCounts, getRounds, updateUserProfile, uploadProfilePhoto } from "../../services/firestoreService";
 import { getAllCharacters } from "../../services/charactersService";
 import { ACCENT_LIST, RADIUS, SPACING } from "../../theme";
 import { Skeleton } from "../../components/Skeleton";
 import { IS_TABLET, scale } from "../../utils/responsive";
 
 //JS:
+const ELIJAH_IMAGE = require("../../assets/elijah.png");
+
 export default function ProfileScreen({ navigation }) {
   const theme = useTheme();
   const { user, profile, refreshProfile } = useAuth();
@@ -23,7 +25,7 @@ export default function ProfileScreen({ navigation }) {
   const [editing, setEditing] = useState(false);
   const [playerName, setPlayerName] = useState(profile?.playerName || "");
   const [saving, setSaving] = useState(false);
-  const [stats, setStats] = useState({ played: 0, won: 0 });
+  const [stats, setStats] = useState({ played: 0, won: 0, elijah: 0, elijahRounds: 0 });
   const [statsLoading, setStatsLoading] = useState(true);
   const [bestCharacter, setBestCharacter] = useState(null);
   const [bestCharLoading, setBestCharLoading] = useState(true);
@@ -78,7 +80,12 @@ export default function ProfileScreen({ navigation }) {
       const finished = await getFinishedTournaments();
       const mine = finished.filter((t) => t.participantUids?.includes(user.uid));
       const won = mine.filter((t) => t.winnerUid === user.uid).length;
-      setStats({ played: mine.length, won });
+      const roundsByTournament = await Promise.all(mine.map((t) => getRounds(t.id)));
+      const myRounds = roundsByTournament.flat().filter((r) => r.roundNumber > 0);
+      const elijahRounds = myRounds.filter((r) => r.elijahUid).length; 
+      const elijah = myRounds.filter((r) => r.elijahUid === user.uid).length;
+
+      setStats({ played: mine.length, won, elijah, elijahRounds });
       setStatsLoading(false);
     }
     loadStats();
@@ -134,6 +141,14 @@ export default function ProfileScreen({ navigation }) {
 
   const rotateDeg = rotateAnim.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "180deg"] });
   const swatchAnimatedHeight = colorAnim.interpolate({ inputRange: [0, 1], outputRange: [0, swatchHeight || 1] });
+
+  const hasBeenElijah = stats.elijah > 0;
+  const elijahPercent = stats.elijahRounds > 0 ? Math.round((stats.elijah / stats.elijahRounds) * 100) : null;
+  const elijahTitle = hasBeenElijah
+    ? "Primero en quedar afuera"
+    : stats.elijahRounds > 0
+    ? "Nunca quedaste afuera primero"
+    : "Todavía sin rondas con Elijah";
 
   return (
     <Animated.View
@@ -256,6 +271,50 @@ export default function ProfileScreen({ navigation }) {
             <Text style={{ fontSize: scale(11), fontWeight: "700", color: theme.colors.onSurfaceVariant }}>Próximamente</Text>
           </View>
         </View>
+        {statsLoading ? (
+          <View style={[styles.elijahCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+            <Skeleton width={scale(60)} height={scale(60)} radius={RADIUS.lg} />
+            <View style={{ flex: 1, marginLeft: SPACING.m }}>
+              <Skeleton width={scale(72)} height={scale(20)} style={{ marginBottom: 6 }} />
+              <Skeleton width="70%" height={scale(11)} style={{ marginBottom: 5 }} />
+              <Skeleton width="50%" height={scale(9)} />
+            </View>
+            <View style={styles.elijahCountWrap}>
+              <Skeleton width={scale(24)} height={scale(32)} style={{ marginBottom: 4 }} />
+              <Skeleton width={scale(34)} height={scale(9)} />
+            </View>
+          </View>
+        ) : (
+          <View style={[styles.elijahCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+            <View style={[styles.elijahImageWrap, { backgroundColor: theme.colors.surfaceVariant }]}>
+              <Image source={ELIJAH_IMAGE} style={styles.elijahImage} />
+              <View style={[styles.elijahBadge, { backgroundColor: theme.colors.surface, borderColor: theme.colors.surfaceVariant }]}>
+                <MaterialCommunityIcons name="exit-run" size={scale(12)} color={theme.colors.onSurfaceVariant} />
+              </View>
+            </View>
+
+            <View style={{ flex: 1, marginLeft: SPACING.m }}>
+              <Text variant="titleLarge" style={{ color: theme.colors.onSurface, fontWeight: "800" }}>Elijah</Text>
+              <Text variant="bodySmall" numberOfLines={1} style={{ color: theme.colors.onSurfaceVariant }}>
+                {elijahTitle}
+              </Text>
+              {elijahPercent !== null && (
+                <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, opacity: 0.75, marginTop: 1 }}>
+                  En el {elijahPercent}% de {stats.elijahRounds} {stats.elijahRounds === 1 ? "ronda" : "rondas"}
+                </Text>
+              )}
+            </View>
+
+            <View style={styles.elijahCountWrap}>
+              <Text style={[styles.elijahCount, { color: hasBeenElijah ? theme.colors.error : theme.colors.onSurfaceVariant }]}>
+                {stats.elijah}
+              </Text>
+              <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: -2 }}>
+                {stats.elijah === 1 ? "vez" : "veces"}
+              </Text>
+            </View>
+          </View>
+        )}
 
         <View style={[styles.settingsCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
           <Pressable onPress={toggleColorOpen} style={styles.settingsRow}>
@@ -365,6 +424,29 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: RADIUS.pill,
   },
+  elijahCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    padding: SPACING.l,
+    marginBottom: SPACING.l,
+  },
+  elijahImageWrap: {
+    width: scale(60),
+    height: scale(60),
+    borderRadius: RADIUS.lg,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  elijahImage: { width: scale(46), height: scale(46), borderRadius: RADIUS.sm },
+  elijahBadge: {
+    position: "absolute", bottom: -6, right: -6,
+    width: scale(22), height: scale(22), borderRadius: scale(11), borderWidth: 2,
+    alignItems: "center", justifyContent: "center",
+  },
+  elijahCountWrap: { alignItems: "center", minWidth: scale(44), marginLeft: SPACING.s },
+  elijahCount: { fontFamily: "Rajdhani_700Bold", fontSize: scale(34), lineHeight: scale(38) },
   settingsCard: { borderRadius: RADIUS.lg, borderWidth: 1, marginBottom: SPACING.l, overflow: "hidden" },
   settingsRow: { flexDirection: "row", alignItems: "center", padding: SPACING.m },
   rowIconBadge: {

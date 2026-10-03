@@ -1,6 +1,6 @@
 //Importaciones:
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, Easing, Image, ImageBackground, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Animated, Easing, Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import { Avatar, Button, Modal, Portal, Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -370,22 +370,6 @@ export default function HomeScreen({ navigation }) {
                   </View>
                 </Pressable>
               )}
-
-              {/* --- Próximamente: Elijah (estadísticas del primero eliminado) --- */}
-              <View style={[styles.premiumCard, styles.elijahCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary, borderWidth: 1.5 }]}>
-                <View style={styles.elijahImageWrap}>
-                  <Image source={require("../../assets/elijah.png")} style={styles.elijahImage} resizeMode="cover" />
-                  <View style={[styles.elijahBadge, { backgroundColor: theme.colors.primary, borderColor: theme.colors.surface }]}>
-                    <MaterialCommunityIcons name="exit-run" size={scale(13)} color={theme.colors.onPrimary} />
-                  </View>
-                </View>
-                <View style={{ flex: 1, marginLeft: SPACING.m }}>
-                  <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>Próximamente: Elijah</Text>
-                  <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: SPACING.xs }}>
-                    Registro y estadísticas de quien queda afuera primero en cada ronda.
-                  </Text>
-                </View>
-              </View>
             </Animated.View>
           )}
         </View>
@@ -480,21 +464,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   emptyStateCard: { alignItems: "center" },
-
-  elijahCard: { flexDirection: "row", alignItems: "center" },
-  elijahImageWrap: { width: scale(92), height: scale(92) },
-  elijahImage: { width: scale(92), height: scale(92), borderRadius: scale(46) },
-  elijahBadge: {
-    position: "absolute",
-    bottom: -2,
-    right: -2,
-    width: scale(26),
-    height: scale(26),
-    borderRadius: scale(13),
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
 
   rankingCard: {
     flexDirection: "row",

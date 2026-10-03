@@ -26,6 +26,7 @@ import ScreenHeader from "../../components/ScreenHeader";
 import { RADIUS, SPACING } from "../../theme";
 import { scale } from "../../utils/responsive";
 import { notifyNewComment } from "../../services/pushNotifications";
+const ELIJAH_IMAGE = require("../../assets/elijah.png");
 
 //JS:
 const VICTORY_SONGS = [
@@ -335,6 +336,100 @@ function WinnerChoiceRow({ theme, p, character, onPress }) {
   );
 }
 
+  function ElijahIntroAvatar({ theme }) {
+    const shake = useRef(new Animated.Value(0)).current;
+    const float = useRef(new Animated.Value(0)).current;
+    const pulse = useRef(new Animated.Value(0)).current;
+    const sweat = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+      const floatLoop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(float, { toValue: 1, duration: 1300, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(float, { toValue: 0, duration: 1300, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        ])
+      );
+      const pulseLoop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulse, { toValue: 1, duration: 1200, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+          Animated.timing(pulse, { toValue: 0, duration: 0, useNativeDriver: true }),
+          Animated.delay(300),
+        ])
+      );
+      const nervousLoop = Animated.loop(
+        Animated.sequence([
+          Animated.delay(1000),
+          Animated.parallel([
+            Animated.sequence(
+              [-1, 1, -1, 1, -0.6, 0.6, 0].map((v) =>
+                Animated.timing(shake, { toValue: v, duration: 60, useNativeDriver: true })
+              )
+            ),
+            Animated.sequence([
+              Animated.timing(sweat, { toValue: 1, duration: 800, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+              Animated.timing(sweat, { toValue: 0, duration: 0, useNativeDriver: true }),
+            ]),
+          ]),
+        ])
+      );
+      floatLoop.start();
+      pulseLoop.start();
+      nervousLoop.start();
+      return () => {
+        floatLoop.stop();
+        pulseLoop.stop();
+        nervousLoop.stop();
+      };
+    }, [float, pulse, shake, sweat]);
+
+    const translateY = float.interpolate({ inputRange: [0, 1], outputRange: [0, -6] });
+    const translateX = shake.interpolate({ inputRange: [-1, 1], outputRange: [-3, 3] });
+    const rotate = shake.interpolate({ inputRange: [-1, 1], outputRange: ["-7deg", "7deg"] });
+    const ringScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.45] });
+    const ringOpacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.4, 0] });
+    const sweatY = sweat.interpolate({ inputRange: [0, 1], outputRange: [0, scale(16)] });
+    const sweatOpacity = sweat.interpolate({ inputRange: [0, 0.15, 0.8, 1], outputRange: [0, 1, 1, 0] });
+
+    return (
+      <View style={styles.elijahIntroWrap}>
+        <Animated.View
+          style={[styles.elijahIntroRing, { borderColor: theme.colors.error, opacity: ringOpacity, transform: [{ scale: ringScale }] }]}
+        />
+        <Animated.View style={{ transform: [{ translateY }, { translateX }, { rotate }] }}>
+          <Image source={ELIJAH_IMAGE} style={[styles.elijahIntroImage, { borderColor: theme.colors.surfaceVariant }]} />
+          <Animated.View style={[styles.elijahSweat, { opacity: sweatOpacity, transform: [{ translateY: sweatY }] }]}>
+            <MaterialCommunityIcons name="water" size={scale(16)} color="#7EC8F2" />
+          </Animated.View>
+        </Animated.View>
+      </View>
+    );
+  }
+
+  function ElijahBanner({ theme, playerName, onPress }) {
+    const content = (
+      <View style={[styles.elijahBanner, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+        <View style={[styles.elijahBannerImageWrap, { backgroundColor: theme.colors.surfaceVariant }]}>
+          <Image source={ELIJAH_IMAGE} style={styles.elijahBannerImage} />
+        </View>
+        <View style={{ flex: 1, marginLeft: SPACING.m }}>
+          <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Elijah de la ronda</Text>
+          <Text variant="titleMedium" numberOfLines={1} style={{ color: theme.colors.onSurface, fontWeight: "700" }}>
+            {playerName}
+          </Text>
+        </View>
+        {onPress ? (
+          <View style={[styles.elijahBannerAction, { backgroundColor: theme.colors.surfaceVariant }]}>
+            <MaterialCommunityIcons name="pencil-outline" size={scale(16)} color={theme.colors.onSurfaceVariant} />
+          </View>
+        ) : (
+          <MaterialCommunityIcons name="exit-run" size={scale(20)} color={theme.colors.onSurfaceVariant} />
+        )}
+      </View>
+    );
+    if (!onPress) return content;
+    return <Pressable onPress={onPress}>{content}</Pressable>;
+  }
+
 function TournamentDetailScreenInner({ route, navigation }) {
   const { tournamentId } = route.params;
   const theme = useTheme();
@@ -350,6 +445,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
   const [pendingWinnerUid, setPendingWinnerUid] = useState(null);
   const [pickingWinner, setPickingWinner] = useState(false);
   const [winnerUid, setWinnerUid] = useState(null);
+  const [elijahUid, setElijahUid] = useState(null);
   const [loserCharPicks, setLoserCharPicks] = useState({});
   const [pickerForUid, setPickerForUid] = useState(null);
   const [pickerMode, setPickerMode] = useState("assign");
@@ -518,6 +614,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
   function startRegisterRound() {
     setEditingRoundId(null);
     setWinnerUid(null);
+    setElijahUid(null);
     setPendingWinnerUid(null);
     setLoserCharPicks({});
     setPickingWinner(true);
@@ -527,6 +624,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
     setEditingRoundId(round.id);
     setPendingWinnerUid(null);
     setWinnerUid(round.winnerUid);
+    setElijahUid(round.elijahUid ?? null);
     const picks = {};
     Object.entries(round.characters || {}).forEach(([uid, charId]) => {
       if (uid !== round.winnerUid) picks[uid] = charId;
@@ -539,6 +637,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
     setPickingWinner(false);
     setPendingWinnerUid(null);
     setWinnerUid(null);
+    setElijahUid(null); 
     setEditingRoundId(null);
   }
 
@@ -568,6 +667,23 @@ function TournamentDetailScreenInner({ route, navigation }) {
   const winnerParticipant = winnerUid ? participants.find((p) => p.uid === winnerUid) : null;
   const winnerCharacter = winnerParticipant ? charById[winnerParticipant.currentCharacterId] : null;
   const pendingWinnerParticipant = pendingWinnerUid ? participants.find((p) => p.uid === pendingWinnerUid) : null;
+  const needsElijah = participants.length >= 3;
+  const elijahParticipant = elijahUid ? participants.find((p) => p.uid === elijahUid) : null;
+  const roundStep = needsElijah && !elijahUid ? "elijah" : !winnerUid ? "winner" : "losers";
+  const canGoBack = roundStep === "losers" || (roundStep === "winner" && needsElijah);
+
+  function selectElijah(uid) {
+    setElijahUid(uid);
+    if (winnerUid === uid) {
+      setWinnerUid(null);
+      setLoserCharPicks({});
+    }
+  }
+
+  function goBackStep() {
+    if (roundStep === "losers") backToWinnerStep();
+    else if (roundStep === "winner") setElijahUid(null);
+  }
 
   async function confirmRound(uidOverride) {
     const winUid = uidOverride ?? winnerUid;
@@ -584,14 +700,17 @@ function TournamentDetailScreenInner({ route, navigation }) {
 
     setBusy(true);
     try {
+      const elijah = needsElijah ? elijahUid : null; 
       if (editingRoundId) {
-        await correctRound({ tournamentId, roundId: editingRoundId, winnerUid: winUid, characters: characterMap });
-        const updatedRounds = rounds.map((r) => (r.id === editingRoundId ? { ...r, winnerUid: winUid, characters: characterMap } : r));
+        await correctRound({ tournamentId, roundId: editingRoundId, winnerUid: winUid, elijahUid: elijah, characters: characterMap });
+        const updatedRounds = rounds.map((r) =>
+          r.id === editingRoundId ? { ...r, winnerUid: winUid, elijahUid: elijah, characters: characterMap } : r
+        );
         await persistState(updatedRounds);
       } else {
         const nextRoundNumber = rounds.length;
-        await submitRound({ tournamentId, roundNumber: nextRoundNumber, winnerUid: winUid, characters: characterMap });
-        await persistState([...rounds, { roundNumber: nextRoundNumber, winnerUid: winUid, characters: characterMap }]);
+        await submitRound({ tournamentId, roundNumber: nextRoundNumber, winnerUid: winUid, elijahUid: elijah, characters: characterMap });
+        await persistState([...rounds, { roundNumber: nextRoundNumber, winnerUid: winUid, elijahUid: elijah, characters: characterMap }]);
       }
       requestAnimationFrame(() => {
         closeRoundModal();
@@ -750,6 +869,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
               tournamentId={tournamentId}
               round={r}
               winnerName={participants.find((p) => p.uid === r.winnerUid)?.playerName}
+              elijahName={r.elijahUid ? participants.find((p) => p.uid === r.elijahUid)?.playerName : null}
               canEdit={isCreator}
               onEdit={() => startEditRound(r)}
               readOnlyReactions={isParticipant}
@@ -796,8 +916,8 @@ function TournamentDetailScreenInner({ route, navigation }) {
         <Modal visible={pickingWinner} dismissable={false} contentContainerStyle={styles.fullScreenModal}>
           <View style={[styles.fullScreenModal, { backgroundColor: theme.colors.background, padding: SPACING.l }]}>
             <View style={styles.roundModalHeader}>
-              {winnerUid ? (
-                <IconButton icon="arrow-left" size={scale(22)} onPress={backToWinnerStep} />
+            {canGoBack ? (
+                <IconButton icon="arrow-left" size={scale(22)} onPress={goBackStep} />
               ) : (
                 <View style={{ width: scale(40) }} />
               )}
@@ -808,26 +928,52 @@ function TournamentDetailScreenInner({ route, navigation }) {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              {!winnerUid ? (
+              {roundStep === "elijah" ? (
                 <>
                   <View style={styles.roundStepIntro}>
+                  <ElijahIntroAvatar theme={theme} />
+                    <Text variant="headlineSmall" style={{ marginTop: SPACING.s, textAlign: "center", color: theme.colors.onBackground }}>
+                      ¿Quién fue Elijah?
+                    </Text>
+                    <Text variant="bodyMedium" style={{ marginTop: SPACING.xs, textAlign: "center", color: theme.colors.onSurfaceVariant }}>
+                      El primero en quedar afuera de la ronda
+                    </Text>
+                  </View>
+                  {participants.map((p) => (
+                    <WinnerChoiceRow
+                      key={p.uid}
+                      theme={theme}
+                      p={p}
+                      character={charById[p.currentCharacterId]}
+                      onPress={() => selectElijah(p.uid)}
+                    />
+                  ))}
+                </>
+              ) : roundStep === "winner" ? (
+                <>
+                  {elijahParticipant && (
+                    <ElijahBanner theme={theme} playerName={elijahParticipant.playerName} onPress={() => setElijahUid(null)} />
+                  )}
+                  <View style={[styles.roundStepIntro, elijahParticipant && { marginTop: SPACING.xl }]}>
                     <BouncingTrophy size={scale(40)} color={theme.custom.gold} />
                     <Text variant="headlineSmall" style={{ marginTop: SPACING.s, textAlign: "center", color: theme.colors.onBackground }}>
                       ¿Quién ganó esta ronda?
                     </Text>
                   </View>
-                  {participants.map((p) => {
-                    const character = charById[p.currentCharacterId];
-                    return (
-                      <WinnerChoiceRow
-                        key={p.uid}
-                        theme={theme}
-                        p={p}
-                        character={character}
-                        onPress={() => (editingRoundId ? selectWinner(p.uid) : setPendingWinnerUid(p.uid))}
-                      />
-                    );
-                  })}
+                  {participants
+                    .filter((p) => p.uid !== elijahUid)
+                    .map((p) => {
+                      const character = charById[p.currentCharacterId];
+                      return (
+                        <WinnerChoiceRow
+                          key={p.uid}
+                          theme={theme}
+                          p={p}
+                          character={character}
+                          onPress={() => (editingRoundId ? selectWinner(p.uid) : setPendingWinnerUid(p.uid))}
+                        />
+                      );
+                    })}
                 </>
               ) : (
                 <>
@@ -844,6 +990,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
                       )}
                     </View>
                   </View>
+                  {elijahParticipant && <ElijahBanner theme={theme} playerName={elijahParticipant.playerName} />}
 
                   {willFinishTournament ? (
                     <View style={styles.roundStepIntro}>
@@ -873,7 +1020,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
               )}
             </ScrollView>
 
-            {winnerUid && !(willFinishTournament && !editingRoundId) && (
+            {roundStep === "losers" && !(willFinishTournament && !editingRoundId) && (
               <Button
                 mode="contained"
                 disabled={!allLoserPicksReady}
@@ -901,7 +1048,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
             ¿Marcar a {pendingWinnerParticipant?.playerName} como ganador?
           </Text>
           <Text variant="bodyMedium" style={{ textAlign: "center", color: theme.colors.onSurfaceVariant, marginBottom: SPACING.xl }}>
-            Se puede corregir desde el historial.
+            {elijahParticipant ? `Elijah: ${elijahParticipant.playerName}\n` : ""}Se puede corregir desde el historial.
           </Text>
           <View style={styles.confirmActions}>
             <Button mode="outlined" style={{ flex: 1, borderRadius: RADIUS.pill, marginRight: SPACING.s }} onPress={() => setPendingWinnerUid(null)}>
@@ -1056,6 +1203,24 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg,
     borderWidth: 1.5,
     padding: SPACING.m,
+  },
+  elijahIntroWrap: { width: scale(100), height: scale(100), alignItems: "center", justifyContent: "center" },
+  elijahIntroRing: { position: "absolute", width: scale(84), height: scale(84), borderRadius: scale(42), borderWidth: 2 },
+  elijahIntroImage: { width: scale(84), height: scale(84), borderRadius: scale(42), borderWidth: 3 },
+  elijahSweat: { position: "absolute", top: scale(2), right: scale(4) },
+  elijahBanner: {
+    flexDirection: "row", alignItems: "center",
+    borderWidth: 1, borderRadius: RADIUS.lg,
+    padding: SPACING.m, marginBottom: SPACING.l,
+  },
+  elijahBannerImageWrap: {
+    width: scale(44), height: scale(44), borderRadius: RADIUS.md,
+    alignItems: "center", justifyContent: "center",
+  },
+  elijahBannerImage: { width: scale(34), height: scale(34), borderRadius: RADIUS.sm },
+  elijahBannerAction: {
+    width: scale(32), height: scale(32), borderRadius: scale(16),
+    alignItems: "center", justifyContent: "center",
   },
 
   fullScreenModal: { flex: 1, margin: 0 },

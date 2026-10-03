@@ -157,20 +157,20 @@ export async function getRounds(tournamentId) {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
-export async function submitRound({ tournamentId, roundNumber, winnerUid, characters }) {
+export async function submitRound({ tournamentId, roundNumber, winnerUid, elijahUid, characters }) {
   await addDoc(collection(db, "tournaments", tournamentId, "rounds"), {
     roundNumber,
     winnerUid: winnerUid || null,
+    elijahUid: elijahUid || null,
     characters,
     createdAt: serverTimestamp(),
   });
 }
 
-export async function correctRound({ tournamentId, roundId, winnerUid, characters }) {
-  await updateDoc(doc(db, "tournaments", tournamentId, "rounds", roundId), {
-    winnerUid: winnerUid || null,
-    characters,
-  });
+export async function correctRound({ tournamentId, roundId, winnerUid, elijahUid, characters }) {
+  const payload = { winnerUid: winnerUid || null, characters };
+  if (elijahUid !== undefined) payload.elijahUid = elijahUid || null;
+  await updateDoc(doc(db, "tournaments", tournamentId, "rounds", roundId), payload);
 }
 
 export async function applyRecomputedState({ tournamentId, participants, winnerUid, isFinished }) {

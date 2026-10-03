@@ -9,7 +9,7 @@ import { RADIUS, SPACING } from "../theme";
 import { scale } from "../utils/responsive";
 
 //JS:
-export default function RoundHistoryRow({ tournamentId, round, winnerName, canEdit, onEdit, readOnlyReactions }) {
+export default function RoundHistoryRow({ tournamentId, round, winnerName, elijahName, canEdit, onEdit, readOnlyReactions }) {
   const theme = useTheme();
   const { user, profile } = useAuth();
   const [reactions, setReactions] = useState({ likes: 0, dislikes: 0, docs: [] });
@@ -40,9 +40,17 @@ export default function RoundHistoryRow({ tournamentId, round, winnerName, canEd
       </View>
 
       <View style={{ flex: 1, marginLeft: SPACING.m }}>
-        <Text variant="titleSmall" style={{ color: theme.colors.onSurface }}>
+        <Text variant="titleSmall" style={{ color: theme.colors.onSurface }} numberOfLines={1}>
           Ganó {winnerName || "—"}
         </Text>
+        {elijahName && (
+          <View style={styles.elijahRow}>
+            <MaterialCommunityIcons name="emoticon-dead-outline" size={scale(16)} color={theme.colors.error} />
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 5, flexShrink: 1 }} numberOfLines={1}>
+              Elijah: {elijahName}
+            </Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.reactions}>
@@ -134,6 +142,7 @@ const styles = StyleSheet.create({
     width: scale(32), height: scale(32), borderRadius: RADIUS.pill,
     alignItems: "center", justifyContent: "center",
   },
+  elijahRow: { flexDirection: "row", alignItems: "center", marginTop: 3 },
   reactions: { flexDirection: "row" },
   reactionPill: {
     flexDirection: "row", alignItems: "center",

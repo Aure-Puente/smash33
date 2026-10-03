@@ -79,16 +79,31 @@ export default function AdminPanelScreen({ navigation }) {
         includedUids,
       });
 
+      const elijahCountByUid = {};
+      allRounds.forEach((r) => {
+        if (!r.elijahUid) return;
+        elijahCountByUid[r.elijahUid] = (elijahCountByUid[r.elijahUid] || 0) + 1;
+      });
+      const elijahRounds = allRounds.filter((r) => r.elijahUid).length;
+
+      const elijahRanking = Object.entries(elijahCountByUid)
+        .map(([uid, count]) => {
+          const u = allUsers.find((usr) => usr.uid === uid);
+          return { uid, playerName: u?.playerName || "?", photoURL: u?.photoURL || null, count };
+        })
+        .sort((a, b) => b.count - a.count);
+
       await saveSeasonHistory({
         seasonKey: seasonInfo.key,
         seasonLabel: season.label,
         start: seasonInfo.start,
         end: now,
         totalTournaments: finished.length,
-        players: qualified,
+        players: qualified.map((p) => ({ ...p, elijahCount: elijahCountByUid[p.uid] || 0 })),
         topCharacters,
+        elijahRounds,
+        elijahRanking,
       });
-
       await resetAllTournaments();
       setResetModalOpen(false);
     } finally {

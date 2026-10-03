@@ -55,12 +55,6 @@ function MemberRow({ item, theme, isMe, isAdmin, onPress, onDeletePress }) {
             {item.played} {item.played === 1 ? "torneo jugado" : "torneos jugados"}
           </Text>
         </View>
-        {item.wins > 0 && (
-          <View style={[styles.winsPill, { backgroundColor: theme.colors.primaryContainer }]}>
-            <MaterialCommunityIcons name="trophy" size={IS_TABLET ? scale(15) : scale(13)} color={theme.custom.gold} style={{ marginRight: 4 }} />
-            <Text style={{ fontSize: IS_TABLET ? scale(14) : scale(12), fontWeight: "700", color: theme.colors.primary }}>{item.wins}</Text>
-          </View>
-        )}
         {isAdmin && !isMe && (
           <Pressable onPress={onDeletePress} hitSlop={8} style={[styles.deleteBadge, { backgroundColor: theme.colors.surfaceVariant }]}>
             <MaterialCommunityIcons name="account-remove-outline" size={scale(16)} color={theme.colors.error} />
@@ -224,13 +218,6 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: SPACING.m,
-  },
-  winsPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: SPACING.s,
-    paddingVertical: 4,
-    borderRadius: RADIUS.pill,
   },
   meBadge: {
     position: "absolute",

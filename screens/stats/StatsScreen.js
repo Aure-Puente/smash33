@@ -30,6 +30,84 @@ function joinNames(names) {
   return `${names.slice(0, -1).join(", ")} y ${names[names.length - 1]}`;
 }
 
+function ElijahRows({ theme, rows, max, resetKey, emptyText }) {
+  return (
+    <>
+      <Text variant="titleSmall" style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Veces que fue Elijah</Text>
+      {rows.length > 0 ? (
+        <View style={{ marginBottom: SPACING.l }}>
+          {rows.map((row, index) => (
+            <View key={row.id} style={styles.rankRow}>
+              <View style={[styles.rankBadge, { backgroundColor: theme.colors.surfaceVariant }]}>
+                <Text style={{ fontSize: scale(11), fontWeight: "700", color: theme.colors.onSurfaceVariant }}>{index + 1}</Text>
+              </View>
+              <Text style={{ width: scale(84), color: theme.colors.onSurface }} numberOfLines={1}>{row.name}</Text>
+              <AnimatedBar value={row.value} max={max} resetKey={resetKey} style={styles.barTrack} />
+              <Text style={{ width: scale(24), textAlign: "right", fontWeight: "700", color: theme.colors.onBackground }}>{row.value}</Text>
+            </View>
+          ))}
+        </View>
+      ) : (
+        <Text style={{ color: theme.colors.onSurfaceVariant, marginBottom: SPACING.l }}>{emptyText}</Text>
+      )}
+    </>
+  );
+}
+
+// ---------- Skeletons----------
+
+function SectionTitleSkeleton({ width }) {
+  return <Skeleton width={width} height={scale(14)} style={{ marginTop: SPACING.s, marginBottom: SPACING.s }} />;
+}
+
+function DonutSkeleton({ theme }) {
+  return (
+    <View style={[styles.chartCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+      <Skeleton width={scale(180)} height={scale(180)} radius={scale(90)} />
+      <View style={styles.legendWrap}>
+        {[0, 1, 2, 3].map((i) => (
+          <View key={i} style={styles.legendItem}>
+            <Skeleton width={scale(10)} height={scale(10)} radius={scale(5)} style={{ marginRight: 6 }} />
+            <Skeleton width={scale(54)} height={scale(10)} />
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function RankRowsSkeleton({ count = 4 }) {
+  return (
+    <View style={{ marginBottom: SPACING.l }}>
+      {Array.from({ length: count }).map((_, i) => (
+        <View key={i} style={styles.rankRow}>
+          <Skeleton width={scale(22)} height={scale(22)} radius={RADIUS.pill} style={{ marginRight: SPACING.s }} />
+          <Skeleton width={scale(70)} height={scale(12)} style={{ marginRight: scale(14) }} />
+          <Skeleton height={scale(12)} radius={RADIUS.sm} style={{ flex: 1, marginHorizontal: SPACING.s }} />
+          <Skeleton width={scale(16)} height={scale(12)} style={{ marginLeft: scale(8) }} />
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function IconRowsSkeleton({ count = 5, withSubLabel = false }) {
+  return (
+    <View style={{ marginBottom: SPACING.l }}>
+      {Array.from({ length: count }).map((_, i) => (
+        <View key={i} style={{ flexDirection: "row", alignItems: "center", marginBottom: SPACING.s }}>
+          <View style={{ width: 40, alignItems: "center", marginRight: SPACING.s }}>
+            <Skeleton width={32} height={32} radius={RADIUS.sm} />
+            {withSubLabel && <Skeleton width={30} height={8} style={{ marginTop: 3 }} />}
+          </View>
+          <Skeleton height={14} radius={RADIUS.sm} style={{ flex: 1 }} />
+          <Skeleton width={16} height={12} style={{ marginLeft: SPACING.s + 12 }} />
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export default function StatsScreen() {
   const theme = useTheme();
   const { user } = useAuth();
@@ -146,6 +224,18 @@ export default function StatsScreen() {
       .map(([name, count]) => ({ id: name, name, value: count }));
     const maxRoundWins = Math.max(...roundWinsRows.map((r) => r.value), 1);
 
+    const elijahByPlayer = {};
+    roundsList.forEach((r) => {
+      if (!r.elijahUid) return;
+      const t = tournaments.find((tt) => tt.id === r.tournamentId);
+      const elijah = t?.participants?.find((p) => p.uid === r.elijahUid);
+      if (elijah) elijahByPlayer[elijah.playerName] = (elijahByPlayer[elijah.playerName] || 0) + 1;
+    });
+    const elijahRows = Object.entries(elijahByPlayer)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count]) => ({ id: name, name, value: count }));
+    const maxElijah = Math.max(...elijahRows.map((r) => r.value), 1);
+
     const characterRowsGlobal = Object.entries(winsByCharacterPlayer)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
@@ -154,7 +244,7 @@ export default function StatsScreen() {
         return { id: key, iconUrl: charById(charId)?.images?.iconImage, value: count, subLabel: playerName };
       });
 
-    return { pieData, pieSignature, donutData, totalPieWins, roundWinsRows, maxRoundWins, characterRowsGlobal };
+    return { pieData, pieSignature, donutData, totalPieWins, roundWinsRows, maxRoundWins, characterRowsGlobal, elijahRows, maxElijah };
   }
 
   const generalStats = computeAggregates(filteredTournaments, filteredRounds);
@@ -191,10 +281,21 @@ export default function StatsScreen() {
   // ---- Por jugador ----
   const selectedUser = userByUid(selectedUid);
   const playerFinishedWins = tournaments.filter((t) => t.winnerUid === selectedUid).length;
+  const playerElijahCount = allRounds.filter((r) => r.elijahUid === selectedUid).length;
   const playerCharEntries = playerStats
     ? Object.entries(playerStats.characterWins).sort((a, b) => b[1] - a[1])
     : [];
-  const bestPlayerCharacter = playerCharEntries[0] ? charById(playerCharEntries[0][0]) : null;
+  const bestWinCount = playerCharEntries[0]?.[1] || 0;
+  const bestPlayerCharacters =
+    bestWinCount > 0
+      ? playerCharEntries.filter(([, count]) => count === bestWinCount).map(([charId]) => charById(charId)).filter(Boolean)
+      : [];
+  const bestCharactersLabel =
+    bestPlayerCharacters.length === 0
+      ? "—"
+      : bestPlayerCharacters.length <= 2
+      ? bestPlayerCharacters.map((c) => c.name).join(" / ")
+      : `${bestPlayerCharacters.length} empatados`;
   const playerCharacterRows = playerCharEntries.map(([charId, count]) => ({
     id: charId,
     iconUrl: charById(charId)?.images?.iconImage,
@@ -256,38 +357,24 @@ export default function StatsScreen() {
             <View>
               <View style={[styles.summaryCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
                 <View style={{ flex: 1 }}>
-                  <Skeleton width={scale(64)} height={scale(30)} style={{ marginBottom: SPACING.xs }} />
-                  <Skeleton width={scale(110)} height={scale(12)} />
+                  <Skeleton width={scale(70)} height={scale(32)} style={{ marginBottom: SPACING.xs }} />
+                  <Skeleton width={scale(100)} height={scale(12)} />
                 </View>
-                <Skeleton width={scale(120)} height={scale(34)} radius={RADIUS.pill} />
+                <Skeleton width={scale(150)} height={scale(40)} radius={RADIUS.pill} />
               </View>
-              <Skeleton width="70%" height={scale(12)} style={{ marginTop: SPACING.s, marginBottom: SPACING.l }} />
+              <Skeleton width="65%" height={scale(12)} style={{ marginBottom: SPACING.l }} />
 
               <Skeleton width={scale(170)} height={scale(14)} style={{ marginBottom: SPACING.s }} />
-              <View style={[styles.chartCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
-                <Skeleton width={scale(180)} height={scale(180)} radius={scale(90)} />
-              </View>
+              <DonutSkeleton theme={theme} />
 
-              <Skeleton width={scale(190)} height={scale(14)} style={{ marginBottom: SPACING.s }} />
-              <View style={{ marginBottom: SPACING.l }}>
-                {[0, 1, 2, 3].map((i) => (
-                  <View key={i} style={styles.rankRow}>
-                    <Skeleton width={scale(22)} height={scale(22)} radius={RADIUS.pill} />
-                    <Skeleton width={scale(70)} height={scale(12)} style={{ marginLeft: SPACING.s, marginRight: SPACING.s }} />
-                    <Skeleton height={scale(12)} radius={RADIUS.sm} style={{ flex: 1 }} />
-                    <Skeleton width={scale(20)} height={scale(12)} style={{ marginLeft: SPACING.s }} />
-                  </View>
-                ))}
-              </View>
+              <SectionTitleSkeleton width={scale(190)} />
+              <RankRowsSkeleton />
 
-              <Skeleton width={scale(200)} height={scale(14)} style={{ marginBottom: SPACING.s }} />
-              {[0, 1, 2, 3, 4].map((i) => (
-                <View key={i} style={{ flexDirection: "row", alignItems: "center", marginBottom: SPACING.s }}>
-                  <Skeleton width={scale(32)} height={scale(32)} radius={RADIUS.sm} style={{ marginRight: SPACING.m }} />
-                  <Skeleton height={scale(14)} radius={RADIUS.sm} style={{ flex: 1, marginRight: SPACING.s }} />
-                  <Skeleton width={scale(24)} height={scale(12)} />
-                </View>
-              ))}
+              <SectionTitleSkeleton width={scale(150)} />
+              <RankRowsSkeleton count={3} />
+
+              <SectionTitleSkeleton width={scale(200)} />
+              <IconRowsSkeleton withSubLabel />
             </View>
           ) : (
           <>
@@ -397,12 +484,21 @@ export default function StatsScreen() {
               </Text>
             )}
 
+            <ElijahRows
+              theme={theme}
+              rows={generalStats.elijahRows}
+              max={generalStats.maxElijah}
+              resetKey={`general-elijah-${onlyMyTournaments}`}
+              emptyText={onlyMyTournaments ? "Sin Elijah registrados en los torneos en los que jugaste." : "Todavía no hay ningún Elijah registrado."}
+            />
+
             <Text variant="titleSmall" style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Combates ganados por personaje</Text>
             <IconBarRows
               data={generalStats.characterRowsGlobal}
               emptyMessage={onlyMyTournaments ? "Sin datos en los torneos en los que jugaste." : undefined}
               resetKey={`general-${onlyMyTournaments}`}
             />
+
           </>
           )
         ) : view === "filtradas" ? (
@@ -410,15 +506,24 @@ export default function StatsScreen() {
             <View>
               <View style={[styles.summaryCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
                 <View style={{ flex: 1 }}>
-                  <Skeleton width={scale(64)} height={scale(30)} style={{ marginBottom: SPACING.xs }} />
-                  <Skeleton width={scale(110)} height={scale(12)} />
+                  <Skeleton width={scale(70)} height={scale(32)} style={{ marginBottom: SPACING.xs }} />
+                  <Skeleton width={scale(140)} height={scale(12)} />
                 </View>
+                <Skeleton width={scale(34)} height={scale(34)} radius={RADIUS.pill} />
               </View>
-              <Skeleton width="70%" height={scale(12)} style={{ marginTop: SPACING.s, marginBottom: SPACING.l }} />
+              <Skeleton width="55%" height={scale(12)} style={{ marginBottom: SPACING.l }} />
+
               <Skeleton width={scale(170)} height={scale(14)} style={{ marginBottom: SPACING.s }} />
-              <View style={[styles.chartCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
-                <Skeleton width={scale(180)} height={scale(180)} radius={scale(90)} />
-              </View>
+              <DonutSkeleton theme={theme} />
+
+              <SectionTitleSkeleton width={scale(190)} />
+              <RankRowsSkeleton />
+
+              <SectionTitleSkeleton width={scale(200)} />
+              <IconRowsSkeleton withSubLabel />
+
+              <SectionTitleSkeleton width={scale(150)} />
+              <RankRowsSkeleton count={3} />
             </View>
           ) : matchedTournaments.length === 0 ? (
             <View style={styles.emptyPlayerState}>
@@ -506,6 +611,14 @@ export default function StatsScreen() {
                 data={matchedStats.characterRowsGlobal}
                 resetKey={`filtradas-${(activeFilterUids || []).join(",")}`}
               />
+
+              <ElijahRows
+                theme={theme}
+                rows={matchedStats.elijahRows}
+                max={matchedStats.maxElijah}
+                resetKey={`filtradas-elijah-${(activeFilterUids || []).join(",")}`}
+                emptyText="Sin Elijah registrados en estos torneos."
+              />
             </>
           )
         ) : (
@@ -545,91 +658,139 @@ export default function StatsScreen() {
             )}
 
             {selectedUid && (loadingPlayer ? (
-              <View style={{ marginTop: SPACING.l }}>
+              <View>
                 <View style={[styles.playerCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
                   <View style={styles.playerCardHeader}>
-                    <Skeleton width={scale(44)} height={scale(44)} radius={RADIUS.pill} />
-                    <Skeleton width={scale(120)} height={scale(16)} style={{ marginLeft: SPACING.m }} />
+                    <Skeleton width={scale(40)} height={scale(40)} radius={RADIUS.pill} />
+                    <Skeleton width={scale(100)} height={scale(16)} style={{ marginLeft: SPACING.m }} />
                   </View>
-                  <View style={[styles.playerCardDivider, { backgroundColor: theme.colors.outline }]} />
-                  <View style={styles.playerStatsRow}>
-                    <View style={styles.playerStatBlock}>
-                      <Skeleton width={scale(36)} height={scale(22)} style={{ marginBottom: SPACING.xs }} />
-                      <Skeleton width={scale(80)} height={scale(10)} />
-                    </View>
-                    <View style={styles.playerStatBlock}>
-                      <Skeleton width={scale(22)} height={scale(22)} radius={RADIUS.pill} style={{ marginBottom: SPACING.xs }} />
-                      <Skeleton width={scale(70)} height={scale(10)} />
-                    </View>
+                  <View style={styles.statTilesRow}>
+                    {[0, 1, 2].map((i) => (
+                      <View key={i} style={[styles.statTile, { backgroundColor: theme.colors.surfaceVariant }]}>
+                        <View style={styles.statTileVisual}>
+                          {i === 2 ? (
+                            <Skeleton width={scale(28)} height={scale(28)} radius={scale(14)} />
+                          ) : (
+                            <Skeleton width={scale(18)} height={scale(22)} />
+                          )}
+                        </View>
+                        {i === 2 && <Skeleton width={scale(64)} height={scale(10)} style={{ marginBottom: 3 }} />}
+                        <Skeleton width={scale(64)} height={scale(9)} style={{ marginTop: 2 }} />
+                      </View>
+                    ))}
                   </View>
                 </View>
 
-                <Skeleton width={scale(210)} height={scale(14)} style={{ marginTop: SPACING.l, marginBottom: SPACING.s }} />
-                {[0, 1, 2, 3].map((i) => (
-                  <View key={i} style={{ flexDirection: "row", alignItems: "center", marginBottom: SPACING.s }}>
-                    <Skeleton width={scale(32)} height={scale(32)} radius={RADIUS.sm} style={{ marginRight: SPACING.m }} />
-                    <Skeleton height={scale(14)} radius={RADIUS.sm} style={{ flex: 1, marginRight: SPACING.s }} />
-                    <Skeleton width={scale(24)} height={scale(12)} />
-                  </View>
-                ))}
+                <SectionTitleSkeleton width={scale(210)} />
+                <IconRowsSkeleton />
               </View>
             ) : (
               <>
                 <View style={[styles.playerCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
                   <View style={styles.playerCardHeader}>
-                    <Avatar.Image size={scale(44)} source={{ uri: selectedUser?.photoURL }} />
-                    <Text variant="titleMedium" style={{ marginLeft: SPACING.m, color: theme.colors.onSurface }}>{selectedUser?.playerName}</Text>
+                    <Avatar.Image size={scale(40)} source={{ uri: selectedUser?.photoURL }} />
+                    <Text variant="titleMedium" numberOfLines={1} style={{ flex: 1, marginLeft: SPACING.m, color: theme.colors.onSurface, fontWeight: "700" }}>
+                      {selectedUser?.playerName}
+                    </Text>
                   </View>
-                  <View style={[styles.playerCardDivider, { backgroundColor: theme.colors.outline }]} />
-                  <View style={styles.playerStatsRow}>
-                    <View style={styles.playerStatBlock}>
-                      <Text variant="headlineSmall" style={{ color: theme.custom.gold }}>{playerFinishedWins}</Text>
-                      <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Torneos ganados</Text>
+
+                  <View style={styles.statTilesRow}>
+                    <View style={[styles.statTile, { backgroundColor: theme.colors.surfaceVariant }]}>
+                      <View style={styles.statTileVisual}>
+                        <Text variant="titleLarge" style={{ color: theme.custom.gold, fontWeight: "800" }}>{playerFinishedWins}</Text>
+                      </View>
+                      <Text variant="labelSmall" numberOfLines={1} adjustsFontSizeToFit style={[styles.statTileLabel, { color: theme.colors.onSurfaceVariant }]}>Torneos ganados</Text>
                     </View>
-                    <View style={styles.playerStatBlock}>
-                      {bestPlayerCharacter?.images?.iconImage && (
-                        <Avatar.Image
-                          size={scale(22)}
-                          source={{ uri: bestPlayerCharacter.images.iconImage }}
-                          style={{ backgroundColor: theme.colors.background, marginBottom: SPACING.xs }}
-                        />
+
+                    <View style={[styles.statTile, { backgroundColor: theme.colors.surfaceVariant }]}>
+                      <View style={styles.statTileVisual}>
+                        <Text
+                          variant="titleLarge"
+                          style={{ color: playerElijahCount > 0 ? theme.colors.error : theme.colors.onSurfaceVariant, fontWeight: "800" }}
+                        >
+                          {playerElijahCount}
+                        </Text>
+                      </View>
+                      <Text variant="labelSmall" numberOfLines={1} adjustsFontSizeToFit style={[styles.statTileLabel, { color: theme.colors.onSurfaceVariant }]}>Veces Elijah</Text>
+                    </View>
+
+                    <View style={[styles.statTile, { backgroundColor: theme.colors.surfaceVariant }]}>
+                      <View style={styles.statTileVisual}>
+                        {bestPlayerCharacters.length > 0 ? (
+                          bestPlayerCharacters.slice(0, 3).map((c, i) => (
+                            <Avatar.Image
+                              key={c.fighterNumber}
+                              size={scale(28)}
+                              source={{ uri: c.images?.iconImage }}
+                              style={[
+                                styles.bestCharIcon,
+                                { backgroundColor: theme.colors.background, borderColor: theme.colors.surfaceVariant },
+                                i > 0 && styles.bestCharIconOverlap,
+                              ]}
+                            />
+                          ))
+                        ) : (
+                          <Text variant="titleLarge" style={{ color: theme.colors.onSurfaceVariant, fontWeight: "800" }}>—</Text>
+                        )}
+                      </View>
+                      {bestPlayerCharacters.length > 0 && (
+                        <Text variant="labelSmall" numberOfLines={1} style={{ color: theme.colors.onSurface, fontWeight: "700", textAlign: "center" }}>
+                          {bestCharactersLabel}
+                        </Text>
                       )}
-                      <Text variant="labelSmall" numberOfLines={1} style={{ color: theme.colors.onSurface, fontWeight: "700" }}>
-                        {bestPlayerCharacter?.name || "—"}
+                      <Text variant="labelSmall" numberOfLines={1} adjustsFontSizeToFit style={[styles.statTileLabel, { color: theme.colors.onSurfaceVariant }]}>
+                        {bestPlayerCharacters.length > 1 ? "Mejores personajes" : "Mejor personaje"}
                       </Text>
-                      <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>Mejor personaje</Text>
                     </View>
                   </View>
                 </View>
 
-                <Text variant="titleSmall" style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Personajes y combates ganados</Text>
-                <IconBarRows data={playerCharacterRows} emptyMessage="Todavía no ganó ningún combate." resetKey={selectedUid} />
-
                 {nemesisOpponent && nemesisCharacter && (
                   <View style={[styles.nemesisCard, { backgroundColor: NEMESIS_BG, borderColor: NEMESIS_COLOR }]}>
                     <View style={styles.nemesisHeader}>
-                      <MaterialCommunityIcons name="emoticon-devil-outline" size={scale(16)} color={NEMESIS_COLOR} style={{ marginRight: SPACING.xs }} />
-                      <Text variant="titleSmall" style={{ color: NEMESIS_COLOR, fontWeight: "800" }}>Némesis</Text>
+                      <MaterialCommunityIcons name="emoticon-devil-outline" size={scale(15)} color={NEMESIS_COLOR} style={{ marginRight: SPACING.xs }} />
+                      <Text style={[styles.nemesisTag, { color: NEMESIS_COLOR }]}>NÉMESIS</Text>
                     </View>
+
                     <View style={styles.nemesisBody}>
-                      {charById(playerStats.nemesis.characterId)?.images?.iconImage && (
+                      <View style={styles.nemesisCharWrap}>
+                        <View style={[styles.nemesisCharFrame, { backgroundColor: theme.colors.surface, borderColor: NEMESIS_COLOR }]}>
+                          {nemesisCharacter.images?.iconImage ? (
+                            <Image source={{ uri: nemesisCharacter.images.iconImage }} style={styles.nemesisCharImage} resizeMode="contain" />
+                          ) : (
+                            <MaterialCommunityIcons name="sword-cross" size={scale(22)} color={NEMESIS_COLOR} />
+                          )}
+                        </View>
                         <Avatar.Image
-                          size={scale(28)}
-                          source={{ uri: nemesisCharacter.images?.iconImage }}
-                          style={{ backgroundColor: theme.colors.background }}
+                          size={scale(22)}
+                          source={{ uri: nemesisOpponent.photoURL }}
+                          style={[styles.nemesisPlayerBadge, { borderColor: NEMESIS_COLOR }]}
                         />
-                      )}
-                      <Text style={{ flex: 1, marginLeft: SPACING.s, color: theme.colors.onSurface }}>
-                        {nemesisOpponent.playerName} con {nemesisCharacter.name}
-                      </Text>
-                      <View style={[styles.nemesisChip, { backgroundColor: theme.colors.surface }]}>
-                        <Text style={{ fontSize: scale(11), fontWeight: "700", color: NEMESIS_COLOR }}>
-                          {playerStats.nemesis.count} {playerStats.nemesis.count === 1 ? "derrota" : "derrotas"}
+                      </View>
+
+                      <View style={{ flex: 1, marginLeft: SPACING.m }}>
+                        <Text variant="titleMedium" numberOfLines={1} style={{ color: theme.colors.onSurface, fontWeight: "800" }}>
+                          {nemesisCharacter.name}
+                        </Text>
+                        <Text variant="bodySmall" numberOfLines={1} style={{ color: theme.colors.onSurfaceVariant }}>
+                          usado por {nemesisOpponent.playerName}
+                        </Text>
+                      </View>
+
+                      <View style={[styles.nemesisCount, { backgroundColor: theme.colors.surface, borderColor: NEMESIS_COLOR }]}>
+                        <Text variant="titleLarge" style={{ color: NEMESIS_COLOR, fontWeight: "800", lineHeight: scale(24) }}>
+                          {playerStats.nemesis.count}
+                        </Text>
+                        <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                          {playerStats.nemesis.count === 1 ? "derrota" : "derrotas"}
                         </Text>
                       </View>
                     </View>
                   </View>
                 )}
+
+                <Text variant="titleSmall" style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Personajes y combates ganados</Text>
+                <IconBarRows data={playerCharacterRows} emptyMessage="Todavía no ganó ningún combate." resetKey={selectedUid} />
               </>
             ))}
           </>
@@ -752,15 +913,47 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.pill, borderWidth: 1.5,
     marginRight: SPACING.s,
   },
-  playerCard: { borderRadius: RADIUS.lg, borderWidth: 1, padding: SPACING.l, marginTop: SPACING.l, marginBottom: SPACING.l },
+  playerCard: { borderRadius: RADIUS.lg, borderWidth: 1, padding: SPACING.m, marginTop: SPACING.m, marginBottom: SPACING.m },
   playerCardHeader: { flexDirection: "row", alignItems: "center" },
-  playerCardDivider: { height: 1, marginVertical: SPACING.m },
-  playerStatsRow: { flexDirection: "row" },
-  playerStatBlock: { flex: 1, alignItems: "center" },
-  nemesisCard: { borderRadius: RADIUS.lg, borderWidth: 1, padding: SPACING.m, marginTop: SPACING.s },
+  statTilesRow: { flexDirection: "row", gap: SPACING.s, marginTop: SPACING.m },
+  statTile: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: RADIUS.md,
+    paddingVertical: SPACING.s,
+    paddingHorizontal: SPACING.xs,
+  },
+  statTileVisual: { height: scale(30), flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 2 },
+  statTileLabel: { textAlign: "center", marginTop: 2 },
+  bestCharIcon: { borderWidth: 2 },
+  bestCharIconOverlap: { marginLeft: -scale(9) },
+  nemesisCard: { borderRadius: RADIUS.lg, borderWidth: 1.5, padding: SPACING.m, marginBottom: SPACING.m },
   nemesisHeader: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.s },
+  nemesisTag: { fontSize: scale(12), fontWeight: "800", letterSpacing: 1.5 },
   nemesisBody: { flexDirection: "row", alignItems: "center" },
-  nemesisChip: { paddingHorizontal: SPACING.s, paddingVertical: 4, borderRadius: RADIUS.pill },
+  nemesisCharWrap: { width: scale(54), height: scale(54) },
+  nemesisCharFrame: {
+    width: scale(50),
+    height: scale(50),
+    borderRadius: RADIUS.md,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  nemesisCharImage: { width: "82%", height: "82%" },
+  nemesisPlayerBadge: { position: "absolute", right: -2, bottom: -2, borderWidth: 2 },
+  nemesisCount: {
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.s,
+    marginLeft: SPACING.s,
+    minWidth: scale(56),
+  },
   filterModal: {
     marginHorizontal: SPACING.l,
     borderRadius: RADIUS.xl,

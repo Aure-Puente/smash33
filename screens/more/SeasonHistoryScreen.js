@@ -12,6 +12,8 @@ import { RADIUS, SPACING } from "../../theme";
 import { scale } from "../../utils/responsive";
 
 //JS:
+const ELIJAH_IMAGE = require("../../assets/elijah.png");
+
 function getPositionVisual(index, total, theme) {
   const position = index + 1;
   const isLast = position === total;
@@ -21,6 +23,13 @@ function getPositionVisual(index, total, theme) {
   if (isLast && total > 3) return { icon: "emoticon-poop", color: theme.colors.onSurfaceVariant, label: `${position}° puesto` };
   if (position === 4) return { icon: "medal", color: "#8B5A2B", label: "4to puesto" };
   return { icon: null, color: theme.colors.primary, label: `${position}° puesto` };
+}
+
+function withTiedPositions(list) {
+  return list.map((item, index) => {
+    const firstIndex = list.findIndex((other) => other.count === item.count);
+    return { ...item, position: firstIndex + 1 };
+  });
 }
 
 function formatDate(value) {
@@ -40,6 +49,9 @@ function SeasonCard({ season, theme }) {
   const champion = season.players?.[0];
   const topCharacter = season.topCharacters?.[0];
   const totalPlayers = season.players?.length || 0;
+
+  const hasElijahData = Array.isArray(season.elijahRanking);
+  const elijahRows = hasElijahData ? withTiedPositions(season.elijahRanking) : [];
 
   function toggle() {
     const next = !open;
@@ -131,6 +143,53 @@ function SeasonCard({ season, theme }) {
         </>
       )}
 
+      {/* --- Tabla de posiciones: Elijah --- */}
+      {hasElijahData && (
+        <>
+          <View style={[styles.sectionHeader, { marginTop: SPACING.l }]}>
+            <MaterialCommunityIcons name="exit-run" size={scale(17)} color={theme.colors.primary} />
+            <Text style={styles.sectionTitle}>
+              <Text style={{ color: theme.colors.primary }}>Tabla de posiciones</Text>
+              <Text style={{ color: theme.colors.onSurface }}> — Elijah</Text>
+            </Text>
+          </View>
+
+          {elijahRows.length === 0 ? (
+            <View style={[styles.posRow, { backgroundColor: theme.colors.surfaceVariant }]}>
+              <View style={styles.posIconWrap}>
+                <MaterialCommunityIcons name="emoticon-happy-outline" size={scale(22)} color={theme.colors.onSurfaceVariant} />
+              </View>
+              <Text style={{ flex: 1, color: theme.colors.onSurfaceVariant, fontSize: scale(13) }}>
+                Nadie fue Elijah esta temporada
+              </Text>
+            </View>
+          ) : (
+            elijahRows.map((e) => (
+              <View key={e.uid} style={[styles.posRow, { backgroundColor: theme.colors.surfaceVariant }]}>
+                <View style={styles.posIconWrap}>
+                  {e.position === 1 ? (
+                    <Image source={ELIJAH_IMAGE} style={styles.elijahPosImage} />
+                  ) : (
+                    <Text style={{ fontWeight: "800", color: theme.colors.onSurfaceVariant, fontSize: scale(13) }}>{e.position}°</Text>
+                  )}
+                </View>
+                <Avatar.Image size={scale(34)} source={{ uri: e.photoURL }} style={{ marginRight: SPACING.s }} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: theme.colors.onSurface, fontSize: scale(14), fontWeight: "700" }} numberOfLines={1}>{e.playerName}</Text>
+                  <Text style={{ color: theme.colors.onSurfaceVariant, fontSize: scale(11) }} numberOfLines={1}>
+                    {e.position === 1 ? "El Elijah de la temporada" : `${e.position}° puesto`}
+                  </Text>
+                </View>
+                <View style={styles.elijahCountWrap}>
+                  <Text style={[styles.elijahCount, { color: theme.colors.error }]}>{e.count}</Text>
+                  <Text style={{ fontSize: scale(10), color: theme.colors.onSurfaceVariant }}>{e.count === 1 ? "vez" : "veces"}</Text>
+                </View>
+              </View>
+            ))
+          )}
+        </>
+      )}
+
       {/* --- Estadísticas individuales --- */}
       <View style={[styles.sectionHeader, { marginTop: SPACING.l }]}>
         <MaterialCommunityIcons name="chart-box-outline" size={scale(17)} color={theme.colors.primary} />
@@ -153,6 +212,14 @@ function SeasonCard({ season, theme }) {
                 {p.roundsWon} {p.roundsWon === 1 ? "pelea ganada" : "peleas ganadas"}
               </Text>
             </View>
+            {p.elijahCount !== undefined && (
+              <View style={styles.statLineRow}>
+                <MaterialCommunityIcons name="exit-run" size={scale(13)} color={theme.colors.primary} />
+                <Text style={{ fontSize: scale(12), color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
+                  {p.elijahCount} {p.elijahCount === 1 ? "vez Elijah" : "veces Elijah"}
+                </Text>
+              </View>
+            )}
           </View>
           {p.bestCharacterName && (
             <View style={styles.statBestChar}>
@@ -341,6 +408,10 @@ const styles = StyleSheet.create({
   },
   posIconWrap: { width: scale(30), alignItems: "center", justifyContent: "center", marginRight: SPACING.xs },
   charIcon: { width: scale(34), height: scale(34), borderRadius: RADIUS.sm },
+
+  elijahPosImage: { width: scale(24), height: scale(24), borderRadius: scale(12) },
+  elijahCountWrap: { alignItems: "center", minWidth: scale(36), marginLeft: SPACING.s },
+  elijahCount: { fontFamily: "Rajdhani_700Bold", fontSize: scale(20), lineHeight: scale(22) },
 
   statRow: {
     flexDirection: "row", alignItems: "center",
