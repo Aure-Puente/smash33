@@ -1,288 +1,122 @@
 //Importaciones:
-import React, { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Avatar, Button, Modal, Portal, Text, useTheme } from "react-native-paper";
+import React, { useRef } from "react";
+import { Animated, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  getAllUsers,
-  getFinishedTournaments,
-  getRankingSettings,
-  getRounds,
-  resetAllTournaments,
-  saveSeasonHistory,
-  setRankingIncludedUids,
-} from "../../services/firestoreService";
-import { getAllCharacters } from "../../services/charactersService";
-import { computeRankingData } from "../../utils/rankingCalc";
-import { getSeasonInfo, SEASONS } from "../../utils/season";
 import ScreenHeader from "../../components/ScreenHeader";
-import { Skeleton } from "../../components/Skeleton";
+import { getSeasonInfo, SEASONS } from "../../utils/season";
 import { RADIUS, SPACING } from "../../theme";
 import { scale } from "../../utils/responsive";
 
 //JS:
+function AdminCard({ theme, icon, title, description, tag, highlight, onPress }) {
+  const pressScale = useRef(new Animated.Value(1)).current;
+
+  function pressIn() {
+    Animated.spring(pressScale, { toValue: 0.97, useNativeDriver: true, speed: 40, bounciness: 0 }).start();
+  }
+  function pressOut() {
+    Animated.spring(pressScale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }).start();
+  }
+
+  const bg = highlight ? theme.colors.primaryContainer : theme.colors.surface;
+  const border = highlight ? theme.colors.primary : theme.colors.outline;
+  const textColor = highlight ? theme.colors.onPrimaryContainer : theme.colors.onSurface;
+  const subColor = highlight ? theme.colors.onPrimaryContainer : theme.colors.onSurfaceVariant;
+
+  return (
+    <Pressable onPress={onPress} onPressIn={pressIn} onPressOut={pressOut}>
+      <Animated.View
+        style={[
+          styles.card,
+          { backgroundColor: bg, borderColor: border, borderWidth: highlight ? 2 : 1, transform: [{ scale: pressScale }] },
+        ]}
+      >
+        <View style={[styles.iconWrap, { backgroundColor: highlight ? theme.colors.surface : theme.colors.primaryContainer }]}>
+          <MaterialCommunityIcons name={icon} size={scale(28)} color={theme.colors.primary} />
+        </View>
+        <View style={{ flex: 1, marginLeft: SPACING.m }}>
+          <View style={styles.titleRow}>
+            <Text variant="titleMedium" style={{ color: textColor, fontWeight: "800" }}>
+              {title}
+            </Text>
+            {tag ? (
+              <View style={[styles.tag, { backgroundColor: theme.colors.surfaceVariant }]}>
+                <Text style={[styles.tagText, { color: theme.colors.onSurfaceVariant }]}>{tag}</Text>
+              </View>
+            ) : null}
+          </View>
+          <Text style={{ color: subColor, opacity: 0.85, fontSize: scale(12), marginTop: 2 }}>{description}</Text>
+        </View>
+        <MaterialCommunityIcons name="chevron-right" size={scale(24)} color={subColor} />
+      </Animated.View>
+    </Pressable>
+  );
+}
+
 export default function AdminPanelScreen({ navigation }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-
-  const [users, setUsers] = useState([]);
-  const [includedUids, setIncludedUids] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [savingUid, setSavingUid] = useState(null);
-
-  const [resetModalOpen, setResetModalOpen] = useState(false);
-  const [resetting, setResetting] = useState(false);
-
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      const [allUsers, settings] = await Promise.all([getAllUsers(), getRankingSettings()]);
-      setUsers(allUsers);
-      setIncludedUids(settings.includedUids || []);
-      setLoading(false);
-    }
-    load();
-  }, []);
-
-  async function toggleIncluded(uid) {
-    const next = includedUids.includes(uid) ? includedUids.filter((id) => id !== uid) : [...includedUids, uid];
-    setSavingUid(uid);
-    setIncludedUids(next);
-    try {
-      await setRankingIncludedUids(next);
-    } catch (e) {
-      setIncludedUids(includedUids);
-    } finally {
-      setSavingUid(null);
-    }
-  }
-
-  async function handleConfirmReset() {
-    setResetting(true);
-    try {
-      const now = new Date();
-      const seasonInfo = getSeasonInfo(now);
-      const season = SEASONS[seasonInfo.key];
-
-      const [allUsers, finished, characters] = await Promise.all([getAllUsers(), getFinishedTournaments(), getAllCharacters()]);
-      const roundsByTournament = await Promise.all(
-        finished.map(async (t) => (await getRounds(t.id)).map((r) => ({ ...r, tournamentId: t.id })))
-      );
-      const allRounds = roundsByTournament.flat().filter((r) => r.roundNumber > 0);
-
-      const { qualified, topCharacters } = computeRankingData({
-        users: allUsers,
-        finished,
-        allRounds,
-        allCharacters: characters,
-        includedUids,
-      });
-
-      const elijahCountByUid = {};
-      allRounds.forEach((r) => {
-        if (!r.elijahUid) return;
-        elijahCountByUid[r.elijahUid] = (elijahCountByUid[r.elijahUid] || 0) + 1;
-      });
-      const elijahRounds = allRounds.filter((r) => r.elijahUid).length;
-
-      const elijahRanking = Object.entries(elijahCountByUid)
-        .map(([uid, count]) => {
-          const u = allUsers.find((usr) => usr.uid === uid);
-          return { uid, playerName: u?.playerName || "?", photoURL: u?.photoURL || null, count };
-        })
-        .sort((a, b) => b.count - a.count);
-
-      await saveSeasonHistory({
-        seasonKey: seasonInfo.key,
-        seasonLabel: season.label,
-        start: seasonInfo.start,
-        end: now,
-        totalTournaments: finished.length,
-        players: qualified.map((p) => ({ ...p, elijahCount: elijahCountByUid[p.uid] || 0 })),
-        topCharacters,
-        elijahRounds,
-        elijahRanking,
-      });
-      await resetAllTournaments();
-      setResetModalOpen(false);
-    } finally {
-      setResetting(false);
-    }
-  }
+  const season = SEASONS[getSeasonInfo().key];
 
   return (
-    <>
-      <ScrollView
-        style={{ flex: 1, backgroundColor: theme.colors.background }}
-        contentContainerStyle={{ padding: SPACING.l, paddingTop: insets.top + SPACING.l, paddingBottom: SPACING.xxxl }}
-      >
-        <ScreenHeader title="Panel de Admin" subtitle="Solo vos ves esto" logo onBack={() => navigation.goBack()} />
+    <ScrollView
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+      contentContainerStyle={{ padding: SPACING.l, paddingTop: insets.top + SPACING.l, paddingBottom: SPACING.xxxl }}
+    >
+      <ScreenHeader title="Panel de Admin" subtitle="Solo vos ves esto" logo onBack={() => navigation.goBack()} />
 
-        <Text variant="titleSmall" style={{ color: theme.colors.onBackground, marginBottom: SPACING.xs }}>
-          Jugadores en el ranking
-        </Text>
-        <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginBottom: SPACING.m }}>
-          Elegís vos quién entra al Ranking Smash 33 (jugadores y personajes). Arranca vacío hasta que agregues gente.
-        </Text>
+      <AdminCard
+        theme={theme}
+        highlight
+        icon={season?.icon || "trophy"}
+        title="Ranking 33"
+        description="Jugadores del ranking y cierre de temporada"
+        onPress={() => navigation.navigate("AdminRanking")}
+      />
 
-        {loading ? (
-          <View>
-            {[0, 1, 2, 3].map((i) => (
-              <View key={i} style={[styles.userRow, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
-                <Skeleton width={scale(38)} height={scale(38)} radius={RADIUS.pill} />
-                <Skeleton width="45%" height={scale(14)} style={{ marginLeft: SPACING.m }} />
-              </View>
-            ))}
-          </View>
-        ) : (
-          users.map((u) => {
-            const included = includedUids.includes(u.uid);
-            return (
-              <Pressable key={u.uid} onPress={() => toggleIncluded(u.uid)} disabled={savingUid === u.uid}>
-                <View
-                  style={[
-                    styles.userRow,
-                    { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline },
-                    included && { borderColor: theme.colors.primary, backgroundColor: theme.colors.primaryContainer },
-                  ]}
-                >
-                  <Avatar.Image size={scale(38)} source={{ uri: u.photoURL }} />
-                  <Text
-                    style={{
-                      flex: 1,
-                      marginLeft: SPACING.m,
-                      color: included ? theme.colors.onPrimaryContainer : theme.colors.onSurface,
-                      fontWeight: included ? "700" : "400",
-                    }}
-                  >
-                    {u.playerName}
-                  </Text>
-                  <MaterialCommunityIcons
-                    name={included ? "check-circle" : "circle-outline"}
-                    size={scale(24)}
-                    color={included ? theme.colors.primary : theme.colors.onSurfaceVariant}
-                  />
-                </View>
-              </Pressable>
-            );
-          })
-        )}
+      <AdminCard
+        theme={theme}
+        icon="medal-outline"
+        title="Insignias"
+        tag="PRONTO"
+        description="Asignar medallas e insignias a mano"
+        onPress={() => navigation.navigate("AdminBadges")}
+      />
 
-        <View style={[styles.divider, { backgroundColor: theme.colors.outline }]} />
-
-        {/* --- En construcción: asignación de insignias --- */}
-        <View style={[styles.constructionCard, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.colors.outline }]}>
-          <View style={[styles.constructionIconWrap, { backgroundColor: theme.colors.surface }]}>
-            <MaterialCommunityIcons name="hammer-wrench" size={scale(20)} color={theme.colors.onSurfaceVariant} />
-          </View>
-          <View style={{ flex: 1, marginLeft: SPACING.m }}>
-            <Text variant="titleSmall" style={{ color: theme.colors.onSurface }}>En construcción: asignación de insignias</Text>
-            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: SPACING.xs }}>
-              Pronto vas a poder entregar medallas e insignias a mano desde acá mismo.
-            </Text>
-          </View>
-        </View>
-
-        <View style={[styles.divider, { backgroundColor: theme.colors.outline }]} />
-
-        <Text variant="titleSmall" style={{ color: theme.colors.onBackground, marginBottom: SPACING.xs }}>
-          Cierre de temporada
-        </Text>
-        <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginBottom: SPACING.m }}>
-          Cuando termine la temporada, guardá el resumen en el historial y arrancá la siguiente desde cero.
-        </Text>
-        <Button
-          mode="contained"
-          icon="flag-checkered"
-          style={{ borderRadius: RADIUS.pill }}
-          contentStyle={{ paddingVertical: SPACING.xs }}
-          onPress={() => setResetModalOpen(true)}
-        >
-          Finalizar temporada
-        </Button>
-      </ScrollView>
-
-      <Portal>
-        <Modal
-          visible={resetModalOpen}
-          onDismiss={() => (resetting ? null : setResetModalOpen(false))}
-          contentContainerStyle={[styles.resetCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary }]}
-        >
-          <View style={[styles.resetIconWrap, { backgroundColor: theme.colors.primaryContainer }]}>
-            <MaterialCommunityIcons name="flag-checkered" size={scale(30)} color={theme.colors.primary} />
-          </View>
-          <Text variant="titleMedium" style={{ textAlign: "center", marginBottom: SPACING.xs, color: theme.colors.onSurface, fontWeight: "800" }}>
-            ¿Finalizar la temporada?
-          </Text>
-          <Text variant="bodyMedium" style={{ textAlign: "center", color: theme.colors.onSurface, marginBottom: SPACING.s }}>
-            Guardo un resumen de cómo quedó todo (jugadores y personajes) en el historial, y después borro los torneos, rondas y comentarios para arrancar la siguiente temporada desde cero.
-          </Text>
-          <Text variant="bodyMedium" style={{ textAlign: "center", color: theme.colors.onSurfaceVariant, marginBottom: SPACING.xl }}>
-            Los usuarios y los personajes cargados se mantienen intactos. Esta acción no se puede deshacer, así que asegurate de estar list@.
-          </Text>
-          <View style={styles.resetActions}>
-            <Button
-              mode="outlined"
-              disabled={resetting}
-              style={{ flex: 1, borderRadius: RADIUS.pill, marginRight: SPACING.s }}
-              onPress={() => setResetModalOpen(false)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              mode="contained"
-              loading={resetting}
-              style={{ flex: 1, borderRadius: RADIUS.pill }}
-              onPress={handleConfirmReset}
-            >
-              Sí, finalizar
-            </Button>
-          </View>
-        </Modal>
-      </Portal>
-    </>
+      <AdminCard
+        theme={theme}
+        icon="microphone-message"
+        title="Alias de voz"
+        description="Sobrenombres de jugadores y personajes para el control por voz"
+        onPress={() => navigation.navigate("AdminVoiceAliases")}
+      />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  userRow: {
+  card: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: RADIUS.lg,
-    borderWidth: 1,
-    padding: SPACING.m,
-    marginBottom: SPACING.s,
-  },
-  divider: { height: 1, marginVertical: SPACING.xl },
-  constructionCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: RADIUS.lg,
-    borderWidth: 1,
-    padding: SPACING.m,
-  },
-  constructionIconWrap: {
-    width: scale(38),
-    height: scale(38),
-    borderRadius: RADIUS.sm,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  resetCard: {
-    margin: SPACING.xxl,
     borderRadius: RADIUS.xl,
-    borderWidth: 1.5,
-    padding: SPACING.xl,
-    alignItems: "center",
-  },
-  resetIconWrap: {
-    width: scale(60),
-    height: scale(60),
-    borderRadius: RADIUS.pill,
-    alignItems: "center",
-    justifyContent: "center",
+    padding: SPACING.l,
     marginBottom: SPACING.m,
   },
-  resetActions: { flexDirection: "row", width: "100%" },
+  iconWrap: {
+    width: scale(54),
+    height: scale(54),
+    borderRadius: RADIUS.lg,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  titleRow: { flexDirection: "row", alignItems: "center", flexWrap: "wrap" },
+  tag: {
+    marginLeft: SPACING.s,
+    borderRadius: RADIUS.pill,
+    paddingHorizontal: SPACING.s,
+    paddingVertical: 2,
+  },
+  tagText: { fontSize: scale(9), fontWeight: "800", letterSpacing: 0.8 },
 });

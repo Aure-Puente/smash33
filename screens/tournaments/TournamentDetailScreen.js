@@ -23,15 +23,15 @@ import CharacterPickerModal from "../../components/CharacterPickerModal";
 import CommentsSection from "../../components/CommentsSection";
 import RoundHistoryRow, { EmptyRoundHistory } from "../../components/RoundHistoryRow";
 import ScreenHeader from "../../components/ScreenHeader";
-import VoiceStatusBar from "../../components/VoiceStatusBar";
 import useVoiceCommands from "../../hooks/useVoiceCommands";
 import { characterOptions, commandOptions, CONTINUOUS_MATCH, matchSpoken, playerOptions, wordCount } from "../../utils/voiceMatch";
 import { RADIUS, SPACING } from "../../theme";
 import { scale } from "../../utils/responsive";
 import { notifyNewComment } from "../../services/pushNotifications";
-const ELIJAH_IMAGE = require("../../assets/elijah.png");
+import { listenVoiceAliases } from "../../services/voiceAliasesService";
 
 //JS:
+const ELIJAH_IMAGE = require("../../assets/elijah.png");
 const VICTORY_SONGS = [
   require("../../assets/audio/victory01.mp3"),
   require("../../assets/audio/victory02.mp3"),
@@ -196,49 +196,6 @@ function CharacterAvatar({ theme, character, size, radius }) {
   );
 }
 
-function CharacterChoiceRow({ theme, playerName, character, onPress }) {
-  const picked = !!character;
-  const { scale: pressScale, pressIn, pressOut } = usePressScale();
-  return (
-    <Pressable onPress={onPress} onPressIn={pressIn} onPressOut={pressOut}>
-      <Animated.View
-        style={[
-          styles.choiceRow,
-          {
-            backgroundColor: picked ? theme.colors.primaryContainer : theme.colors.surface,
-            borderColor: picked ? theme.colors.primary : theme.colors.outline,
-          },
-          { transform: [{ scale: pressScale }] },
-        ]}
-      >
-        <CharacterAvatar theme={theme} character={character} size={scale(36)} radius={RADIUS.sm} />
-        <View style={{ flex: 1, marginLeft: SPACING.m }}>
-          <Text
-            variant="titleSmall"
-            style={{ color: picked ? theme.colors.onPrimaryContainer : theme.colors.onSurface }}
-          >
-            Selección de {playerName}
-          </Text>
-          <Text
-            variant="bodySmall"
-            style={{
-              color: picked ? theme.colors.onPrimaryContainer : theme.colors.onSurfaceVariant,
-              opacity: picked ? 0.8 : 1,
-            }}
-          >
-            {picked ? character.name : "Todavía no eligió"}
-          </Text>
-        </View>
-        <MaterialCommunityIcons
-          name={picked ? "check-circle" : "chevron-right"}
-          size={scale(22)}
-          color={picked ? theme.colors.primary : theme.colors.onSurfaceVariant}
-        />
-      </Animated.View>
-    </Pressable>
-  );
-}
-
 function PlayerCard({ theme, p, character, isPending, canAssign, isMatchPoint, isChampion, isFinished, matchPointScale, onPress }) {
   const { scale: pressScale, pressIn, pressOut } = usePressScale();
 
@@ -313,34 +270,42 @@ function PlayerCard({ theme, p, character, isPending, canAssign, isMatchPoint, i
   );
 }
 
-function WinnerChoiceRow({ theme, p, character, onPress }) {
+function WinnerChoiceRow({ theme, p, character, onPress, isCurrent }) {
   const { scale: pressScale, pressIn, pressOut } = usePressScale();
   return (
     <Pressable onPress={onPress} onPressIn={pressIn} onPressOut={pressOut} style={{ marginBottom: SPACING.s }}>
       <Animated.View
         style={[
           styles.winnerBigRow,
-          { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary },
+          {
+            backgroundColor: isCurrent ? theme.colors.primaryContainer : theme.colors.surface,
+            borderColor: theme.colors.primary,
+          },
           { transform: [{ scale: pressScale }] },
         ]}
       >
         <CharacterAvatar theme={theme} character={character} size={scale(52)} radius={RADIUS.md} />
         <View style={{ flex: 1, marginLeft: SPACING.m }}>
-          <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>
+          <Text variant="titleLarge" style={{ color: isCurrent ? theme.colors.onPrimaryContainer : theme.colors.onSurface }}>
             {p.playerName}
           </Text>
-          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+          <Text variant="bodySmall" style={{ color: isCurrent ? theme.colors.onPrimaryContainer : theme.colors.onSurfaceVariant }}>
             {character?.name || "Sin personaje"}
           </Text>
         </View>
-        <MaterialCommunityIcons name="chevron-right" size={scale(26)} color={theme.colors.onSurfaceVariant} />
+        {isCurrent ? (
+          <View style={[styles.currentChip, { backgroundColor: theme.colors.primary }]}>
+            <Text style={{ color: theme.colors.onPrimary, fontSize: scale(11), fontWeight: "800" }}>Actual</Text>
+          </View>
+        ) : (
+          <MaterialCommunityIcons name="chevron-right" size={scale(26)} color={theme.colors.onSurfaceVariant} />
+        )}
       </Animated.View>
     </Pressable>
   );
 }
 
 function ElijahIntroAvatar({ theme }) {
-  const shake = useRef(new Animated.Value(0)).current;
   const float = useRef(new Animated.Value(0)).current;
   const pulse = useRef(new Animated.Value(0)).current;
   const sweat = useRef(new Animated.Value(0)).current;
@@ -359,35 +324,24 @@ function ElijahIntroAvatar({ theme }) {
         Animated.delay(300),
       ])
     );
-    const nervousLoop = Animated.loop(
+    const sweatLoop = Animated.loop(
       Animated.sequence([
         Animated.delay(1000),
-        Animated.parallel([
-          Animated.sequence(
-            [-1, 1, -1, 1, -0.6, 0.6, 0].map((v) =>
-              Animated.timing(shake, { toValue: v, duration: 60, useNativeDriver: true })
-            )
-          ),
-          Animated.sequence([
-            Animated.timing(sweat, { toValue: 1, duration: 800, easing: Easing.in(Easing.quad), useNativeDriver: true }),
-            Animated.timing(sweat, { toValue: 0, duration: 0, useNativeDriver: true }),
-          ]),
-        ]),
+        Animated.timing(sweat, { toValue: 1, duration: 800, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+        Animated.timing(sweat, { toValue: 0, duration: 0, useNativeDriver: true }),
       ])
     );
     floatLoop.start();
     pulseLoop.start();
-    nervousLoop.start();
+    sweatLoop.start();
     return () => {
       floatLoop.stop();
       pulseLoop.stop();
-      nervousLoop.stop();
+      sweatLoop.stop();
     };
-  }, [float, pulse, shake, sweat]);
+  }, [float, pulse, sweat]);
 
   const translateY = float.interpolate({ inputRange: [0, 1], outputRange: [0, -6] });
-  const translateX = shake.interpolate({ inputRange: [-1, 1], outputRange: [-3, 3] });
-  const rotate = shake.interpolate({ inputRange: [-1, 1], outputRange: ["-7deg", "7deg"] });
   const ringScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.45] });
   const ringOpacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.4, 0] });
   const sweatY = sweat.interpolate({ inputRange: [0, 1], outputRange: [0, scale(16)] });
@@ -398,7 +352,7 @@ function ElijahIntroAvatar({ theme }) {
       <Animated.View
         style={[styles.elijahIntroRing, { borderColor: theme.colors.error, opacity: ringOpacity, transform: [{ scale: ringScale }] }]}
       />
-      <Animated.View style={{ transform: [{ translateY }, { translateX }, { rotate }] }}>
+      <Animated.View style={{ transform: [{ translateY }] }}>
         <Image source={ELIJAH_IMAGE} style={[styles.elijahIntroImage, { borderColor: theme.colors.surfaceVariant }]} />
         <Animated.View style={[styles.elijahSweat, { opacity: sweatOpacity, transform: [{ translateY: sweatY }] }]}>
           <MaterialCommunityIcons name="water" size={scale(16)} color="#7EC8F2" />
@@ -433,6 +387,28 @@ function ElijahBanner({ theme, playerName, onPress }) {
   return <Pressable onPress={onPress}>{content}</Pressable>;
 }
 
+function VoiceToggle({ theme, muted, permissionDenied, onPress, style }) {
+  const active = !muted && !permissionDenied;
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={permissionDenied}
+      hitSlop={8}
+      style={[
+        styles.voiceToggle,
+        { backgroundColor: active ? theme.colors.primaryContainer : theme.colors.surfaceVariant, borderColor: active ? theme.colors.primary : theme.colors.outline },
+        style,
+      ]}
+    >
+      <MaterialCommunityIcons
+        name={active ? "microphone" : "microphone-off"}
+        size={scale(22)}
+        color={permissionDenied ? theme.colors.error : active ? theme.colors.primary : theme.colors.onSurfaceVariant}
+      />
+    </Pressable>
+  );
+}
+
 function joinNames(names) {
   if (names.length <= 1) return names[0] || "";
   return `${names.slice(0, -1).join(", ")} y ${names[names.length - 1]}`;
@@ -452,12 +428,10 @@ function TournamentDetailScreenInner({ route, navigation }) {
 
   const [pendingWinnerUid, setPendingWinnerUid] = useState(null);
   const [pickingWinner, setPickingWinner] = useState(false);
-  const [winnerUid, setWinnerUid] = useState(null);
   const [elijahUid, setElijahUid] = useState(null);
-  const [loserCharPicks, setLoserCharPicks] = useState({});
   const [pickerForUid, setPickerForUid] = useState(null);
-  const [pickerMode, setPickerMode] = useState("assign");
-  const [editingRoundId, setEditingRoundId] = useState(null);
+  const [editingRound, setEditingRound] = useState(null);
+  const editingRoundId = editingRound?.id ?? null;
   const [busy, setBusy] = useState(false);
   const [celebration, setCelebration] = useState(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -525,7 +499,8 @@ function TournamentDetailScreenInner({ route, navigation }) {
     const u1 = listenTournament(tournamentId, setTournament);
     const u2 = listenRounds(tournamentId, setRounds);
     const u3 = listenComments(tournamentId, setComments);
-    return () => { u1(); u2(); u3(); };
+    const u4 = listenVoiceAliases();
+    return () => { u1(); u2(); u3(); u4(); };
   }, [tournamentId]);
 
   useEffect(() => {
@@ -561,7 +536,6 @@ function TournamentDetailScreenInner({ route, navigation }) {
     return map;
   }, [characters]);
 
-  // ---------- Voz (solo escucha el dispositivo del creador, con el torneo en curso) ----------
   const voiceHandlerRef = useRef(null);
   const voiceVocabRef = useRef([]);
   const voice = useVoiceCommands({
@@ -593,28 +567,16 @@ function TournamentDetailScreenInner({ route, navigation }) {
   }
 
   function openAssignPicker(uid) {
-    setPickerMode("assign");
-    setPickerForUid(uid);
-  }
-
-  function openLoserPicker(uid) {
-    setPickerMode("loser");
     setPickerForUid(uid);
   }
 
   function handlePickerSelect(character) {
-    if (pickerMode === "assign") {
-      assignCurrentCharacter(pickerForUid, character.fighterNumber);
-    } else {
-      setLoserCharPicks((prev) => ({ ...prev, [pickerForUid]: character.fighterNumber }));
-      setPickingWinner(true);
-    }
+    assignCurrentCharacter(pickerForUid, character.fighterNumber);
     setPickerForUid(null);
   }
 
   function handlePickerDismiss() {
     setPickerForUid(null);
-    if (pickerMode === "loser" && winnerUid) setPickingWinner(true);
   }
 
   async function handleConfirmDelete() {
@@ -629,33 +591,41 @@ function TournamentDetailScreenInner({ route, navigation }) {
   }
 
   function startRegisterRound() {
-    setEditingRoundId(null);
-    setWinnerUid(null);
+    setEditingRound(null);
     setElijahUid(null);
     setPendingWinnerUid(null);
-    setLoserCharPicks({});
     setPickingWinner(true);
   }
 
-  function startEditRound(round) {
-    setEditingRoundId(round.id);
-    setPendingWinnerUid(null);
-    setWinnerUid(round.winnerUid);
-    setElijahUid(round.elijahUid ?? null);
-    const picks = {};
-    Object.entries(round.characters || {}).forEach(([uid, charId]) => {
-      if (uid !== round.winnerUid) picks[uid] = charId;
+  function foughtCharactersFor(roundNumber) {
+    const before = rounds.filter((r) => r.roundNumber < roundNumber);
+    const { participants: stateBefore } = recomputeTournamentState(tournament.roster, before);
+    const map = {};
+    stateBefore.forEach((p) => {
+      map[p.uid] = p.currentCharacterId;
     });
-    setLoserCharPicks(picks);
+    return map;
+  }
+
+  function startEditRound(round) {
+    if (!isCreator || isFinished) return;
+    setEditingRound({
+      id: round.id,
+      roundNumber: round.roundNumber,
+      winnerUid: round.winnerUid,
+      elijahUid: round.elijahUid ?? null,
+      foughtChars: foughtCharactersFor(round.roundNumber),
+    });
+    setElijahUid(null); 
+    setPendingWinnerUid(null);
     setPickingWinner(true);
   }
 
   function closeRoundModal() {
     setPickingWinner(false);
     setPendingWinnerUid(null);
-    setWinnerUid(null);
     setElijahUid(null);
-    setEditingRoundId(null);
+    setEditingRound(null);
   }
 
   function willFinishFor(uid) {
@@ -665,67 +635,52 @@ function TournamentDetailScreenInner({ route, navigation }) {
     return pointsBefore + 1 >= POINTS_TO_WIN;
   }
 
-  function selectWinner(uid) {
-    setWinnerUid(uid);
-    setLoserCharPicks({});
-    if (!editingRoundId && willFinishFor(uid)) {
-      confirmRound(uid);
-    }
-  }
-
-  function backToWinnerStep() {
-    setWinnerUid(null);
-    setLoserCharPicks({});
-  }
-
-  const willFinishTournament = winnerUid ? willFinishFor(winnerUid) : false;
-  const losers = participants.filter((p) => p.uid !== winnerUid);
-  const allLoserPicksReady = willFinishTournament || (winnerUid && losers.every((p) => !!loserCharPicks[p.uid]));
-  const winnerParticipant = winnerUid ? participants.find((p) => p.uid === winnerUid) : null;
-  const winnerCharacter = winnerParticipant ? charById[winnerParticipant.currentCharacterId] : null;
   const pendingWinnerParticipant = pendingWinnerUid ? participants.find((p) => p.uid === pendingWinnerUid) : null;
   // ---------- Elijah ----------
   const needsElijah = participants.length >= 3;
   const elijahParticipant = elijahUid ? participants.find((p) => p.uid === elijahUid) : null;
-  const roundStep = needsElijah && !elijahUid ? "elijah" : !winnerUid ? "winner" : "losers";
-  const canGoBack = roundStep === "losers" || (roundStep === "winner" && needsElijah);
+  const roundStep = needsElijah && !elijahUid ? "elijah" : "winner";
+  const canGoBack = roundStep === "winner" && needsElijah;
+  const roundCharIdOf = (p) => (editingRound ? editingRound.foughtChars[p.uid] : p.currentCharacterId);
 
   function selectElijah(uid) {
     setElijahUid(uid);
-    if (winnerUid === uid) {
-      setWinnerUid(null);
-      setLoserCharPicks({});
-    }
   }
 
   function goBackStep() {
-    if (roundStep === "losers") backToWinnerStep();
-    else if (roundStep === "winner") setElijahUid(null);
+    if (roundStep === "winner") setElijahUid(null);
   }
 
-  async function confirmRound(uidOverride) {
-    const winUid = uidOverride ?? winnerUid;
-    const winner = participants.find((p) => p.uid === winUid);
+  async function confirmRound(winUid) {
     const willFinish = willFinishFor(winUid);
-    const characterMap = { [winUid]: winner.currentCharacterId };
-    if (!willFinish) {
-      participants
-        .filter((p) => p.uid !== winUid)
-        .forEach((p) => {
-          characterMap[p.uid] = editingRoundId ? (loserCharPicks[p.uid] ?? null) : null;
-        });
-    }
-
     setBusy(true);
     try {
       const elijah = needsElijah ? elijahUid : null;
-      if (editingRoundId) {
-        await correctRound({ tournamentId, roundId: editingRoundId, winnerUid: winUid, elijahUid: elijah, characters: characterMap });
+      if (editingRound) {
+        const round = rounds.find((r) => r.id === editingRound.id);
+        const chars = { ...(round?.characters || {}) };
+        if (winUid !== editingRound.winnerUid) {
+          chars[winUid] = editingRound.foughtChars[winUid] ?? chars[winUid] ?? null;
+          const latestNumber = Math.max(...rounds.map((r) => r.roundNumber));
+          if (round && round.roundNumber === latestNumber && !willFinish && editingRound.winnerUid) {
+            chars[editingRound.winnerUid] = null;
+          }
+        }
+        await correctRound({ tournamentId, roundId: editingRound.id, winnerUid: winUid, elijahUid: elijah, characters: chars });
         const updatedRounds = rounds.map((r) =>
-          r.id === editingRoundId ? { ...r, winnerUid: winUid, elijahUid: elijah, characters: characterMap } : r
+          r.id === editingRound.id ? { ...r, winnerUid: winUid, elijahUid: elijah, characters: chars } : r
         );
         await persistState(updatedRounds);
       } else {
+        const winner = participants.find((p) => p.uid === winUid);
+        const characterMap = { [winUid]: winner.currentCharacterId };
+        if (!willFinish) {
+          participants
+            .filter((p) => p.uid !== winUid)
+            .forEach((p) => {
+              characterMap[p.uid] = null;
+            });
+        }
         const nextRoundNumber = rounds.length;
         await submitRound({ tournamentId, roundNumber: nextRoundNumber, winnerUid: winUid, elijahUid: elijah, characters: characterMap });
         await persistState([...rounds, { roundNumber: nextRoundNumber, winnerUid: winUid, elijahUid: elijah, characters: characterMap }]);
@@ -786,7 +741,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
     if (busy) return "busy";
     if (pendingWinnerUid) return "confirmWinner";
     if (pickerForUid) return "character";
-    if (pickingWinner) return roundStep; // "elijah" | "winner" | "losers"
+    if (pickingWinner) return roundStep; 
     return "main";
   }
 
@@ -800,8 +755,6 @@ function TournamentDetailScreenInner({ route, navigation }) {
         return [...playerOptions(participants), ...commandOptions(["back", "cancel"])];
       case "winner":
         return [...playerOptions(participants.filter((p) => p.uid !== elijahUid)), ...commandOptions(["back", "cancel"])];
-      case "losers":
-        return [...playerOptions(losers), ...commandOptions(["confirm", "back", "cancel"])];
       case "confirmWinner":
         return commandOptions(["confirm", "cancel", "back"]);
       default:
@@ -812,11 +765,10 @@ function TournamentDetailScreenInner({ route, navigation }) {
   function handleVoice(texts) {
     const mode = getVoiceMode();
     if (mode === "busy") return;
-    // En la pantalla principal hay más charla: solo aceptamos frases cortas
     if (mode === "main" && wordCount(texts[0]) > 4) return;
 
     const { best } = matchSpoken(texts, getVoiceOptions(mode), CONTINUOUS_MATCH);
-    if (!best) return; // no se entendió nada útil: silencio (para no interrumpir la charla)
+    if (!best) return; 
     const [kind, id] = best.id.startsWith("cmd:") ? ["cmd", best.id.slice(4)] : ["item", best.id];
     const say = voice.say;
 
@@ -850,7 +802,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
           return;
         }
         const others = participants.filter((p) => p.uid !== pickerForUid);
-        const allReadyAfter = pickerMode === "assign" && others.every((p) => !!p.currentCharacterId);
+        const allReadyAfter = others.every((p) => !!p.currentCharacterId);
         handlePickerSelect(character);
         say(`${playerName} con ${character.name}.${allReadyAfter ? " Todos listos." : ""}`);
         return;
@@ -878,13 +830,8 @@ function TournamentDetailScreenInner({ route, navigation }) {
           }
           return;
         }
-        if (editingRoundId) {
-          selectWinner(id);
-          say(`Ganó ${nameOf(id)}`);
-        } else {
-          setPendingWinnerUid(id);
-          say(`¿Confirmás que ganó ${nameOf(id)}?`);
-        }
+        setPendingWinnerUid(id);
+        say(editingRound ? `¿Guardo la corrección? Ganó ${nameOf(id)}` : `¿Confirmás que ganó ${nameOf(id)}?`);
         return;
       }
 
@@ -893,7 +840,8 @@ function TournamentDetailScreenInner({ route, navigation }) {
         if (id === "confirm") {
           const finishes = willFinishFor(uid);
           finalizeWinner(uid);
-          say(finishes ? `¡${nameOf(uid)} ganó el torneo!` : `Punto para ${nameOf(uid)}. Los que perdieron, elijan personaje.`);
+          if (editingRound) say("Ronda corregida");
+          else say(finishes ? `¡${nameOf(uid)} ganó el torneo!` : `Punto para ${nameOf(uid)}. Los que perdieron, elijan personaje.`);
         } else {
           setPendingWinnerUid(null);
           say("¿Quién ganó?");
@@ -901,32 +849,20 @@ function TournamentDetailScreenInner({ route, navigation }) {
         return;
       }
 
-      case "losers": {
-        if (kind === "cmd") {
-          if (id === "confirm") {
-            if (allLoserPicksReady) {
-              confirmRound();
-              say("Ronda corregida");
-            } else {
-              say("Faltan personajes");
-            }
-          } else if (id === "back") {
-            goBackStep();
-            say("¿Quién ganó?");
-          } else {
-            closeRoundModal();
-            say("Cancelado");
-          }
-          return;
-        }
-        openLoserPicker(id);
-        say(`¿Personaje de ${nameOf(id)}?`);
-        return;
-      }
-
       default:
     }
   }
+
+  const showVoice = voice.supported && isCreator && !isFinished && !celebration;
+  const micButton = (extraStyle) => (
+    <VoiceToggle
+      theme={theme}
+      muted={voice.muted}
+      permissionDenied={voice.permissionDenied}
+      onPress={voice.toggleMute}
+      style={extraStyle}
+    />
+  );
 
   voiceHandlerRef.current = handleVoice;
   voiceVocabRef.current = getVoiceOptions(getVoiceMode()).flatMap((o) => o.names);
@@ -935,35 +871,73 @@ function TournamentDetailScreenInner({ route, navigation }) {
     <>
       <ScrollView
         style={{ flex: 1, backgroundColor: theme.colors.background }}
-        contentContainerStyle={{ padding: SPACING.l, paddingTop: insets.top + SPACING.l, paddingBottom: voice.supported && isCreator && !isFinished ? scale(80) : SPACING.l }}
+        contentContainerStyle={{ padding: SPACING.l, paddingTop: insets.top + SPACING.l }}
       >
-        <ScreenHeader
-          title={isFinished ? "Torneo finalizado" : "Torneo en vivo"}
-          logo
-          onBack={isFinished ? () => navigation.goBack() : undefined}
-        />
+        <View style={styles.headerRow}>
+          <ScreenHeader
+            title={isFinished ? "Torneo finalizado" : "Torneo en vivo"}
+            logo
+            onBack={isFinished ? () => navigation.goBack() : undefined}
+            style={{ flex: 1, marginBottom: 0 }}
+          />
+          {showVoice && micButton()}
+        </View>
 
-        {isFinished && (
-          <View style={[styles.finishedBanner, { backgroundColor: theme.custom.gold }]}>
-            <View style={styles.finishedIconWrap}>
-              <MaterialCommunityIcons name="trophy" size={scale(26)} color={theme.custom.gold} />
+        {isFinished && (() => {
+          const winner = participants.find((p) => p.uid === tournament.winnerUid);
+          const winnerChar = charById[winner?.currentCharacterId];
+          const bigImage = winnerChar?.images?.fullImage;
+          return (
+            <View style={[styles.finishedBanner, { backgroundColor: theme.custom.gold }]}>
+              <View style={styles.finishedHaloBig} />
+              <View style={styles.finishedHaloSmall} />
+              <MaterialCommunityIcons
+                name="trophy"
+                size={scale(120)}
+                color="#241A05"
+                style={styles.finishedTrophyBg}
+              />
+
+              <View style={styles.finishedTextCol}>
+                <View style={styles.finishedTag}>
+                  <MaterialCommunityIcons name="trophy" size={scale(13)} color={theme.custom.gold} />
+                  <Text style={[styles.finishedTagText, { color: theme.custom.gold }]}>TORNEO TERMINADO</Text>
+                </View>
+                <Text
+                  variant="titleMedium"
+                  style={{ color: "#241A05", opacity: 0.75, marginTop: SPACING.m, fontWeight: "700" }}
+                >
+                  Campeón
+                </Text>
+                <Text
+                  variant="headlineSmall"
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  style={{ color: "#241A05", fontWeight: "800" }}
+                >
+                  {winner?.playerName}
+                </Text>
+                {winnerChar && (
+                  <Text
+                    variant="titleMedium"
+                    numberOfLines={1}
+                    style={{ color: "#241A05", opacity: 0.85, fontWeight: "600" }}
+                  >
+                    con {winnerChar.name}
+                  </Text>
+                )}
+              </View>
+
+              {bigImage ? (
+                <Image source={{ uri: bigImage }} style={styles.finishedCharImage} resizeMode="contain" />
+              ) : (
+                <View style={styles.finishedAvatarFallback}>
+                  <CharacterAvatar theme={theme} character={winnerChar} size={scale(72)} radius={RADIUS.lg} />
+                </View>
+              )}
             </View>
-            <View style={{ flex: 1, marginLeft: SPACING.m }}>
-              <Text variant="bodySmall" style={{ color: "#241A05", opacity: 0.7 }}>
-                Torneo terminado
-              </Text>
-              <Text variant="titleLarge" style={{ color: "#241A05" }}>
-                Ganó {participants.find((p) => p.uid === tournament.winnerUid)?.playerName}
-              </Text>
-            </View>
-            <CharacterAvatar
-              theme={theme}
-              character={charById[participants.find((p) => p.uid === tournament.winnerUid)?.currentCharacterId]}
-              size={scale(52)}
-              radius={RADIUS.lg}
-            />
-          </View>
-        )}
+          );
+        })()}
 
         {participants
           .slice()
@@ -1042,7 +1016,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
               round={r}
               winnerName={participants.find((p) => p.uid === r.winnerUid)?.playerName}
               elijahName={r.elijahUid ? participants.find((p) => p.uid === r.elijahUid)?.playerName : null}
-              canEdit={isCreator}
+              canEdit={isCreator && !isFinished}
               onEdit={() => startEditRound(r)}
               readOnlyReactions={isParticipant}
             />
@@ -1069,7 +1043,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
         disabledIds={pickerParticipant?.usedCharacterIds || []}
         activeId={pickerParticipant?.currentCharacterId}
         emptyMessage="Este jugador todavía no tiene personajes guardados en 'Mis personajes'."
-        title={pickerMode === "assign" ? "Elegí el personaje" : "Elegí el nuevo personaje"}
+        title="Elegí el personaje"
         onSelect={handlePickerSelect}
       />
 
@@ -1094,7 +1068,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
                 <View style={{ width: scale(40) }} />
               )}
               <Text variant="titleMedium" style={{ flex: 1, textAlign: "center", color: theme.colors.onBackground }}>
-                {editingRoundId ? "Corregir ronda" : "Registrar ronda"}
+                {editingRound ? `Corregir ronda ${editingRound.roundNumber}` : "Registrar ronda"}
               </Text>
               <IconButton icon="close" size={scale(22)} onPress={closeRoundModal} />
             </View>
@@ -1108,7 +1082,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
                       ¿Quién fue Elijah?
                     </Text>
                     <Text variant="bodyMedium" style={{ marginTop: SPACING.xs, textAlign: "center", color: theme.colors.onSurfaceVariant }}>
-                      El primero en quedar afuera de la ronda
+                      {editingRound ? "Elegilo de nuevo (el registrado aparece marcado)" : "El primero en quedar afuera de la ronda"}
                     </Text>
                   </View>
                   {participants.map((p) => (
@@ -1116,12 +1090,13 @@ function TournamentDetailScreenInner({ route, navigation }) {
                       key={p.uid}
                       theme={theme}
                       p={p}
-                      character={charById[p.currentCharacterId]}
+                      character={charById[roundCharIdOf(p)]}
+                      isCurrent={editingRound?.elijahUid === p.uid}
                       onPress={() => selectElijah(p.uid)}
                     />
                   ))}
                 </>
-              ) : roundStep === "winner" ? (
+              ) : (
                 <>
                   {elijahParticipant && (
                     <ElijahBanner theme={theme} playerName={elijahParticipant.playerName} onPress={() => setElijahUid(null)} />
@@ -1131,78 +1106,29 @@ function TournamentDetailScreenInner({ route, navigation }) {
                     <Text variant="headlineSmall" style={{ marginTop: SPACING.s, textAlign: "center", color: theme.colors.onBackground }}>
                       ¿Quién ganó esta ronda?
                     </Text>
+                    {editingRound && (
+                      <Text variant="bodyMedium" style={{ marginTop: SPACING.xs, textAlign: "center", color: theme.colors.onSurfaceVariant }}>
+                        El registrado aparece marcado
+                      </Text>
+                    )}
                   </View>
                   {participants
                     .filter((p) => p.uid !== elijahUid)
-                    .map((p) => {
-                      const character = charById[p.currentCharacterId];
-                      return (
-                        <WinnerChoiceRow
-                          key={p.uid}
-                          theme={theme}
-                          p={p}
-                          character={character}
-                          onPress={() => (editingRoundId ? selectWinner(p.uid) : setPendingWinnerUid(p.uid))}
-                        />
-                      );
-                    })}
-                </>
-              ) : (
-                <>
-                  <View style={[styles.winnerBanner, { backgroundColor: theme.colors.primaryContainer }]}>
-                    <CharacterAvatar theme={theme} character={winnerCharacter} size={scale(44)} radius={RADIUS.sm} />
-                    <View style={{ marginLeft: SPACING.m }}>
-                      <Text variant="titleMedium" style={{ color: theme.colors.onPrimaryContainer }}>
-                        Ganó {winnerParticipant?.playerName}
-                      </Text>
-                      {winnerCharacter && (
-                        <Text variant="bodySmall" style={{ color: theme.colors.onPrimaryContainer, opacity: 0.8 }}>
-                          con {winnerCharacter.name}
-                        </Text>
-                      )}
-                    </View>
-                  </View>
-                  {elijahParticipant && <ElijahBanner theme={theme} playerName={elijahParticipant.playerName} />}
-
-                  {willFinishTournament ? (
-                    <View style={styles.roundStepIntro}>
-                      <BouncingTrophy size={scale(40)} color={theme.custom.gold} />
-                      <Text variant="bodyMedium" style={{ marginTop: SPACING.s, textAlign: "center", color: theme.colors.onSurfaceVariant }}>
-                        Con esta victoria termina el torneo — no hace falta elegir personaje nuevo.
-                      </Text>
-                    </View>
-                  ) : (
-                    <View style={{ marginTop: SPACING.l }}>
-                      <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginBottom: SPACING.s }}>
-                        Los que perdieron eligen su nuevo personaje:
-                      </Text>
-                      {losers.map((p) => (
-                        <View key={p.uid} style={{ marginBottom: SPACING.s }}>
-                          <CharacterChoiceRow
-                            theme={theme}
-                            playerName={p.playerName}
-                            character={charById[loserCharPicks[p.uid]]}
-                            onPress={() => openLoserPicker(p.uid)}
-                          />
-                        </View>
-                      ))}
-                    </View>
-                  )}
+                    .map((p) => (
+                      <WinnerChoiceRow
+                        key={p.uid}
+                        theme={theme}
+                        p={p}
+                        character={charById[roundCharIdOf(p)]}
+                        isCurrent={editingRound?.winnerUid === p.uid}
+                        onPress={() => setPendingWinnerUid(p.uid)}
+                      />
+                    ))}
                 </>
               )}
             </ScrollView>
 
-            {roundStep === "losers" && !(willFinishTournament && !editingRoundId) && (
-              <Button
-                mode="contained"
-                disabled={!allLoserPicksReady}
-                style={{ borderRadius: RADIUS.pill, marginTop: SPACING.m }}
-                contentStyle={{ paddingVertical: SPACING.xs }}
-                onPress={() => confirmRound()}
-              >
-                Confirmar
-              </Button>
-            )}
+            {showVoice && <View style={styles.modalMicRow}>{micButton({ marginLeft: 0 })}</View>}
           </View>
         </Modal>
       </Portal>
@@ -1217,11 +1143,14 @@ function TournamentDetailScreenInner({ route, navigation }) {
             <MaterialCommunityIcons name="trophy-outline" size={scale(26)} color={theme.colors.primary} />
           </View>
           <Text variant="titleMedium" style={{ textAlign: "center", marginBottom: SPACING.xs, color: theme.colors.onSurface }}>
-            ¿Marcar a {pendingWinnerParticipant?.playerName} como ganador?
+            {editingRound
+              ? `¿Guardar la corrección de la ronda ${editingRound.roundNumber}?`
+              : `¿Marcar a ${pendingWinnerParticipant?.playerName} como ganador?`}
           </Text>
           <Text variant="bodyMedium" style={{ textAlign: "center", color: theme.colors.onSurfaceVariant, marginBottom: SPACING.xl }}>
+            {editingRound ? `Ganó ${pendingWinnerParticipant?.playerName}\n` : ""}
             {elijahParticipant ? `Elijah: ${elijahParticipant.playerName}\n` : ""}
-            {voice.supported ? "Decí \"confirmar\" o \"cancelar\"." : "Se puede corregir desde el historial."}
+            {voice.supported && !editingRound ? "Decí \"confirmar\" o \"cancelar\"." : editingRound ? "" : "Se puede corregir desde el historial."}
           </Text>
           <View style={styles.confirmActions}>
             <Button mode="outlined" style={{ flex: 1, borderRadius: RADIUS.pill, marginRight: SPACING.s }} onPress={() => setPendingWinnerUid(null)}>
@@ -1232,7 +1161,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
               style={{ flex: 1, borderRadius: RADIUS.pill }}
               onPress={() => finalizeWinner(pendingWinnerUid)}
             >
-              Confirmar
+              {editingRound ? "Guardar" : "Confirmar"}
             </Button>
           </View>
         </Modal>
@@ -1315,18 +1244,6 @@ function TournamentDetailScreenInner({ route, navigation }) {
         </Modal>
       </Portal>
 
-      {voice.supported && isCreator && !isFinished && !celebration && (
-        <Portal>
-          <VoiceStatusBar
-            listening={voice.listening}
-            muted={voice.muted}
-            lastHeard={voice.lastHeard}
-            permissionDenied={voice.permissionDenied}
-            onToggle={voice.toggleMute}
-          />
-        </Portal>
-      )}
-
       <Portal>
         <Modal visible={busy} dismissable={false} contentContainerStyle={styles.fullScreenModal}>
           <View style={[styles.fullScreenModal, styles.busyOverlay]}>
@@ -1345,15 +1262,63 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: RADIUS.xl,
     marginBottom: SPACING.l,
-    padding: SPACING.l,
+    minHeight: scale(150),
+    overflow: "hidden",
   },
-  finishedIconWrap: {
-    width: scale(52),
-    height: scale(52),
-    borderRadius: RADIUS.pill,
-    backgroundColor: "#241A05",
+  finishedHaloBig: {
+    position: "absolute",
+    right: -scale(40),
+    top: -scale(30),
+    width: scale(210),
+    height: scale(210),
+    borderRadius: scale(105),
+    backgroundColor: "rgba(255,255,255,0.22)",
+  },
+  finishedHaloSmall: {
+    position: "absolute",
+    right: scale(10),
+    top: scale(20),
+    width: scale(120),
+    height: scale(120),
+    borderRadius: scale(60),
+    backgroundColor: "rgba(255,255,255,0.25)",
+  },
+  finishedTrophyBg: {
+    position: "absolute",
+    left: -scale(18),
+    bottom: -scale(28),
+    opacity: 0.07,
+  },
+  finishedTextCol: {
+    flex: 1,
+    paddingVertical: SPACING.l,
+    paddingLeft: SPACING.l,
+    paddingRight: SPACING.s,
+  },
+  finishedTag: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    alignSelf: "flex-start",
+    backgroundColor: "#241A05",
+    borderRadius: RADIUS.pill,
+    paddingHorizontal: SPACING.m,
+    paddingVertical: scale(4),
+  },
+  finishedTagText: {
+    fontSize: scale(10),
+    fontWeight: "800",
+    letterSpacing: 1,
+    marginLeft: scale(5),
+  },
+  finishedCharImage: {
+    width: scale(150),
+    height: scale(165),
+    alignSelf: "flex-end",
+    marginBottom: -scale(10),
+    marginRight: -scale(6),
+  },
+  finishedAvatarFallback: {
+    paddingRight: SPACING.l,
   },
 
   playerCard: {
@@ -1409,6 +1374,13 @@ const styles = StyleSheet.create({
   },
 
   fullScreenModal: { flex: 1, margin: 0 },
+  headerRow: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.l },
+  voiceToggle: {
+    width: scale(44), height: scale(44), borderRadius: scale(22), borderWidth: 1.5,
+    alignItems: "center", justifyContent: "center", marginLeft: SPACING.s,
+  },
+  modalMicRow: { alignItems: "center", paddingTop: SPACING.m },
+  currentChip: { paddingHorizontal: SPACING.s, paddingVertical: 4, borderRadius: RADIUS.pill },
   roundModalHeader: { flexDirection: "row", alignItems: "center", marginBottom: SPACING.s },
   roundStepIntro: { alignItems: "center", marginTop: SPACING.l, marginBottom: SPACING.xl },
   winnerBigRow: {

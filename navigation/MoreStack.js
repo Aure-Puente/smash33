@@ -10,6 +10,9 @@ import BadgesScreen from "../screens/more/BadgesScreen";
 import WorldRankingScreen from "../screens/more/WorldRankingScreen";
 import SeasonHistoryScreen from "../screens/more/SeasonHistoryScreen";
 import AdminPanelScreen from "../screens/more/AdminPanelScreen";
+import AdminRankingScreen from "../screens/more/AdminRankingScreen";
+import AdminBadgesScreen from "../screens/more/AdminBadgesScreen";
+import AdminVoiceAliasesScreen from "../screens/more/AdminVoiceAliasesScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +28,9 @@ export default function MoreStack() {
         <Stack.Screen name="WorldRanking" component={WorldRankingScreen} />
         <Stack.Screen name="SeasonHistory" component={SeasonHistoryScreen} />
         <Stack.Screen name="AdminPanel" component={AdminPanelScreen} />
+        <Stack.Screen name="AdminRanking" component={AdminRankingScreen} />
+        <Stack.Screen name="AdminBadges" component={AdminBadgesScreen} />
+        <Stack.Screen name="AdminVoiceAliases" component={AdminVoiceAliasesScreen} />
         </Stack.Navigator>
     );
 }
