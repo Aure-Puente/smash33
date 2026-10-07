@@ -19,7 +19,8 @@
         "backgroundColor": "#0A0A0E"
       },
       "permissions": [
-        "NOTIFICATIONS"
+        "NOTIFICATIONS",
+        "RECORD_AUDIO"
       ]
     },
     "plugins": [
@@ -44,7 +45,15 @@
       ],
       "@react-native-community/datetimepicker",
       "expo-audio",
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Smash 33 usa el micrófono para registrar las rondas por voz.",
+          "speechRecognitionPermission": "Smash 33 usa el reconocimiento de voz para registrar las rondas.",
+          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+        }
+      ]
     ],
     "extra": {
       "eas": {

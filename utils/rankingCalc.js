@@ -5,7 +5,10 @@ export function computeRankingData({ users, finished, allRounds, allCharacters, 
 
     const commonFinished =
         includedUids.length > 0
-        ? finished.filter((t) => includedUids.every((uid) => t.participantUids?.includes(uid)))
+        ? finished.filter((t) => {
+            const roster = t.participantUids || [];
+            return roster.length === includedUids.length && includedUids.every((uid) => roster.includes(uid));
+        })
         : [];
     const commonIds = new Set(commonFinished.map((t) => t.id));
     const commonRounds = allRounds.filter((r) => commonIds.has(r.tournamentId));
