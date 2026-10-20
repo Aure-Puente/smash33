@@ -1,6 +1,6 @@
 //Importaciones:
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Dimensions, Easing, Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Animated, BackHandler, Dimensions, Easing, Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useAudioPlayer } from "expo-audio";
 import { Button, IconButton, Modal, Portal, Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -23,6 +23,7 @@ import CharacterPickerModal from "../../components/CharacterPickerModal";
 import CommentsSection from "../../components/CommentsSection";
 import RoundHistoryRow, { EmptyRoundHistory } from "../../components/RoundHistoryRow";
 import ScreenHeader from "../../components/ScreenHeader";
+import TournamentBoardView from "../../components/TournamentBoardView";
 import useVoiceCommands from "../../hooks/useVoiceCommands";
 import { characterOptions, commandOptions, CONTINUOUS_MATCH, matchSpoken, playerOptions, wordCount } from "../../utils/voiceMatch";
 import { RADIUS, SPACING } from "../../theme";
@@ -409,6 +410,18 @@ function VoiceToggle({ theme, muted, permissionDenied, onPress, style }) {
   );
 }
 
+function BoardToggle({ theme, onPress }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={8}
+      style={[styles.voiceToggle, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
+    >
+      <MaterialCommunityIcons name="television-play" size={scale(22)} color={theme.colors.onSurface} />
+    </Pressable>
+  );
+}
+
 function joinNames(names) {
   if (names.length <= 1) return names[0] || "";
   return `${names.slice(0, -1).join(", ")} y ${names[names.length - 1]}`;
@@ -436,6 +449,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
   const [celebration, setCelebration] = useState(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [showMyCharacters, setShowMyCharacters] = useState(false);
+  const [boardMode, setBoardMode] = useState(false);
 
   const celebrationFloat = useRef(new Animated.Value(0)).current;
   const celebrationHaloPulse = useRef(new Animated.Value(0)).current;
@@ -526,6 +540,25 @@ function TournamentDetailScreenInner({ route, navigation }) {
 
   const isCreator = tournament && user && tournament.createdBy === user.uid;
   const isFinished = tournament?.status === "finished";
+
+  // Modo pantalla grande:
+  useEffect(() => {
+    if (!boardMode) return undefined;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      setBoardMode(false);
+      return true;
+    });
+    return () => sub.remove();
+  }, [boardMode]);
+
+  useEffect(() => {
+    if (isFinished) setBoardMode(false);
+  }, [isFinished]);
+  useEffect(() => {
+    const parent = navigation.getParent();
+    parent?.setOptions({ tabBarStyle: boardMode ? { display: "none" } : undefined });
+    return () => parent?.setOptions({ tabBarStyle: undefined });
+  }, [boardMode, navigation]);
   const isParticipant = tournament?.participantUids?.includes(user.uid);
   const participants = tournament?.participants || [];
   const allHaveCurrentCharacter = participants.length > 0 && participants.every((p) => !!p.currentCharacterId);
@@ -867,8 +900,20 @@ function TournamentDetailScreenInner({ route, navigation }) {
   voiceHandlerRef.current = handleVoice;
   voiceVocabRef.current = getVoiceOptions(getVoiceMode()).flatMap((o) => o.names);
 
+  const showBoard = boardMode && !isFinished;
+
   return (
     <>
+      {showBoard ? (
+        <TournamentBoardView
+          tournament={tournament}
+          rounds={rounds}
+          charById={charById}
+          matchPointScale={matchPointScale}
+          micButton={showVoice ? micButton() : null}
+          onExit={() => setBoardMode(false)}
+        />
+      ) : (
       <ScrollView
         style={{ flex: 1, backgroundColor: theme.colors.background }}
         contentContainerStyle={{ padding: SPACING.l, paddingTop: insets.top + SPACING.l }}
@@ -880,6 +925,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
             onBack={isFinished ? () => navigation.goBack() : undefined}
             style={{ flex: 1, marginBottom: 0 }}
           />
+          {!isFinished && <BoardToggle theme={theme} onPress={() => setBoardMode(true)} />}
           {showVoice && micButton()}
         </View>
 
@@ -1035,6 +1081,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
           }}
         />
       </ScrollView>
+      )}
 
       <CharacterPickerModal
         visible={!!pickerForUid}
