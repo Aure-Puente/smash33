@@ -9,6 +9,7 @@ import {
   getFinishedTournaments,
   getRankingSettings,
   getRounds,
+  invalidateTournamentData,
   resetAllTournaments,
   saveSeasonHistory,
   setRankingIncludedUids,
@@ -61,6 +62,7 @@ export default function AdminRankingScreen({ navigation }) {
   async function handleConfirmReset() {
     setResetting(true);
     try {
+      invalidateTournamentData();
       const now = new Date();
       const seasonInfo = getSeasonInfo(now);
       const season = SEASONS[seasonInfo.key];

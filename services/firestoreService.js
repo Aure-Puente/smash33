@@ -2,6 +2,7 @@
 import {
   addDoc,
   collection,
+  collectionGroup,
   deleteDoc,
   doc,
   getDoc,
@@ -17,6 +18,64 @@ import {
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { db, storage } from "../firebaseConfig";
+
+// ---------- CACHÉ DE TORNEOS Y RONDAS ----------
+
+const CACHE_TTL_MS = 60 * 1000; 
+let tournamentCache = null; 
+let tournamentCacheAt = 0;
+let tournamentCacheInflight = null;
+
+function sortRounds(list) {
+  return list.sort((a, b) => (a.roundNumber ?? 0) - (b.roundNumber ?? 0));
+}
+
+async function fetchAllTournamentData() {
+  const tournamentsSnap = await getDocs(collection(db, "tournaments"));
+  const tournaments = tournamentsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const roundsByTournament = {};
+
+  try {
+    const roundsSnap = await getDocs(collectionGroup(db, "rounds"));
+    roundsSnap.docs.forEach((r) => {
+      const tournamentId = r.ref.parent.parent?.id;
+      if (!tournamentId) return;
+      (roundsByTournament[tournamentId] = roundsByTournament[tournamentId] || []).push({ id: r.id, ...r.data() });
+    });
+  } catch (e) {
+    console.log("collectionGroup(rounds) no disponible, uso consultas por torneo:", e.message);
+    await Promise.all(
+      tournaments.map(async (t) => {
+        const snap = await getDocs(collection(db, "tournaments", t.id, "rounds"));
+        roundsByTournament[t.id] = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      })
+    );
+  }
+
+  Object.values(roundsByTournament).forEach(sortRounds);
+  return { tournaments, roundsByTournament };
+}
+
+export async function getTournamentData({ force = false } = {}) {
+  const fresh = tournamentCache && Date.now() - tournamentCacheAt < CACHE_TTL_MS;
+  if (!force && fresh) return tournamentCache;
+  if (tournamentCacheInflight) return tournamentCacheInflight; 
+  tournamentCacheInflight = fetchAllTournamentData()
+    .then((data) => {
+      tournamentCache = data;
+      tournamentCacheAt = Date.now();
+      return data;
+    })
+    .finally(() => {
+      tournamentCacheInflight = null;
+    });
+  return tournamentCacheInflight;
+}
+
+export function invalidateTournamentData() {
+  tournamentCache = null;
+  tournamentCacheAt = 0;
+}
 
 // ---------- USUARIOS ----------
 
@@ -77,20 +136,18 @@ export async function removeMyCharacter(uid, characterId) {
 }
 
 export async function getMyCharacterWinCounts(uid) {
-  const q = query(collection(db, "tournaments"), where("participantUids", "array-contains", uid));
-  const tournamentsSnap = await getDocs(q);
-
+  const { tournaments, roundsByTournament } = await getTournamentData();
   const wins = {};
-  for (const tDoc of tournamentsSnap.docs) {
-    const roundsSnap = await getDocs(collection(db, "tournaments", tDoc.id, "rounds"));
-    roundsSnap.docs.forEach((r) => {
-      const round = r.data();
-      if (round.winnerUid !== uid) return;
-      const charId = round.characters?.[uid];
-      if (!charId) return;
-      wins[charId] = (wins[charId] || 0) + 1;
+  tournaments
+    .filter((t) => t.participantUids?.includes(uid))
+    .forEach((t) => {
+      (roundsByTournament[t.id] || []).forEach((round) => {
+        if (round.winnerUid !== uid) return;
+        const charId = round.characters?.[uid];
+        if (!charId) return;
+        wins[charId] = (wins[charId] || 0) + 1;
+      });
     });
-  }
   return wins;
 }
 
@@ -124,6 +181,7 @@ export async function createTournament({ createdBy, roster }) {
     currentCharacterId: null,
   }));
 
+  invalidateTournamentData();
   const docRef = await addDoc(collection(db, "tournaments"), {
     createdBy,
     createdAt: serverTimestamp(),
@@ -152,12 +210,12 @@ export function listenRounds(tournamentId, callback) {
 }
 
 export async function getRounds(tournamentId) {
-  const q = query(collection(db, "tournaments", tournamentId, "rounds"), orderBy("roundNumber"));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const { roundsByTournament } = await getTournamentData();
+  return (roundsByTournament[tournamentId] || []).map((r) => ({ ...r }));
 }
 
 export async function submitRound({ tournamentId, roundNumber, winnerUid, elijahUid, characters }) {
+  invalidateTournamentData();
   await addDoc(collection(db, "tournaments", tournamentId, "rounds"), {
     roundNumber,
     winnerUid: winnerUid || null,
@@ -168,25 +226,27 @@ export async function submitRound({ tournamentId, roundNumber, winnerUid, elijah
 }
 
 export async function correctRound({ tournamentId, roundId, winnerUid, elijahUid, characters }) {
+  invalidateTournamentData();
   const payload = { winnerUid: winnerUid || null, characters };
   if (elijahUid !== undefined) payload.elijahUid = elijahUid || null;
   await updateDoc(doc(db, "tournaments", tournamentId, "rounds", roundId), payload);
 }
 
-export async function applyRecomputedState({ tournamentId, participants, winnerUid, isFinished }) {
+export async function applyRecomputedState({ tournamentId, participants, winnerUid, isFinished, finishedAt }) {
+  invalidateTournamentData();
   await updateDoc(doc(db, "tournaments", tournamentId), {
     participants,
     winnerUid: winnerUid || null,
     status: isFinished ? "finished" : "in_progress",
-    finishedAt: isFinished ? serverTimestamp() : null,
+    finishedAt: isFinished ? finishedAt || serverTimestamp() : null,
   });
+  invalidateTournamentData();
 }
 
 export async function getFinishedTournaments() {
   try {
-    const q = query(collection(db, "tournaments"), where("status", "==", "finished"));
-    const snap = await getDocs(q);
-    const tournaments = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const { tournaments: all } = await getTournamentData();
+    const tournaments = all.filter((t) => t.status === "finished").map((t) => ({ ...t }));
     tournaments.sort((a, b) => (b.finishedAt?.toMillis?.() || 0) - (a.finishedAt?.toMillis?.() || 0));
     return tournaments;
   } catch (e) {
@@ -196,6 +256,7 @@ export async function getFinishedTournaments() {
 }
 
 export async function deleteTournament(tournamentId) {
+  invalidateTournamentData();
   const roundsSnap = await getDocs(collection(db, "tournaments", tournamentId, "rounds"));
   for (const roundDoc of roundsSnap.docs) {
     const reactionsSnap = await getDocs(collection(db, "tournaments", tournamentId, "rounds", roundDoc.id, "reactions"));
@@ -205,6 +266,7 @@ export async function deleteTournament(tournamentId) {
   const commentsSnap = await getDocs(collection(db, "tournaments", tournamentId, "comments"));
   await Promise.all(commentsSnap.docs.map((c) => deleteDoc(c.ref)));
   await deleteDoc(doc(db, "tournaments", tournamentId));
+  invalidateTournamentData();
 }
 
 export async function resetAllTournaments() {
@@ -214,7 +276,7 @@ export async function resetAllTournaments() {
   return ids.length;
 }
 
-// ---------- CONFIGURACIÓN DEL RANKING (curada a mano por el admin) ----------
+// ---------- CONFIGURACIÓN DEL RANKING  ----------
 
 export async function getRankingSettings() {
   try {
@@ -269,18 +331,15 @@ export async function getLastFinishedTournament() {
 }
 
 export async function getPlayerDeepStats(uid) {
-  const q = query(collection(db, "tournaments"), where("participantUids", "array-contains", uid));
-  const tournamentsSnap = await getDocs(q);
+  const { tournaments, roundsByTournament } = await getTournamentData();
 
   const characterWins = {};
   const lossPairs = {}; 
   const beatenPairs = new Set();
 
-  for (const tDoc of tournamentsSnap.docs) {
-    const roundsSnap = await getDocs(collection(db, "tournaments", tDoc.id, "rounds"));
-    roundsSnap.docs.forEach((r) => {
-      const round = r.data();
-      if (!round.roundNumber) return; 
+  for (const t of tournaments.filter((tt) => tt.participantUids?.includes(uid))) {
+    (roundsByTournament[t.id] || []).forEach((round) => {
+      if (!round.roundNumber) return;
       const chars = round.characters || {};
 
       if (round.winnerUid === uid) {

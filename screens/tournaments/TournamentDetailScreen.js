@@ -32,6 +32,7 @@ import { notifyNewComment } from "../../services/pushNotifications";
 import { listenVoiceAliases } from "../../services/voiceAliasesService";
 
 //JS:
+const ADMIN_EMAIL = "aurepuente25@gmail.com";
 const ELIJAH_IMAGE = require("../../assets/elijah.png");
 const VICTORY_SONGS = [
   require("../../assets/audio/victory01.mp3"),
@@ -540,6 +541,8 @@ function TournamentDetailScreenInner({ route, navigation }) {
 
   const isCreator = tournament && user && tournament.createdBy === user.uid;
   const isFinished = tournament?.status === "finished";
+  const isAdmin = user?.email === ADMIN_EMAIL;
+  const canEditRounds = !!tournament && (isAdmin || (isCreator && !isFinished));
 
   // Modo pantalla grande:
   useEffect(() => {
@@ -582,7 +585,13 @@ function TournamentDetailScreenInner({ route, navigation }) {
       tournament.roster,
       newRounds
     );
-    await applyRecomputedState({ tournamentId, participants: newParticipants, winnerUid: newWinnerUid, isFinished: finished });
+    await applyRecomputedState({
+      tournamentId,
+      participants: newParticipants,
+      winnerUid: newWinnerUid,
+      isFinished: finished,
+      finishedAt: tournament.status === "finished" ? tournament.finishedAt : null,
+    });
   }
 
   async function assignCurrentCharacter(uid, characterId) {
@@ -641,7 +650,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
   }
 
   function startEditRound(round) {
-    if (!isCreator || isFinished) return;
+    if (!canEditRounds) return;
     setEditingRound({
       id: round.id,
       roundNumber: round.roundNumber,
@@ -659,6 +668,13 @@ function TournamentDetailScreenInner({ route, navigation }) {
     setPendingWinnerUid(null);
     setElijahUid(null);
     setEditingRound(null);
+  }
+
+  function previewEditFor(uid) {
+    if (!editingRound) return null;
+    const simulated = rounds.map((r) => (r.id === editingRound.id ? { ...r, winnerUid: uid } : r));
+    const result = recomputeTournamentState(tournament.roster, simulated);
+    return { isFinished: result.isFinished, winnerUid: result.winnerUid };
   }
 
   function willFinishFor(uid) {
@@ -695,8 +711,15 @@ function TournamentDetailScreenInner({ route, navigation }) {
         if (winUid !== editingRound.winnerUid) {
           chars[winUid] = editingRound.foughtChars[winUid] ?? chars[winUid] ?? null;
           const latestNumber = Math.max(...rounds.map((r) => r.roundNumber));
-          if (round && round.roundNumber === latestNumber && !willFinish && editingRound.winnerUid) {
-            chars[editingRound.winnerUid] = null;
+          const isLatest = round && round.roundNumber === latestNumber;
+          if (isLatest && !willFinish) {
+            if (isFinished) {
+              participants.filter((p) => p.uid !== winUid).forEach((p) => {
+                chars[p.uid] = null;
+              });
+            } else if (editingRound.winnerUid) {
+              chars[editingRound.winnerUid] = null;
+            }
           }
         }
         await correctRound({ tournamentId, roundId: editingRound.id, winnerUid: winUid, elijahUid: elijah, characters: chars });
@@ -1032,7 +1055,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
           </Button>
         )}
 
-        {!isCreator && (
+        {!isCreator && !isFinished &&(
           <Button
             mode="outlined"
             icon="cards"
@@ -1052,6 +1075,14 @@ function TournamentDetailScreenInner({ route, navigation }) {
 
         <View style={[styles.divider, { backgroundColor: theme.colors.outline }]} />
         <Text variant="titleSmall" style={{ marginBottom: SPACING.s, color: theme.colors.onBackground }}>Historial de rondas</Text>
+        {isAdmin && isFinished && visibleRounds.length > 0 && (
+          <View style={[styles.adminHint, { backgroundColor: theme.colors.primaryContainer }]}>
+            <MaterialCommunityIcons name="shield-crown-outline" size={scale(16)} color={theme.colors.onPrimaryContainer} />
+            <Text style={{ flex: 1, marginLeft: SPACING.s, color: theme.colors.onPrimaryContainer, fontSize: scale(12) }}>
+              Modo admin: tocá el lápiz de una ronda para corregir el ganador o el Elijah.
+            </Text>
+          </View>
+        )}
         {visibleRounds.length === 0 ? (
           <EmptyRoundHistory />
         ) : (
@@ -1062,7 +1093,7 @@ function TournamentDetailScreenInner({ route, navigation }) {
               round={r}
               winnerName={participants.find((p) => p.uid === r.winnerUid)?.playerName}
               elijahName={r.elijahUid ? participants.find((p) => p.uid === r.elijahUid)?.playerName : null}
-              canEdit={isCreator && !isFinished}
+              canEdit={canEditRounds}
               onEdit={() => startEditRound(r)}
               readOnlyReactions={isParticipant}
             />
@@ -1199,6 +1230,32 @@ function TournamentDetailScreenInner({ route, navigation }) {
             {elijahParticipant ? `Elijah: ${elijahParticipant.playerName}\n` : ""}
             {voice.supported && !editingRound ? "Decí \"confirmar\" o \"cancelar\"." : editingRound ? "" : "Se puede corregir desde el historial."}
           </Text>
+          {(() => {
+            if (!editingRound || !isFinished || !pendingWinnerUid) return null;
+            const preview = previewEditFor(pendingWinnerUid);
+            if (!preview) return null;
+            if (!preview.isFinished) {
+              return (
+                <View style={[styles.editWarning, { backgroundColor: theme.colors.errorContainer }]}>
+                  <MaterialCommunityIcons name="alert-outline" size={scale(18)} color={theme.colors.onErrorContainer} />
+                  <Text style={{ flex: 1, marginLeft: SPACING.s, color: theme.colors.onErrorContainer, fontSize: scale(13) }}>
+                    Con este cambio nadie llega a {POINTS_TO_WIN} puntos: el torneo vuelve a quedar en curso.
+                  </Text>
+                </View>
+              );
+            }
+            if (preview.winnerUid !== tournament.winnerUid) {
+              return (
+                <View style={[styles.editWarning, { backgroundColor: theme.custom.gold }]}>
+                  <MaterialCommunityIcons name="trophy" size={scale(18)} color="#241A05" />
+                  <Text style={{ flex: 1, marginLeft: SPACING.s, color: "#241A05", fontSize: scale(13), fontWeight: "700" }}>
+                    Nuevo campeón del torneo: {nameOf(preview.winnerUid)}
+                  </Text>
+                </View>
+              );
+            }
+            return null;
+          })()}
           <View style={styles.confirmActions}>
             <Button mode="outlined" style={{ flex: 1, borderRadius: RADIUS.pill, marginRight: SPACING.s }} onPress={() => setPendingWinnerUid(null)}>
               Cancelar
@@ -1464,6 +1521,22 @@ const styles = StyleSheet.create({
     alignItems: "center", justifyContent: "center", marginBottom: SPACING.m,
   },
   confirmActions: { flexDirection: "row", width: "100%" },
+  adminHint: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: RADIUS.md,
+    padding: SPACING.s,
+    marginBottom: SPACING.m,
+  },
+  editWarning: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "stretch",
+    borderRadius: RADIUS.md,
+    padding: SPACING.m,
+    marginTop: -SPACING.m,
+    marginBottom: SPACING.l,
+  },
   busyOverlay: {
     alignItems: "center", justifyContent: "center",
     backgroundColor: "rgba(0,0,0,0.55)",

@@ -51,7 +51,8 @@ export function computeRankingData({ users, finished, allRounds, allCharacters, 
         })
         .sort((a, b) => b.score - a.score);
 
-    const charUsage = {};
+    // ---- Ranking de personajes: ----
+    const pairStats = {};
     includedUids.forEach((uid) => {
         const played = commonFinished.filter((t) => t.participantUids?.includes(uid));
         const playedIds = new Set(played.map((t) => t.id));
@@ -59,31 +60,26 @@ export function computeRankingData({ users, finished, allRounds, allCharacters, 
         userRounds.forEach((r) => {
         const charId = r.characters?.[uid];
         if (!charId) return;
-        if (!charUsage[charId]) charUsage[charId] = { uses: 0, wins: 0, byPlayer: {} };
-        charUsage[charId].uses += 1;
-        if (!charUsage[charId].byPlayer[uid]) charUsage[charId].byPlayer[uid] = { uses: 0, wins: 0 };
-        charUsage[charId].byPlayer[uid].uses += 1;
-        if (r.winnerUid === uid) {
-            charUsage[charId].wins += 1;
-            charUsage[charId].byPlayer[uid].wins += 1;
-        }
+        const key = `${uid}|${charId}`;
+        if (!pairStats[key]) pairStats[key] = { uid, charId, uses: 0, wins: 0 };
+        pairStats[key].uses += 1;
+        if (r.winnerUid === uid) pairStats[key].wins += 1;
         });
     });
 
-    const topCharacters = Object.entries(charUsage)
-        .map(([charId, stat]) => {
-        const topPlayerUid = Object.entries(stat.byPlayer).sort((a, b) => b[1].wins - a[1].wins)[0]?.[0];
-        return {
-            charId,
-            characterName: charById(charId)?.name || null,
-            characterIcon: charById(charId)?.images?.iconImage || null,
+    const topCharacters = Object.entries(pairStats)
+        .map(([key, stat]) => ({
+            key,
+            charId: stat.charId,
+            playerUid: stat.uid,
+            characterName: charById(stat.charId)?.name || null,
+            characterIcon: charById(stat.charId)?.images?.iconImage || null,
             uses: stat.uses,
             wins: stat.wins,
             score: stat.wins,
-            topPlayerUid: topPlayerUid || null,
-            topPlayerName: topPlayerUid ? userByUid(topPlayerUid)?.playerName || null : null,
-        };
-        })
+            topPlayerUid: stat.uid,
+            topPlayerName: userByUid(stat.uid)?.playerName || null,
+        }))
         .filter((c) => c.characterName && c.wins > 0)
         .sort((a, b) => b.score - a.score);
     return { qualified, topCharacters };

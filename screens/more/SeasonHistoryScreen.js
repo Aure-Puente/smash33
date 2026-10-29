@@ -118,7 +118,7 @@ function SeasonCard({ season, theme }) {
           {season.topCharacters.slice(0, 10).map((c, index) => {
             const pos = getPositionVisual(index, season.topCharacters.length, theme);
             return (
-              <View key={c.charId} style={[styles.posRow, { backgroundColor: theme.colors.surfaceVariant }]}>
+              <View key={c.key || `${c.charId}-${index}`} style={[styles.posRow, { backgroundColor: theme.colors.surfaceVariant }]}>
                 <View style={styles.posIconWrap}>
                   {pos.icon ? (
                     <MaterialCommunityIcons name={pos.icon} size={scale(22)} color={pos.color} />

@@ -6,7 +6,7 @@ import { useAudioPlayer } from "expo-audio";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import { Avatar, Portal, Text } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import Svg, { Ellipse, Line, Path } from "react-native-svg";
+import Svg, { Circle, Ellipse, G, Line, Path } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getAllUsers, getFinishedTournaments, getRounds, getSeasonHistory, listenRankingSettings } from "../../services/firestoreService";
 import { getAllCharacters } from "../../services/charactersService";
@@ -212,7 +212,7 @@ function OccasionalCreatures({ palette }) {
   useEffect(() => {
     let cancelled = false;
     function scheduleNext() {
-      const delay = 12000 + Math.random() * 13000; 
+      const delay = 7000 + Math.random() * 9000; 
       timeoutRef.current = setTimeout(() => {
         if (cancelled) return;
         const kind = Math.random() < 0.5 ? "butterfly" : "bee";
@@ -239,6 +239,172 @@ function OccasionalCreatures({ palette }) {
         ))}
       </View>
     </Portal>
+  );
+}
+
+// ---------- Toques primaverales ----------
+
+function FlowerRankBadge({ position, color }) {
+  const spin = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = Animated.loop(Animated.timing(spin, { toValue: 1, duration: 14000, easing: Easing.linear, useNativeDriver: true }));
+    loop.start();
+    return () => loop.stop();
+  }, [spin]);
+  const rotate = spin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
+  const size = scale(42);
+  const petals = [0, 72, 144, 216, 288];
+
+  return (
+    <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center", marginRight: SPACING.s }}>
+      <Animated.View style={{ position: "absolute", transform: [{ rotate }] }}>
+        <Svg width={size} height={size} viewBox="0 0 40 40">
+          <G origin="20, 20">
+            {petals.map((deg) => (
+              <Ellipse key={deg} cx={20} cy={9.5} rx={6.8} ry={9} fill="rgba(255,255,255,0.88)" rotation={deg} origin="20, 20" />
+            ))}
+          </G>
+        </Svg>
+      </Animated.View>
+      <View style={[styles.flowerBadgeCenter, { backgroundColor: color }]}>
+        <Text style={{ fontSize: scale(13), fontWeight: "900", color: "#FFFFFF" }}>{position}</Text>
+      </View>
+    </View>
+  );
+}
+
+function CornerVine({ palette, size = scale(64), style, flipX = false, flipY = false }) {
+  const leaf = "M0 0 C5 -5.5, 13 -5.5, 17 0 C13 5.5, 5 5.5, 0 0 Z";
+  return (
+    <View
+      pointerEvents="none"
+      style={[{ position: "absolute", width: size, height: size, transform: [{ scaleX: flipX ? -1 : 1 }, { scaleY: flipY ? -1 : 1 }] }, style]}
+    >
+      <Svg width={size} height={size} viewBox="0 0 64 64">
+        <Path d="M3 3 C 22 5, 34 14, 40 34 C 43 44, 48 52, 58 56" stroke="#5FA35A" strokeWidth={2.6} fill="none" strokeLinecap="round" />
+        <Path d="M3 3 C 6 18, 4 30, 10 42" stroke="#5FA35A" strokeWidth={2.2} fill="none" strokeLinecap="round" />
+        <G transform="translate(16 7) rotate(-20)"><Path d={leaf} fill="#7BC67A" /></G>
+        <G transform="translate(30 17) rotate(40)"><Path d={leaf} fill="#66BB6A" /></G>
+        <G transform="translate(41 37) rotate(70)"><Path d={leaf} fill="#7BC67A" /></G>
+        <G transform="translate(5 20) rotate(100)"><Path d={leaf} fill="#66BB6A" /></G>
+        <G transform="translate(7 34) rotate(60)"><Path d={leaf} fill="#81C784" /></G>
+        {[0, 72, 144, 216, 288].map((deg) => (
+          <Ellipse key={deg} cx={58} cy={51.5} rx={3.2} ry={4.4} fill={palette.pink} rotation={deg} origin="58, 56" />
+        ))}
+        <Circle cx={58} cy={56} r={2.6} fill="#FFD54F" />
+      </Svg>
+    </View>
+  );
+}
+
+// Jardín:
+function buildGarden(width, H, palette) {
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const shapes = [];
+  const blade = (x, h, lean, w, color) =>
+    shapes.push({ t: "path", d: `M${x - w} ${H} Q${x + lean / 2} ${H - h / 2} ${x + lean} ${H - h} Q${x + lean / 2 + w / 2} ${H - h / 2} ${x + w} ${H} Z`, fill: color });
+  const petals = (cx, cy, n, dist, rx, ry, color) => {
+    for (let k = 0; k < n; k++) {
+      const deg = (360 / n) * k;
+      shapes.push({ t: "ellipse", cx, cy: cy - dist, rx, ry, fill: color, rot: deg, ox: cx, oy: cy });
+    }
+  };
+  const stem = (x, top, lean = 0) => shapes.push({ t: "path", d: `M${x} ${H} Q${x + lean} ${(H + top) / 2} ${x + lean * 0.6} ${top}`, stroke: "#4C8F48", sw: 1.5 });
+  const leaf = (x, y, dir, size, color) =>
+    shapes.push({ t: "path", d: `M${x} ${y} Q${x + dir * size} ${y - size * 0.9} ${x + dir * size * 1.6} ${y - size * 0.2} Q${x + dir * size * 0.8} ${y + size * 0.2} ${x} ${y} Z`, fill: color });
+
+  const flowerColors = [palette.pink, "#FFFFFF", "#FFD54F", palette.purple, "#FF8A65", "#81D4FA", "#F48FB1"];
+
+  // 1) Pasto de fondo
+  for (let x = 0; x < width; x += rnd(2.5, 4.5)) blade(x, rnd(14, 26), rnd(-5, 5), 2.2, pick(["#3F7F3B", "#4C8F48", "#55994F"]));
+
+  // 2) Flores
+  let x = rnd(4, 10);
+  while (x < width - 4) {
+    const kind = Math.random();
+    const top = rnd(H - 34, H - 16);
+    const lean = rnd(-3, 3);
+    const fx = x + lean * 0.6;
+    if (kind < 0.5) {
+      const r = rnd(2.4, 3.8);
+      const color = pick(flowerColors);
+      stem(x, top + r, lean);
+      if (Math.random() < 0.6) leaf(x + lean * 0.3, rnd(top + 8, H - 6), Math.random() < 0.5 ? -1 : 1, rnd(3.5, 5), "#66BB6A");
+      petals(fx, top, 5, r * 0.85, r * 0.62, r * 0.9, color);
+      shapes.push({ t: "circle", cx: fx, cy: top, r: r * 0.5, fill: color === "#FFD54F" ? "#F57C00" : "#FFD54F" });
+    } else if (kind < 0.72) {
+      const color = pick([palette.pink, "#FF7043", palette.purple, "#EF5350", "#F48FB1"]);
+      const w = rnd(3, 4.2);
+      stem(x, top + 3, lean);
+      leaf(x + lean * 0.3, rnd(top + 10, H - 5), Math.random() < 0.5 ? -1 : 1, rnd(4, 6), "#5FA35A");
+      shapes.push({
+        t: "path",
+        d: `M${fx - w} ${top - 2} L${fx - w * 0.5} ${top - w * 0.9} L${fx} ${top - 1.5} L${fx + w * 0.5} ${top - w * 0.9} L${fx + w} ${top - 2} Q${fx + w} ${top + w * 1.1} ${fx} ${top + w * 1.1} Q${fx - w} ${top + w * 1.1} ${fx - w} ${top - 2} Z`,
+        fill: color,
+      });
+    } else if (kind < 0.88) {
+      const color = pick([palette.purple, "#B39DDB", "#9575CD"]);
+      stem(x, top, lean);
+      for (let k = 0; k < 5; k++) shapes.push({ t: "ellipse", cx: fx + (k % 2 ? 1.2 : -1.2), cy: top + k * 2.6, rx: 1.5, ry: 2, fill: color, rot: 0, ox: fx, oy: top });
+    } else {
+      const color = pick(["#FFFFFF", "#FFF59D", "#F8BBD0"]);
+      stem(x, top + 4, lean);
+      [[-3, 1], [0, -2], [3, 1], [-1.5, 3.5], [1.8, 3.6]].forEach(([dx, dy]) => {
+        petals(fx + dx, top + dy, 5, 1.1, 0.9, 1.2, color);
+        shapes.push({ t: "circle", cx: fx + dx, cy: top + dy, r: 0.6, fill: "#FFB300" });
+      });
+    }
+    x += rnd(7, 13);
+  }
+
+  // 3) Pasto de adelante
+  for (let gx = 0; gx < width; gx += rnd(2, 3.5)) blade(gx, rnd(6, 14), rnd(-4, 4), 1.9, pick(["#66BB6A", "#7BC67A", "#81C784", "#5FA35A"]));
+
+  return shapes;
+}
+
+function GrassStrip({ width, palette }) {
+  const H = 46;
+  const shapes = useMemo(() => buildGarden(width, H, palette), [width]);
+
+  return (
+    <Svg width={width} height={H} viewBox={`0 0 ${width} ${H}`} pointerEvents="none">
+      {shapes.map((sh, i) => {
+        if (sh.t === "path") {
+          return sh.stroke ? (
+            <Path key={i} d={sh.d} stroke={sh.stroke} strokeWidth={sh.sw} fill="none" strokeLinecap="round" />
+          ) : (
+            <Path key={i} d={sh.d} fill={sh.fill} />
+          );
+        }
+        if (sh.t === "ellipse") {
+          return <Ellipse key={i} cx={sh.cx} cy={sh.cy} rx={sh.rx} ry={sh.ry} fill={sh.fill} rotation={sh.rot} origin={`${sh.ox}, ${sh.oy}`} />;
+        }
+        return <Circle key={i} cx={sh.cx} cy={sh.cy} r={sh.r} fill={sh.fill} />;
+      })}
+    </Svg>
+  );
+}
+
+function SwayingSeasonIcon({ name, color }) {
+  const sway = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(sway, { toValue: 1, duration: 1700, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(sway, { toValue: 0, duration: 1700, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [sway]);
+  const rotate = sway.interpolate({ inputRange: [0, 1], outputRange: ["-10deg", "10deg"] });
+  const translateY = sway.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, -2, 0] });
+  return (
+    <Animated.View style={{ transform: [{ translateY }, { rotate }] }}>
+      <MaterialCommunityIcons name={name} size={scale(26)} color={color} />
+    </Animated.View>
   );
 }
 
@@ -453,6 +619,7 @@ const tierHeights = items.map((t) => {
 });
 const tierOffsets = tierHeights.map((_, i) => tierHeights.slice(0, i).reduce((s, h) => s + h, 0));
 const H = Math.max(tierHeights.reduce((s, h) => s + h, 0), BAND_HEIGHT);
+const isSpring = season?.key === "spring";
 
   const messageBagRef = useRef([]);
 
@@ -603,7 +770,7 @@ const H = Math.max(tierHeights.reduce((s, h) => s + h, 0), BAND_HEIGHT);
         </View>
       )}
 
-      <View style={{ width: BAR_WIDTH, height: H, marginTop: SPACING.m }}>
+      <View style={{ width: BAR_WIDTH, height: H, marginTop: SPACING.m, marginBottom: isSpring ? scale(26) : 0 }}>
         <View style={[styles.rankBarShell, { borderColor: palette.pink }]}>
           {items.map((tier, i) => (
             <LinearGradient
@@ -646,9 +813,13 @@ const H = Math.max(tierHeights.reduce((s, h) => s + h, 0), BAND_HEIGHT);
                 transform: [{ translateY }],
               }}
             >
-              <View style={styles.rankNumberBadge}>
-                <Text style={{ fontSize: scale(14), fontWeight: "800", color: "#FFFFFF" }}>{tier.position}</Text>
-              </View>
+              {isSpring ? (
+                <FlowerRankBadge position={tier.position} color={RANK_COLORS[i % RANK_COLORS.length]} />
+              ) : (
+                <View style={styles.rankNumberBadge}>
+                  <Text style={{ fontSize: scale(14), fontWeight: "800", color: "#FFFFFF" }}>{tier.position}</Text>
+                </View>
+              )}
 
                     <View style={[styles.tierMembers, (!showNames || stacked) && { justifyContent: "center" }]}>
                     {tier.members.map((m) =>
@@ -686,6 +857,15 @@ const H = Math.max(tierHeights.reduce((s, h) => s + h, 0), BAND_HEIGHT);
             </Animated.View>
           );
         })}
+
+        {isSpring && (
+          <>
+            <CornerVine palette={palette} size={scale(56)} style={{ top: -scale(26), right: -scale(22), zIndex: 5 }} flipX />
+            <View pointerEvents="none" style={[styles.grassWrap, { bottom: -scale(24) }]}>
+              <GrassStrip width={BAR_WIDTH} palette={palette} />
+            </View>
+          </>
+        )}
       </View>
     </View>
   );
@@ -909,10 +1089,10 @@ const barTiers =
     : groupIntoTiers(activeList)
         .filter((t) => t.position <= MAX_CHARACTER_SLOTS)
         .map((t) => ({
-          key: t.members.map((c) => c.charId).join("-"),
+          key: t.members.map((c) => c.key || c.charId).join("-"),
           position: t.position,
           members: t.members.map((c) => ({
-            key: c.charId,
+            key: c.key || c.charId,
             imageUri: c.character.images?.iconImage,
             label: c.character.name,
             sublabel: c.topPlayerName ? `Usado por ${c.topPlayerName}` : null,
@@ -942,8 +1122,9 @@ const barTiers =
         </View>
 
         <View style={[styles.seasonBanner, { backgroundColor: palette.surface, borderColor: palette.outline }]}>
+          {season.key === "spring" && <CornerVine palette={palette} size={scale(46)} style={{ top: -scale(16), right: -scale(16) }} flipX />}
           <View style={[styles.seasonIconWrap, { backgroundColor: `${palette.pink}22` }]}>
-            <MaterialCommunityIcons name={season.icon} size={scale(26)} color={palette.pink} />
+            <SwayingSeasonIcon name={season.icon} color={palette.pink} />
           </View>
           <View style={{ flex: 1, marginLeft: SPACING.m }}>
             <Text style={[styles.seasonTitle, { color: palette.textDark }]}>Temporada de {season.label}</Text>
@@ -1249,6 +1430,16 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   rankBand: { width: "100%" },
+  flowerBadgeCenter: {
+    width: scale(22),
+    height: scale(22),
+    borderRadius: scale(11),
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1.5,
+    borderColor: "rgba(255,255,255,0.95)",
+  },
+  grassWrap: { position: "absolute", left: 0, right: 0, zIndex: 6 },
   rankNumberBadge: {
     width: scale(30), height: scale(30), borderRadius: scale(15),
     backgroundColor: "rgba(0,0,0,0.28)",
